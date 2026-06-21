@@ -1,0 +1,372 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  COMPANY
+  INTERNAL_SUPERVISOR
+  EXTERNAL_SUPERVISOR
+  ADMIN
+}
+
+enum StudentStatus {
+  CURRENT
+  PASSOUT
+}
+
+enum InternshipMode {
+  ONSITE
+  REMOTE
+  HYBRID
+}
+
+enum InternshipStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  COMPLETED
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  SHORTLISTED
+  INTERVIEW
+  SELECTED
+  REJECTED
+  WITHDRAWN
+}
+
+enum InterviewResult {
+  PENDING
+  PASSED
+  FAILED
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  TERMINATED
+}
+
+enum DocumentType {
+  RESUME
+  REGISTRATION
+  OFFER_LETTER
+  CERTIFICATE
+  OTHER
+}
+
+enum NotificationType {
+  APPLICATION_UPDATE
+  SUPERVISOR_FEEDBACK
+  DEADLINE_REMINDER
+  INTERVIEW_SCHEDULED
+  SYSTEM
+  GENERAL
+}
+
+enum SupervisorType {
+  INTERNAL
+  EXTERNAL
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      Role
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student       Student?
+  company       Company?
+  supervisor    Supervisor?
+  admin         Admin?
+  notifications Notification[]
+}
+
+model University {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  location  String?
+  website   String?
+  colleges  College[]
+  createdAt DateTime @default(now())
+}
+
+model College {
+  id           String     @id @default(cuid())
+  name         String
+  universityId String
+  university   University @relation(fields: [universityId], references: [id])
+  location     String?
+  isVerified   Boolean    @default(false)
+  programs     Program[]
+  students     Student[]
+  supervisors  Supervisor[]
+  createdAt    DateTime   @default(now())
+}
+
+model Program {
+  id        String    @id @default(cuid())
+  name      String
+  collegeId String
+  college   College   @relation(fields: [collegeId], references: [id])
+  duration  Int?
+  students  Student[]
+  createdAt DateTime  @default(now())
+}
+
+model Student {
+  id                 String        @id @default(cuid())
+  userId             String        @unique
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName          String
+  lastName           String
+  phone              String?
+  registrationNumber String?
+  symbolNumber       String?
+  semester           Int?
+  academicYear       String?
+  collegeId          String?
+  college            College?      @relation(fields: [collegeId], references: [id])
+  programId          String?
+  program            Program?      @relation(fields: [programId], references: [id])
+  location           String?
+  bio                String?       @db.Text
+  status             StudentStatus @default(CURRENT)
+  avatarUrl          String?
+  skills             StudentSkill[]
+  applications       Application[]
+  enrollments        InternshipEnrollment[]
+  documents          Document[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+}
+
+model Company {
+  id          String       @id @default(cuid())
+  userId      String       @unique
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?      @db.Text
+  industry    String?
+  website     String?
+  location    String?
+  size        String?
+  logoUrl     String?
+  isVerified  Boolean      @default(false)
+  internships Internship[]
+  supervisors Supervisor[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Supervisor {
+  id        String         @id @default(cuid())
+  userId    String         @unique
+  user      User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  phone     String?
+  type      SupervisorType
+  expertise String?
+  collegeId String?
+  college   College?       @relation(fields: [collegeId], references: [id])
+  companyId String?
+  company   Company?       @relation(fields: [companyId], references: [id])
+
+  internalEnrollments InternshipEnrollment[] @relation("InternalSupervisor")
+  externalEnrollments InternshipEnrollment[] @relation("ExternalSupervisor")
+  progressReviews     ProgressLog[]
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  firstName String
+  lastName  String
+  createdAt DateTime @default(now())
+}
+
+model Skill {
+  id               String           @id @default(cuid())
+  name             String           @unique
+  category         String?
+  studentSkills    StudentSkill[]
+  internshipSkills InternshipSkill[]
+  createdAt        DateTime         @default(now())
+}
+
+model StudentSkill {
+  studentId   String
+  skillId     String
+  proficiency String?
+  student     Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  skill       Skill   @relation(fields: [skillId], references: [id])
+
+  @@id([studentId, skillId])
+}
+
+model Internship {
+  id               String           @id @default(cuid())
+  companyId        String
+  company          Company          @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  title            String
+  description      String           @db.Text
+  requirements     String?          @db.Text
+  responsibilities String?          @db.Text
+  stipend          Float?
+  isPaid           Boolean          @default(false)
+  duration         Int
+  vacancies        Int              @default(1)
+  location         String?
+  mode             InternshipMode   @default(ONSITE)
+  status           InternshipStatus @default(OPEN)
+  startDate        DateTime?
+  endDate          DateTime?
+  deadline         DateTime?
+  skills           InternshipSkill[]
+  applications     Application[]
+  enrollments      InternshipEnrollment[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model InternshipSkill {
+  internshipId String
+  skillId      String
+  internship   Internship @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  skill        Skill      @relation(fields: [skillId], references: [id])
+
+  @@id([internshipId, skillId])
+}
+
+model Application {
+  id           String            @id @default(cuid())
+  studentId    String
+  internshipId String
+  student      Student           @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  internship   Internship        @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  coverLetter  String?           @db.Text
+  resumeUrl    String?
+  status       ApplicationStatus @default(APPLIED)
+  notes        String?
+  appliedAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  interview    Interview?
+
+  @@unique([studentId, internshipId])
+}
+
+model Interview {
+  id            String          @id @default(cuid())
+  applicationId String          @unique
+  application   Application     @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  scheduledAt   DateTime
+  mode          String?
+  link          String?
+  location      String?
+  notes         String?
+  result        InterviewResult @default(PENDING)
+  feedback      String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model InternshipEnrollment {
+  id                   String           @id @default(cuid())
+  studentId            String
+  internshipId         String
+  student              Student          @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  internship           Internship       @relation(fields: [internshipId], references: [id], onDelete: Cascade)
+  internalSupervisorId String?
+  externalSupervisorId String?
+  internalSupervisor   Supervisor?      @relation("InternalSupervisor", fields: [internalSupervisorId], references: [id])
+  externalSupervisor   Supervisor?      @relation("ExternalSupervisor", fields: [externalSupervisorId], references: [id])
+  startDate            DateTime
+  endDate              DateTime?
+  status               EnrollmentStatus @default(ACTIVE)
+  progressLogs         ProgressLog[]
+  evaluation           Evaluation?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+
+  @@unique([studentId, internshipId])
+}
+
+model ProgressLog {
+  id                 String               @id @default(cuid())
+  enrollmentId       String
+  enrollment         InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  weekNumber         Int
+  title              String?
+  description        String               @db.Text
+  tasksCompleted     String?              @db.Text
+  challenges         String?              @db.Text
+  nextWeekPlan       String?              @db.Text
+  hoursWorked        Int?
+  supervisorFeedback String?              @db.Text
+  supervisorId       String?
+  supervisor         Supervisor?          @relation(fields: [supervisorId], references: [id])
+  rating             Int?
+  status             String               @default("SUBMITTED")
+  submittedAt        DateTime             @default(now())
+  reviewedAt         DateTime?
+
+  @@unique([enrollmentId, weekNumber])
+}
+
+model Evaluation {
+  id                 String               @id @default(cuid())
+  enrollmentId       String               @unique
+  enrollment         InternshipEnrollment @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+  technicalScore     Float?
+  communicationScore Float?
+  teamworkScore      Float?
+  punctualityScore   Float?
+  overallScore       Float?
+  feedback           String?              @db.Text
+  strengths          String?              @db.Text
+  improvements       String?              @db.Text
+  grade              String?
+  isRecommended      Boolean?
+  completedAt        DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+}
+
+model Document {
+  id         String       @id @default(cuid())
+  studentId  String
+  student    Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  type       DocumentType
+  name       String
+  filename   String
+  path       String
+  mimeType   String?
+  size       Int?
+  uploadedAt DateTime     @default(now())
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String           @db.Text
+  type      NotificationType
+  isRead    Boolean          @default(false)
+  actionUrl String?
+  createdAt DateTime         @default(now())
+}
