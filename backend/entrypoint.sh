@@ -1,13 +1,17 @@
 #!/bin/sh
 set -e
 
-echo "Pushing Prisma schema to database..."
+echo "Running Prisma db push..."
 npx prisma db push --accept-data-loss
 
 if [ "$SEED_DB" = "true" ]; then
-  echo "Seeding database with demo data..."
+  echo "Seeding database..."
   node prisma/seed.js
 fi
 
 echo "Starting server..."
-exec node src/server.js
+if [ $# -gt 0 ]; then
+  exec "$@"
+else
+  exec node src/server.js
+fi
