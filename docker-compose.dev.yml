@@ -1,0 +1,38 @@
+# Development override — hot reload for both backend and frontend
+# Usage: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+#
+# Install deps locally first so the volume mounts work:
+#   cd backend && npm install
+#   cd frontend && npm install
+
+services:
+
+  backend:
+    build:
+      context: ./backend
+      target: "" # build the full image
+    command: npx nodemon src/server.js
+    environment:
+      NODE_ENV: development
+      SEED_DB: "true"
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - ./backend/node_modules:/app/node_modules
+      - uploads_data:/app/uploads
+    ports:
+      - "3000:3000"
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    environment:
+      VITE_API_URL: ""
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend
