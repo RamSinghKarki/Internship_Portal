@@ -1,149 +1,233 @@
-/* ---------- Simple styles for the whole site ---------- */
+/* ============================================================
+   Internship Portal styles
+   Change the colors of the whole site here in one place:
+   ============================================================ */
+:root {
+    --dark:       #24344d;   /* navbar, headings, table header */
+    --dark-hover: #18243a;   /* darker shade for hover */
+    --accent:     #2563eb;   /* buttons and links */
+    --bg:         #eef2f6;   /* page background */
+    --card:       #ffffff;   /* card background */
+    --border:     #dbe2ea;   /* card and table borders */
+    --text:       #2b3440;   /* main text */
+    --muted:      #6b7686;   /* less important text */
+}
 
 * {
     box-sizing: border-box;
 }
 
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
     margin: 0;
-    background: #f4f6f8;
-    color: #333;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+}
+
+a {
+    color: var(--accent);
 }
 
 /* ---------- Navigation bar ---------- */
 nav {
-    background: #2c3e50;
-    padding: 12px 20px;
-}
-
-nav a {
-    color: white;
-    text-decoration: none;
-    margin-right: 15px;
-}
-
-nav a:hover {
-    text-decoration: underline;
+    background: var(--dark);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
 }
 
 nav .brand {
     color: white;
     font-weight: bold;
-    margin-right: 25px;
+    font-size: 18px;
+    margin-right: 20px;
+}
+
+nav a {
+    color: #dbe4f0;
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+}
+
+nav a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
 }
 
 nav .right {
-    float: right;
-    color: #ccc;
+    margin-left: auto;
+    color: #9fb0c7;
+    font-size: 14px;
+}
+
+nav .right a {
+    color: #ffd7d7;
 }
 
 /* ---------- Page container ---------- */
 .container {
-    max-width: 900px;
-    margin: 25px auto;
-    padding: 0 15px;
+    max-width: 960px;
+    margin: 30px auto;
+    padding: 0 16px;
+}
+
+h2 {
+    color: var(--dark);
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 8px;
+}
+
+h3 {
+    color: var(--dark);
+    margin-top: 0;
 }
 
 /* ---------- Flash messages ---------- */
 .flash {
-    background: #fff3cd;
-    border: 1px solid #ffcf66;
-    padding: 10px;
-    border-radius: 4px;
+    background: #fff8e1;
+    border: 1px solid #f4d06f;
+    border-left: 4px solid #e6b025;
+    padding: 10px 14px;
+    border-radius: 6px;
 }
 
 /* ---------- Cards (dashboard boxes, internship items) ---------- */
 .card {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 15px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(36, 52, 77, 0.08);
+}
+
+.card:hover {
+    box-shadow: 0 3px 10px rgba(36, 52, 77, 0.12);
 }
 
 .stats {
     display: flex;
-    gap: 15px;
+    gap: 14px;
+    flex-wrap: wrap;
 }
 
 .stats .card {
     flex: 1;
+    min-width: 130px;
     text-align: center;
+    color: var(--muted);
 }
 
 .stats .number {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--dark);
 }
 
 /* ---------- Forms ---------- */
 form.box {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 20px;
-    max-width: 450px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 22px;
+    max-width: 460px;
+    box-shadow: 0 1px 3px rgba(36, 52, 77, 0.08);
 }
 
 label {
     display: block;
-    margin-top: 12px;
-    font-weight: bold;
+    margin-top: 14px;
+    margin-bottom: 4px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--dark);
 }
 
 input, select, textarea {
     width: 100%;
-    padding: 8px;
-    margin-top: 4px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    padding: 9px 10px;
+    border: 1px solid #c3ccd8;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
 }
 
 button {
-    margin-top: 15px;
-    padding: 8px 18px;
-    background: #2c3e50;
+    margin-top: 14px;
+    padding: 9px 20px;
+    background: var(--accent);
     color: white;
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
     cursor: pointer;
 }
 
 button:hover {
-    background: #1a252f;
+    background: #1d4fc4;
 }
 
 button.danger {
-    background: #c0392b;
+    background: #dc2626;
+}
+
+button.danger:hover {
+    background: #b91c1c;
 }
 
 /* ---------- Tables ---------- */
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--card);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(36, 52, 77, 0.08);
 }
 
 th, td {
-    border: 1px solid #ddd;
-    padding: 10px;
+    padding: 11px 14px;
     text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
 }
 
 th {
-    background: #2c3e50;
+    background: var(--dark);
     color: white;
+    font-weight: 600;
 }
 
-/* ---------- Small helpers ---------- */
+tr:last-child td {
+    border-bottom: none;
+}
+
+tr:hover td {
+    background: #f5f8fc;
+}
+
+/* ---------- Status badges ---------- */
 .status {
-    padding: 3px 8px;
-    border-radius: 4px;
-    background: #eee;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    background: #e5eaf1;
+    color: var(--muted);
     font-size: 13px;
+    font-weight: 600;
 }
 
-.status.selected { background: #d4edda; }
-.status.rejected { background: #f8d7da; }
+.status.applied  { background: #e0ecff; color: #1d4fc4; }
+.status.selected { background: #d9f2e3; color: #157347; }
+.status.rejected { background: #fbdddd; color: #b02a37; }
