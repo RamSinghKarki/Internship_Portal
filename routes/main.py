@@ -6,11 +6,20 @@ from flask import render_template, redirect, url_for, session
 from db import get_db, my_student, my_company
 
 
-# ---------- HOME ----------
+# ---------- LANDING PAGE ----------
+# public home page: shows how many students, companies etc. have joined
 def home():
     if 'user_id' in session:
         return redirect(url_for('dashboard'))
-    return redirect(url_for('login'))
+
+    db = get_db()
+    cur = db.cursor()
+    counts = {}
+    for table in ('students', 'companies', 'supervisors', 'internships'):
+        cur.execute(f"SELECT COUNT(*) AS c FROM {table}")
+        counts[table] = cur.fetchone()['c']
+    db.close()
+    return render_template('index.html', counts=counts)
 
 
 # ---------- DASHBOARD (READ - counts from every main table) ----------

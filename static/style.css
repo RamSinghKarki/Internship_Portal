@@ -231,3 +231,33 @@ tr:hover td {
 .status.applied  { background: #e0ecff; color: #1d4fc4; }
 .status.selected { background: #d9f2e3; color: #157347; }
 .status.rejected { background: #fbdddd; color: #b02a37; }
+
+/* ---------- Landing page hero ---------- */
+.hero {
+    text-align: center;
+    padding: 50px 20px 30px;
+}
+
+.hero h1 {
+    color: var(--dark);
+    font-size: 38px;
+    margin: 0 0 12px;
+}
+
+.hero p {
+    color: var(--muted);
+    font-size: 17px;
+    max-width: 520px;
+    margin: 0 auto 10px;
+}
+
+button.outline {
+    background: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+}
+
+button.outline:hover {
+    background: var(--accent);
+    color: white;
+}
