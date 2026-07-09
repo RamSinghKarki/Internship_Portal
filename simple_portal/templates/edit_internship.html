@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Edit Internship</h2>
+
+<form class="box" method="POST">
+    <label>Title</label>
+    <input type="text" name="title" value="{{ internship.title }}" required>
+
+    <label>Description</label>
+    <textarea name="description" rows="4">{{ internship.description }}</textarea>
+
+    <label>Required Skills</label>
+    <input type="text" name="skills" value="{{ internship.skills }}">
+
+    <label>Deadline</label>
+    <input type="date" name="deadline" value="{{ internship.deadline }}">
+
+    <button type="submit">Save Changes</button>
+</form>
+
+{% endblock %}

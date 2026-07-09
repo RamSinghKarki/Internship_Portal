@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Welcome, {{ session.name }}!</h2>
+
+<div class="stats">
+    <div class="card">
+        <div class="number">{{ total_internships }}</div>
+        Internships
+    </div>
+    <div class="card">
+        <div class="number">{{ total_students }}</div>
+        Students
+    </div>
+    <div class="card">
+        <div class="number">{{ total_companies }}</div>
+        Companies
+    </div>
+</div>
+
+{% if session.role == 'student' %}
+    <p><a href="{{ url_for('internships') }}">Browse internships</a> and apply.</p>
+{% elif session.role == 'company' %}
+    <p><a href="{{ url_for('add_internship') }}">Post a new internship</a> or view applicants of your posts.</p>
+{% elif session.role == 'admin' %}
+    <p><a href="{{ url_for('users') }}">Manage users</a> of the portal.</p>
+{% endif %}
+
+{% endblock %}

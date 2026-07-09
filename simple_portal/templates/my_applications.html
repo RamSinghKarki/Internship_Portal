@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>My Applications</h2>
+
+{% if applications|length == 0 %}
+    <p>You have not applied to any internships yet.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Internship</th>
+        <th>Company</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    {% for a in applications %}
+    <tr>
+        <td>{{ a.title }}</td>
+        <td>{{ a.company_name }}</td>
+        <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+        <td>
+            <form method="POST" action="{{ url_for('withdraw', id=a.id) }}">
+                <button type="submit" class="danger" onclick="return confirm('Withdraw this application?')">Withdraw</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

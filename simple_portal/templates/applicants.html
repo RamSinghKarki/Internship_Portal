@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Applicants for: {{ internship.title }}</h2>
+
+{% if applications|length == 0 %}
+    <p>No one has applied yet.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Student</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Change Status</th>
+    </tr>
+    {% for a in applications %}
+    <tr>
+        <td>{{ a.student_name }}</td>
+        <td>{{ a.student_email }}</td>
+        <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+        <td>
+            <form method="POST" action="{{ url_for('update_status', id=a.id) }}">
+                <select name="status">
+                    <option value="applied"  {% if a.status == 'applied'  %}selected{% endif %}>applied</option>
+                    <option value="selected" {% if a.status == 'selected' %}selected{% endif %}>selected</option>
+                    <option value="rejected" {% if a.status == 'rejected' %}selected{% endif %}>rejected</option>
+                </select>
+                <button type="submit">Update</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<p><a href="{{ url_for('internships') }}">Back to internships</a></p>
+
+{% endblock %}
