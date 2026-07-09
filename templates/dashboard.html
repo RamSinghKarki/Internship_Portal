@@ -4,11 +4,12 @@
 <h2>Welcome, {{ session.name }}!</h2>
 
 <div class="stats">
-    <div class="card"><div class="number">{{ counts.students }}</div>Students</div>
-    <div class="card"><div class="number">{{ counts.companies }}</div>Companies</div>
-    <div class="card"><div class="number">{{ counts.supervisors }}</div>Supervisors</div>
-    <div class="card"><div class="number">{{ counts.internships }}</div>Internships</div>
-    <div class="card"><div class="number">{{ counts.applications }}</div>Applications</div>
+    {% for label, number in stats %}
+    <div class="card">
+        <div class="number">{{ number }}</div>
+        {{ label }}
+    </div>
+    {% endfor %}
 </div>
 
 {% if session.role == 'student' %}
