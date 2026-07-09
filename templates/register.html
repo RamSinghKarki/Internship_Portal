@@ -1,26 +1,25 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Register</h2>
+<h2>Create an Account</h2>
 
-<form class="box" method="POST">
-    <label>Register as</label>
-    <select name="role" required>
-        <option value="student">Student</option>
-        <option value="company">Company</option>
-    </select>
-
-    <label>Name</label>
-    <input type="text" name="name" required>
-
-    <label>Email</label>
-    <input type="email" name="email" required>
-
-    <label>Password</label>
-    <input type="password" name="password" required>
-
-    <button type="submit">Register</button>
-</form>
+<div class="stats">
+    <div class="card">
+        <h3>Student</h3>
+        <p>Browse internships, apply and keep a weekly log book.</p>
+        <a href="{{ url_for('register_student') }}"><button>Register as Student</button></a>
+    </div>
+    <div class="card">
+        <h3>Company</h3>
+        <p>Post internships and select the best applicants.</p>
+        <a href="{{ url_for('register_company') }}"><button>Register as Company</button></a>
+    </div>
+    <div class="card">
+        <h3>Supervisor</h3>
+        <p>Guide selected students and review their weekly logs.</p>
+        <a href="{{ url_for('register_supervisor') }}"><button>Register as Supervisor</button></a>
+    </div>
+</div>
 
 <p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
 

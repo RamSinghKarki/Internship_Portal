@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Weekly Log Book - {{ application.title }}</h2>
+
+<form class="box" method="POST">
+    <label>Week Number</label>
+    <input type="number" name="week_number" min="1" required>
+
+    <label>Work Done This Week</label>
+    <textarea name="description" rows="3" required></textarea>
+
+    <button type="submit">Submit Log</button>
+</form>
+
+<h3>Submitted Logs</h3>
+{% if logs|length == 0 %}
+    <p>No logs submitted yet.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Week</th>
+        <th>Work Done</th>
+        <th>Supervisor Feedback</th>
+        <th>Marks</th>
+    </tr>
+    {% for log in logs %}
+    <tr>
+        <td>{{ log.week_number }}</td>
+        <td>{{ log.description }}</td>
+        <td>{{ log.feedback or '-' }}</td>
+        <td>{{ log.marks if log.marks is not none else '-' }}</td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<p><a href="{{ url_for('my_applications') }}">Back to my applications</a></p>
+
+{% endblock %}

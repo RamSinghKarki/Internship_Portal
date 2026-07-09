@@ -4,24 +4,21 @@
 <h2>Welcome, {{ session.name }}!</h2>
 
 <div class="stats">
-    <div class="card">
-        <div class="number">{{ total_internships }}</div>
-        Internships
-    </div>
-    <div class="card">
-        <div class="number">{{ total_students }}</div>
-        Students
-    </div>
-    <div class="card">
-        <div class="number">{{ total_companies }}</div>
-        Companies
-    </div>
+    <div class="card"><div class="number">{{ counts.students }}</div>Students</div>
+    <div class="card"><div class="number">{{ counts.companies }}</div>Companies</div>
+    <div class="card"><div class="number">{{ counts.supervisors }}</div>Supervisors</div>
+    <div class="card"><div class="number">{{ counts.internships }}</div>Internships</div>
+    <div class="card"><div class="number">{{ counts.applications }}</div>Applications</div>
 </div>
 
 {% if session.role == 'student' %}
-    <p><a href="{{ url_for('internships') }}">Browse internships</a> and apply.</p>
+    <p><a href="{{ url_for('internships') }}">Browse internships</a> and apply with a cover letter.
+       After you are selected, keep your weekly log book from
+       <a href="{{ url_for('my_applications') }}">My Applications</a>.</p>
 {% elif session.role == 'company' %}
     <p><a href="{{ url_for('add_internship') }}">Post a new internship</a> or view applicants of your posts.</p>
+{% elif session.role == 'supervisor' %}
+    <p>Check <a href="{{ url_for('students') }}">your students</a> and give feedback on their weekly logs.</p>
 {% elif session.role == 'admin' %}
     <p><a href="{{ url_for('users') }}">Manage users</a> of the portal.</p>
 {% endif %}

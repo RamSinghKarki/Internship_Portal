@@ -11,10 +11,16 @@
     <textarea name="description" rows="4"></textarea>
 
     <label>Required Skills</label>
-    <input type="text" name="skills" placeholder="e.g. Python, MySQL">
+    <input type="text" name="required_skills" placeholder="e.g. Python, MySQL">
 
-    <label>Deadline</label>
-    <input type="date" name="deadline">
+    <label>Duration (weeks)</label>
+    <input type="number" name="duration_weeks" min="1">
+
+    <label>Stipend</label>
+    <input type="text" name="stipend" placeholder="e.g. Rs. 10000/month">
+
+    <label>Vacancies</label>
+    <input type="number" name="vacancies" min="1">
 
     <button type="submit">Post</button>
 </form>

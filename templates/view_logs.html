@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Log Book of {{ application.student_name }} - {{ application.title }}</h2>
+
+{% if logs|length == 0 %}
+    <p>The student has not submitted any logs yet.</p>
+{% endif %}
+
+{% for log in logs %}
+<div class="card">
+    <h3>Week {{ log.week_number }}</h3>
+    <p><b>Work done:</b> {{ log.description }}</p>
+    <p><b>Submitted:</b> {{ log.submitted_date.strftime('%Y-%m-%d') }}</p>
+
+    {% if log.feedback %}
+        <p><b>Your feedback:</b> {{ log.feedback }} &nbsp;|&nbsp; <b>Marks:</b> {{ log.marks }}</p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('give_feedback', log_id=log.id) }}">
+        <label>Feedback</label>
+        <textarea name="feedback" rows="2" required>{{ log.feedback or '' }}</textarea>
+
+        <label>Marks (out of 10)</label>
+        <input type="number" name="marks" min="0" max="10" value="{{ log.marks or '' }}">
+
+        <button type="submit">Save Feedback</button>
+    </form>
+</div>
+{% endfor %}
+
+<p><a href="{{ url_for('students') }}">Back to my students</a></p>
+
+{% endblock %}

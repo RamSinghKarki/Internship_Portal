@@ -1,37 +1,47 @@
-# Internship Portal (Simple Version)
+# Internship Portal
 
-A simple Flask + MySQL web app that demonstrates **database connectivity** and **CRUD operations**.
+A Flask + MySQL web app that connects **Students**, **Companies**, **Supervisors** and an **Admin** — built to demonstrate **database connectivity** and **CRUD operations** with plain, easy-to-read code.
 
-Three roles:
-- **Student** — browse internships, apply, withdraw applications
-- **Company** — post / edit / delete internships, view applicants, select or reject them
-- **Admin** — view and delete users
+## Roles and what they can do
+
+| Role | Actions |
+|------|---------|
+| **Student** | Register with details (roll no, department, semester, skills), browse open internships, apply with a cover letter, withdraw, and keep a **weekly log book** after being selected |
+| **Company** | Register, post / edit / delete internships (skills, duration, stipend, vacancies), view applicants with their details, mark them selected / rejected |
+| **Supervisor** | Register under a company, see the selected students of that company, read their weekly logs and give **feedback + marks** |
+| **Admin** | View all users, delete users (related data is removed automatically by `ON DELETE CASCADE`) |
+
+## Database (8 tables — matches the ER diagram)
+
+```
+roles ──< users ──< students ──────< applications >────── internships >── companies
+                └─< companies                │                                │
+                └─< supervisors ──┐          └──< progress_logs >──┘          │
+                        │         └────────────── (feedback+marks)           │
+                        └── belongs to a company ─────────────────────────────┘
+```
+
+- `roles` — admin / student / company / supervisor
+- `users` — central login table (name, email, hashed password, role_id)
+- `students`, `companies`, `supervisors` — extra details of each user type
+- `internships` — posted by a company (title, skills, duration, stipend, vacancies, status)
+- `applications` — student applies to internship (cover letter, status: applied/selected/rejected)
+- `progress_logs` — weekly work of a selected student + supervisor feedback and marks
 
 ## Project Structure
 
 ```
 Internship_Portal/
 ├── app.py              <- all Python code (routes + SQL queries)
-├── database.sql        <- creates the database and tables
+├── database.sql        <- creates the database, 8 tables and admin account
 ├── requirements.txt
-├── static/
-│   └── style.css       <- all styling (plain CSS, no Bootstrap)
-└── templates/          <- HTML pages (plain HTML + Jinja)
-    ├── base.html       <- layout shared by every page (navbar etc.)
-    ├── login.html
-    ├── register.html
-    ├── dashboard.html
-    ├── internships.html
-    ├── add_internship.html
-    ├── edit_internship.html
-    ├── my_applications.html
-    ├── applicants.html
-    └── users.html
+├── static/style.css    <- all styling (plain CSS, no Bootstrap)
+└── templates/          <- plain HTML + Jinja pages (all extend base.html)
 ```
 
 ## How to Run
 
-1. Install the two dependencies:
+1. Install dependencies:
    ```
    pip install -r requirements.txt
    ```
@@ -56,9 +66,9 @@ Default admin login: `admin@portal.com` / `admin123`
 
 | Operation | SQL | Where in app.py |
 |-----------|-----|-----------------|
-| **C**reate | `INSERT INTO` | `register()`, `add_internship()`, `apply()` |
-| **R**ead   | `SELECT`      | `login()`, `internships()`, `my_applications()`, `applicants()`, `users()` |
-| **U**pdate | `UPDATE`      | `edit_internship()`, `update_status()` |
+| **C**reate | `INSERT INTO` | `register_student()`, `register_company()`, `register_supervisor()`, `add_internship()`, `apply()`, `my_logs()` |
+| **R**ead   | `SELECT` (+ `JOIN`) | `login()`, `dashboard()`, `internships()`, `my_applications()`, `applicants()`, `students()`, `view_logs()`, `users()` |
+| **U**pdate | `UPDATE`      | `edit_internship()`, `update_status()`, `give_feedback()` |
 | **D**elete | `DELETE FROM` | `delete_internship()`, `withdraw()`, `delete_user()` |
 
 ## How It Works (short explanation)
@@ -67,7 +77,12 @@ Default admin login: `admin@portal.com` / `admin123`
 - Every route opens a connection, runs SQL with `cursor.execute()`, and closes it.
 - Queries use `%s` placeholders so user input is passed safely (prevents SQL injection).
 - Passwords are stored **hashed** using `generate_password_hash()` (never plain text).
-- Login stores the user's id, name and role in the Flask **session**;
+- Registration inserts into **two tables**: first `users`, then the role table
+  (`students` / `companies` / `supervisors`) using `cursor.lastrowid` as the foreign key.
+- Login joins `users` with `roles` and stores id, name and role in the Flask **session**;
   each page checks `session['role']` to decide who is allowed in.
+- Lists use `JOIN` to combine tables (e.g. applications + internships + users).
+- Foreign keys use `ON DELETE CASCADE`, so deleting a user automatically removes
+  their student/company/supervisor row, internships, applications and logs.
 - `templates/base.html` holds the navbar and layout; every other page
   `{% extends 'base.html' %}` so you only change the layout in one place.

@@ -11,10 +11,22 @@
     <textarea name="description" rows="4">{{ internship.description }}</textarea>
 
     <label>Required Skills</label>
-    <input type="text" name="skills" value="{{ internship.skills }}">
+    <input type="text" name="required_skills" value="{{ internship.required_skills }}">
 
-    <label>Deadline</label>
-    <input type="date" name="deadline" value="{{ internship.deadline }}">
+    <label>Duration (weeks)</label>
+    <input type="number" name="duration_weeks" value="{{ internship.duration_weeks }}" min="1">
+
+    <label>Stipend</label>
+    <input type="text" name="stipend" value="{{ internship.stipend }}">
+
+    <label>Vacancies</label>
+    <input type="number" name="vacancies" value="{{ internship.vacancies }}" min="1">
+
+    <label>Status</label>
+    <select name="status">
+        <option value="open"   {% if internship.status == 'open'   %}selected{% endif %}>open</option>
+        <option value="closed" {% if internship.status == 'closed' %}selected{% endif %}>closed</option>
+    </select>
 
     <button type="submit">Save Changes</button>
 </form>

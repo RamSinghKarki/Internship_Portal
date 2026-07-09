@@ -10,6 +10,7 @@
     <tr>
         <th>Internship</th>
         <th>Company</th>
+        <th>Applied On</th>
         <th>Status</th>
         <th>Action</th>
     </tr>
@@ -17,11 +18,16 @@
     <tr>
         <td>{{ a.title }}</td>
         <td>{{ a.company_name }}</td>
+        <td>{{ a.applied_date.strftime('%Y-%m-%d') }}</td>
         <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
         <td>
-            <form method="POST" action="{{ url_for('withdraw', id=a.id) }}">
-                <button type="submit" class="danger" onclick="return confirm('Withdraw this application?')">Withdraw</button>
-            </form>
+            {% if a.status == 'selected' %}
+                <a href="{{ url_for('my_logs', application_id=a.id) }}">Weekly Logs</a>
+            {% else %}
+                <form method="POST" action="{{ url_for('withdraw', id=a.id) }}">
+                    <button type="submit" class="danger" onclick="return confirm('Withdraw this application?')">Withdraw</button>
+                </form>
+            {% endif %}
         </td>
     </tr>
     {% endfor %}

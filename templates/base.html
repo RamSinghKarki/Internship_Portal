@@ -17,6 +17,9 @@
         {% if session.role == 'company' %}
             <a href="{{ url_for('add_internship') }}">Post Internship</a>
         {% endif %}
+        {% if session.role == 'supervisor' %}
+            <a href="{{ url_for('students') }}">My Students</a>
+        {% endif %}
         {% if session.role == 'admin' %}
             <a href="{{ url_for('users') }}">Users</a>
         {% endif %}

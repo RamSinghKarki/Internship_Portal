@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Company Registration</h2>
+
+<form class="box" method="POST">
+    <label>Company Name</label>
+    <input type="text" name="name" required>
+
+    <label>Email</label>
+    <input type="email" name="email" required>
+
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    <label>Industry</label>
+    <input type="text" name="industry" placeholder="e.g. Software, Banking">
+
+    <label>Location</label>
+    <input type="text" name="location">
+
+    <label>Description</label>
+    <textarea name="description" rows="3"></textarea>
+
+    <button type="submit">Register</button>
+</form>
+
+{% endblock %}

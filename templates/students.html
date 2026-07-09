@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>My Students</h2>
+<p>Selected students doing internships at your company.</p>
+
+{% if rows|length == 0 %}
+    <p>No students selected yet.</p>
+{% else %}
+<table>
+    <tr>
+        <th>Student</th>
+        <th>Roll No</th>
+        <th>Internship</th>
+        <th>Log Book</th>
+    </tr>
+    {% for r in rows %}
+    <tr>
+        <td>{{ r.student_name }}</td>
+        <td>{{ r.roll_number }}</td>
+        <td>{{ r.title }}</td>
+        <td><a href="{{ url_for('view_logs', application_id=r.application_id) }}">View logs</a></td>
+    </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+{% endblock %}

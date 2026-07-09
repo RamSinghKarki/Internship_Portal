@@ -9,25 +9,33 @@
 
 {% for i in internships %}
 <div class="card">
-    <h3>{{ i.title }}</h3>
+    <h3>{{ i.title }}
+        {% if i.status == 'closed' %}<span class="status rejected">closed</span>{% endif %}
+    </h3>
     <p><b>Company:</b> {{ i.company_name }}</p>
     <p>{{ i.description }}</p>
-    <p><b>Skills:</b> {{ i.skills }}</p>
-    {% if i.deadline %}<p><b>Deadline:</b> {{ i.deadline }}</p>{% endif %}
+    <p>
+        <b>Skills:</b> {{ i.required_skills }} &nbsp;|&nbsp;
+        <b>Duration:</b> {{ i.duration_weeks }} weeks &nbsp;|&nbsp;
+        <b>Stipend:</b> {{ i.stipend }} &nbsp;|&nbsp;
+        <b>Vacancies:</b> {{ i.vacancies }}
+    </p>
 
-    {# Student can apply #}
+    {# Student can apply with a cover letter #}
     {% if session.role == 'student' %}
         {% if i.id in applied_ids %}
             <span class="status">Already applied</span>
         {% else %}
             <form method="POST" action="{{ url_for('apply', internship_id=i.id) }}">
+                <label>Cover Letter</label>
+                <textarea name="cover_letter" rows="2" placeholder="Why are you a good fit?"></textarea>
                 <button type="submit">Apply</button>
             </form>
         {% endif %}
     {% endif %}
 
     {# Company can manage its own posts #}
-    {% if session.role == 'company' and i.company_id == session.user_id %}
+    {% if session.role == 'company' %}
         <a href="{{ url_for('applicants', internship_id=i.id) }}">View applicants</a> |
         <a href="{{ url_for('edit_internship', id=i.id) }}">Edit</a>
         <form method="POST" action="{{ url_for('delete_internship', id=i.id) }}" style="display:inline">
