@@ -10,7 +10,7 @@ Three roles:
 ## Project Structure
 
 ```
-simple_portal/
+Internship_Portal/
 ├── app.py              <- all Python code (routes + SQL queries)
 ├── database.sql        <- creates the database and tables
 ├── requirements.txt
