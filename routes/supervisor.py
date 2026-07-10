@@ -3,7 +3,7 @@
 # ============================================================
 
 from flask import render_template, request, redirect, url_for, session, flash
-from db import get_db, my_supervisor
+from models import db, Internship, Application, ProgressLog, current_supervisor
 
 
 # ---------- MY STUDENTS (READ) ----------
@@ -12,20 +12,10 @@ def students():
     if session.get('role') != 'supervisor':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_supervisor(cur)
-    cur.execute("""
-        SELECT applications.id AS application_id, users.name AS student_name,
-               students.roll_number, internships.title
-        FROM applications
-        JOIN internships ON applications.internship_id = internships.id
-        JOIN students    ON applications.student_id = students.id
-        JOIN users       ON students.user_id = users.id
-        WHERE internships.company_id = %s AND applications.status = 'selected'
-    """, (me['company_id'],))
-    rows = cur.fetchall()
-    db.close()
+    me = current_supervisor()
+    rows = (Application.query.join(Internship)
+            .filter(Internship.company_id == me.company_id,
+                    Application.status == 'selected').all())
     return render_template('students.html', rows=rows)
 
 
@@ -34,29 +24,16 @@ def view_logs(application_id):
     if session.get('role') != 'supervisor':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_supervisor(cur)
-
-    # the application must be at the supervisor's company
-    cur.execute("""
-        SELECT applications.id, users.name AS student_name, internships.title
-        FROM applications
-        JOIN internships ON applications.internship_id = internships.id
-        JOIN students    ON applications.student_id = students.id
-        JOIN users       ON students.user_id = users.id
-        WHERE applications.id = %s AND internships.company_id = %s
-    """, (application_id, me['company_id']))
-    application = cur.fetchone()
+    me = current_supervisor()
+    application = (Application.query.join(Internship)
+                   .filter(Application.id == application_id,
+                           Internship.company_id == me.company_id).first())
     if not application:
-        db.close()
         flash('Not found.')
         return redirect(url_for('students'))
 
-    cur.execute("SELECT * FROM progress_logs WHERE application_id = %s ORDER BY week_number",
-                (application_id,))
-    logs = cur.fetchall()
-    db.close()
+    logs = (ProgressLog.query.filter_by(application_id=application_id)
+            .order_by(ProgressLog.week_number).all())
     return render_template('view_logs.html', application=application, logs=logs)
 
 
@@ -65,23 +42,16 @@ def give_feedback(log_id):
     if session.get('role') != 'supervisor':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_supervisor(cur)
+    me = current_supervisor()
+    log = db.session.get(ProgressLog, log_id)
     # only logs of applications at the supervisor's company
-    cur.execute("""
-        UPDATE progress_logs
-        JOIN applications ON progress_logs.application_id = applications.id
-        JOIN internships  ON applications.internship_id = internships.id
-        SET progress_logs.feedback = %s, progress_logs.marks = %s,
-            progress_logs.supervisor_id = %s
-        WHERE progress_logs.id = %s AND internships.company_id = %s
-    """, (request.form['feedback'], request.form['marks'] or None,
-          me['id'], log_id, me['company_id']))
-    db.commit()
+    if not log or log.application.internship.company_id != me.company_id:
+        flash('Not found.')
+        return redirect(url_for('students'))
 
-    cur.execute("SELECT application_id FROM progress_logs WHERE id = %s", (log_id,))
-    row = cur.fetchone()
-    db.close()
+    log.feedback = request.form['feedback']
+    log.marks = request.form['marks'] or None
+    log.supervisor_id = me.id
+    db.session.commit()
     flash('Feedback saved.')
-    return redirect(url_for('view_logs', application_id=row['application_id']))
+    return redirect(url_for('view_logs', application_id=log.application_id))

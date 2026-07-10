@@ -33,7 +33,7 @@ roles ──< users ──< students ──────< applications >───
 ```
 Internship_Portal/
 ├── app.py              <- main file: connects every URL to its function
-├── db.py               <- database connection + shared helper functions
+├── models.py           <- database tables as SQLAlchemy model classes
 ├── routes/             <- the page functions, one file per part of the site
 │   ├── auth.py         <- register (3 types), login, logout
 │   ├── main.py         <- home, dashboard, internship list
@@ -59,7 +59,7 @@ Internship_Portal/
    mysql -u root -p < database.sql
    ```
 
-3. Open `app.py` and set your MySQL password in the `get_db()` function.
+3. Open `app.py` and set your MySQL password in the `SQLALCHEMY_DATABASE_URI` line.
 
 4. Start the app:
    ```
@@ -74,24 +74,30 @@ Default admin login: `admin@portal.com` / `admin123`
 
 | Operation | SQL | Where in routes/ |
 |-----------|-----|-----------------|
-| **C**reate | `INSERT INTO` | `auth.py`: register student/company/supervisor · `company.py`: `add_internship()` · `student.py`: `apply()`, `my_logs()` |
-| **R**ead   | `SELECT` (+ `JOIN`) | `auth.py`: `login()` · `main.py`: `dashboard()`, `internships()` · `student.py`: `my_applications()` · `company.py`: `applicants()` · `supervisor.py`: `students()`, `view_logs()` · `admin.py`: `users()` |
-| **U**pdate | `UPDATE`      | `company.py`: `edit_internship()`, `update_status()` · `supervisor.py`: `give_feedback()` |
-| **D**elete | `DELETE FROM` | `company.py`: `delete_internship()` · `student.py`: `withdraw()` · `admin.py`: `delete_user()` |
+| **C**reate | `db.session.add()` | `auth.py`: register student/company/supervisor · `company.py`: `add_internship()` · `student.py`: `apply()`, `my_logs()` |
+| **R**ead   | `Model.query` | `auth.py`: `login()` · `main.py`: `dashboard()`, `internships()` · `student.py`: `my_applications()` · `company.py`: `applicants()` · `supervisor.py`: `students()`, `view_logs()` · `admin.py`: `users()` |
+| **U**pdate | change attribute + `commit()` | `company.py`: `edit_internship()`, `update_status()` · `supervisor.py`: `give_feedback()` |
+| **D**elete | `db.session.delete()` | `company.py`: `delete_internship()` · `student.py`: `withdraw()` · `admin.py`: `delete_user()` |
 
 ## How It Works (short explanation)
 
 - `app.py` is a "table of contents": `app.add_url_rule()` connects each URL
   to a function written in the `routes/` folder.
-- `db.py` has `get_db()`, which connects Python to MySQL using **PyMySQL**.
-- Every route opens a connection, runs SQL with `cursor.execute()`, and closes it.
-- Queries use `%s` placeholders so user input is passed safely (prevents SQL injection).
+- `models.py` defines every database table as a **SQLAlchemy model class**
+  (`User`, `Student`, `Internship`, ...); SQLAlchemy connects to MySQL through
+  PyMySQL using the URI configured in `app.py`.
+- CRUD through the ORM: **Create** = `db.session.add(object)` + `commit()`,
+  **Read** = `Model.query.filter_by(...)`, **Update** = change the object's
+  attributes + `commit()`, **Delete** = `db.session.delete(object)` + `commit()`.
+- The ORM sends all values as bound parameters, which prevents SQL injection.
 - Passwords are stored **hashed** using `generate_password_hash()` (never plain text).
-- Registration inserts into **two tables**: first `users`, then the role table
-  (`students` / `companies` / `supervisors`) using `cursor.lastrowid` as the foreign key.
-- Login joins `users` with `roles` and stores id, name and role in the Flask **session**;
-  each page checks `session['role']` to decide who is allowed in.
-- Lists use `JOIN` to combine tables (e.g. applications + internships + users).
+- Registration creates a `User` and its profile object together through the
+  relationship (e.g. `Student(user=user, ...)`) — one commit inserts both rows.
+- Login finds the user, checks the password hash, and stores id, name and role
+  (via `user.role.role_name`) in the Flask **session**; each page checks
+  `session['role']` to decide who is allowed in.
+- Related data is read through **relationships** (e.g. `application.internship.title`,
+  `internship.company.user.name`) instead of manual joins.
 - Foreign keys use `ON DELETE CASCADE`, so deleting a user automatically removes
   their student/company/supervisor row, internships, applications and logs.
 - `templates/base.html` holds the navbar and layout; every other page

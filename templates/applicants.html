@@ -8,14 +8,14 @@
 {% else %}
     {% for a in applications %}
     <div class="card">
-        <h3>{{ a.student_name }} <span class="status {{ a.status }}">{{ a.status }}</span></h3>
+        <h3>{{ a.student.user.name }} <span class="status {{ a.status }}">{{ a.status }}</span></h3>
         <p>
-            <b>Email:</b> {{ a.student_email }} &nbsp;|&nbsp;
-            <b>Roll No:</b> {{ a.roll_number }} &nbsp;|&nbsp;
-            <b>Department:</b> {{ a.department }} &nbsp;|&nbsp;
-            <b>Semester:</b> {{ a.semester }}
+            <b>Email:</b> {{ a.student.user.email }} &nbsp;|&nbsp;
+            <b>Roll No:</b> {{ a.student.roll_number }} &nbsp;|&nbsp;
+            <b>Department:</b> {{ a.student.department }} &nbsp;|&nbsp;
+            <b>Semester:</b> {{ a.student.semester }}
         </p>
-        <p><b>Skills:</b> {{ a.skills }}</p>
+        <p><b>Skills:</b> {{ a.student.skills }}</p>
         {% if a.cover_letter %}<p><b>Cover letter:</b> {{ a.cover_letter }}</p>{% endif %}
 
         <form method="POST" action="{{ url_for('update_status', id=a.id) }}">

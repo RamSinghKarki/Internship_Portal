@@ -12,7 +12,7 @@
     <h3>{{ i.title }}
         {% if i.status == 'closed' %}<span class="status rejected">closed</span>{% endif %}
     </h3>
-    <p><b>Company:</b> {{ i.company_name }}</p>
+    <p><b>Company:</b> {{ i.company.user.name }}</p>
     <p>{{ i.description }}</p>
     <p>
         <b>Skills:</b> {{ i.required_skills }} &nbsp;|&nbsp;

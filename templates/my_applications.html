@@ -16,8 +16,8 @@
     </tr>
     {% for a in applications %}
     <tr>
-        <td>{{ a.title }}</td>
-        <td>{{ a.company_name }}</td>
+        <td>{{ a.internship.title }}</td>
+        <td>{{ a.internship.company.user.name }}</td>
         <td>{{ a.applied_date.strftime('%Y-%m-%d') }}</td>
         <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
         <td>

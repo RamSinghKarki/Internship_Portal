@@ -16,10 +16,10 @@
     </tr>
     {% for r in rows %}
     <tr>
-        <td>{{ r.student_name }}</td>
-        <td>{{ r.roll_number }}</td>
-        <td>{{ r.title }}</td>
-        <td><a href="{{ url_for('view_logs', application_id=r.application_id) }}">View logs</a></td>
+        <td>{{ r.student.user.name }}</td>
+        <td>{{ r.student.roll_number }}</td>
+        <td>{{ r.internship.title }}</td>
+        <td><a href="{{ url_for('view_logs', application_id=r.id) }}">View logs</a></td>
     </tr>
     {% endfor %}
 </table>

@@ -99,11 +99,11 @@ supervisors from the company follow the weekly log book of selected students
 and give feedback with marks; and an administrator manages all users of the
 system.
 
-The system is developed using **Python Flask**, **MySQL**, **PyMySQL**,
-**HTML**, and **CSS**. All database operations are written as raw SQL
-queries demonstrating full **CRUD** (Create, Read, Update, Delete)
-functionality, with parameterized queries for security and hashed password
-storage.
+The system is developed using **Python Flask**, **MySQL**, **SQLAlchemy
+ORM** (with PyMySQL), **HTML**, and **CSS**. Every database table is mapped
+to a Python model class, and all database operations demonstrate full
+**CRUD** (Create, Read, Update, Delete) functionality through the ORM, with
+hashed password storage.
 
 The primary objective of this phase of the project was to achieve complete
 database connectivity and implement all CRUD operations through a role-based
@@ -189,7 +189,7 @@ marks, and an administrator oversees all users of the system.
 ## 1.2 Objectives
 
 - To build a web application with complete MySQL database connectivity.
-- To implement all CRUD operations (Create, Read, Update, Delete) using raw SQL queries.
+- To implement all CRUD operations (Create, Read, Update, Delete) using the SQLAlchemy ORM.
 - To provide secure, role-based access for four types of users (admin, student, company, supervisor).
 - To manage the complete internship workflow: posting, application with cover letter, selection, and withdrawal.
 - To maintain a weekly progress log of every selected student with supervisor feedback and marks.
@@ -222,7 +222,7 @@ The following work has been completed during the mid-term phase:
 
 - Database design completed (8 tables with primary keys, foreign keys and cascade rules).
 - Database connectivity from Python implemented using PyMySQL.
-- All four CRUD operations implemented with raw SQL across the system.
+- All four CRUD operations implemented through the SQLAlchemy ORM across the system.
 - Role-based registration, login and session management implemented for all four roles.
 - Complete workflow implemented: post internship → apply → select → weekly logs → feedback and marks.
 - Public landing page and role-specific dashboards implemented.
@@ -266,7 +266,8 @@ and marks.
 
 - **Python Flask** — a lightweight web framework, chosen over heavier frameworks because it keeps the routing, templates and logic simple and visible.
 - **MySQL** — a widely used relational DBMS that stores all system data in 8 related tables.
-- **PyMySQL** — the library that connects Python to MySQL; all queries are written as raw SQL to demonstrate direct database operations.
+- **SQLAlchemy ORM (Flask-SQLAlchemy)** — maps every database table to a Python model class, so rows are handled as objects; taught in class and used for all CRUD operations.
+- **PyMySQL** — the driver through which SQLAlchemy connects to MySQL.
 - **HTML + Jinja Templates** — page structure, with one shared base layout.
 - **CSS** — plain custom stylesheet (no framework), with colors defined once as variables.
 - **Git / GitHub** — version control.
@@ -312,7 +313,7 @@ Functional Requirements and Non-Functional Requirements.
 ### Non-Functional Requirements
 
 - **NFR-1 (Security):** Passwords shall never be stored in plain text; they are hashed using Werkzeug's password hashing functions.
-- **NFR-2 (Security):** All SQL queries shall use parameterized placeholders (`%s`) to prevent SQL injection.
+- **NFR-2 (Security):** All database access goes through the SQLAlchemy ORM, which sends every value as a bound parameter, preventing SQL injection.
 - **NFR-3 (Access control):** Every page shall verify the session role, and users shall act only on their own data.
 - **NFR-4 (Data integrity):** The database shall enforce integrity through primary keys, foreign keys, a unique email, and a unique (student, internship) pair.
 - **NFR-5 (Usability):** The interface shall be simple and usable without training, with clear feedback messages after every action.
@@ -400,7 +401,7 @@ The project is organized as follows:
 ```
 Internship_Portal/
 ├── app.py              main file: connects every URL to its function
-├── db.py               database connection + shared helper functions
+x-noop
 ├── routes/             page functions, one file per part of the site
 │   ├── auth.py         register (3 types), login, logout
 │   ├── main.py         landing page, dashboard, internship list
@@ -528,59 +529,66 @@ management ]**
 
 ## 5.1 Implementation Approach
 
-The application is implemented in Python Flask with raw SQL through PyMySQL.
-`app.py` acts as a routing table: every URL of the site is connected to a
-function in the `routes/` folder using `app.add_url_rule()`. Each function
-opens a database connection with `get_db()` (defined in `db.py`), executes
-its SQL with `cursor.execute()`, commits if data was changed, closes the
-connection, and renders an HTML template.
+The application is implemented in Python Flask with the SQLAlchemy ORM over
+MySQL. `models.py` defines every table as a model class with its
+relationships. `app.py` acts as a routing table: every URL of the site is
+connected to a function in the `routes/` folder using `app.add_url_rule()`.
+Each function queries or changes data through the ORM (`Model.query`,
+`db.session.add/delete`, `db.session.commit()`) and renders an HTML
+template.
 
 Login stores the user's id, name and role in the Flask session; every page
 first checks `session['role']` before showing anything.
 
 ## 5.2 Coding Details and Code Efficiency
 
-Database connection (`db.py`):
+A model class in `models.py` maps a table to Python (example):
 
 ```python
-def get_db():
-    return pymysql.connect(
-        host='localhost', user='root', password='......',
-        database='internship_db',
-        cursorclass=pymysql.cursors.DictCursor)
+class Student(db.Model):
+    __tablename__ = 'students'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), unique=True)
+    roll_number = db.Column(db.String(50))
+    semester = db.Column(db.Integer)
+    applications = db.relationship('Application', backref='student',
+                                   cascade='all, delete-orphan')
 ```
 
-Registration inserts into two tables using the new user's id
-(`cursor.lastrowid`) as the foreign key:
+CREATE — registration builds the user and profile objects together through
+the relationship, and one commit inserts both rows:
 
 ```python
-cur.execute(
-    "INSERT INTO users (role_id, name, email, password) VALUES (%s, %s, %s, %s)",
-    (role_id_of(cur, 'student'), name, email, generate_password_hash(password)))
-new_user_id = cur.lastrowid
-cur.execute(
-    "INSERT INTO students (user_id, roll_number, department, semester, skills) "
-    "VALUES (%s, %s, %s, %s, %s)",
-    (new_user_id, roll_number, department, semester, skills))
+user = User(role_id=role.id, name=name, email=email)
+user.set_password(password)
+student = Student(user=user, roll_number=roll_number, semester=semester)
+db.session.add(student)
+db.session.commit()
 ```
 
-Reading uses JOINs so one query fetches related data from several tables:
+READ — queries return objects, and related data is reached through
+relationships instead of manual joins:
 
-```sql
-SELECT applications.id, applications.status,
-       internships.title, users.name AS company_name
-FROM applications
-JOIN internships ON applications.internship_id = internships.id
-JOIN companies   ON internships.company_id = companies.id
-JOIN users       ON companies.user_id = users.id
-WHERE applications.student_id = %s
+```python
+apps = Application.query.filter_by(student_id=me.id).all()
+# in the template: a.internship.title, a.internship.company.user.name
 ```
 
-Code efficiency measures: parameterized queries (`%s`) prevent SQL
-injection; JOINs avoid multiple round trips to the database; `ON DELETE
-CASCADE` lets the database clean up related rows instead of many DELETE
-statements; and shared helpers (`get_db()`, `my_student()`, `my_company()`,
-`my_supervisor()`) avoid repeated code.
+UPDATE and DELETE — change an attribute or delete an object, then commit:
+
+```python
+application.status = 'selected'
+db.session.commit()
+
+db.session.delete(internship)   # its applications and logs cascade
+db.session.commit()
+```
+
+Code efficiency measures: the ORM binds every value as a parameter
+(preventing SQL injection); relationships with `cascade` remove related
+rows automatically; shared helpers (`current_student()`,
+`current_company()`, `current_supervisor()`) avoid repeated code; and
+model classes mirror the UML class diagram one-to-one.
 
 ## 5.3 Testing Approach
 
@@ -648,10 +656,10 @@ pages of other roles, which correctly redirect away.
 
 This phase of the project successfully achieved its main objective: a
 working web application with full database connectivity and all four CRUD
-operations implemented through raw SQL queries. The complete internship
-workflow — from a company posting an internship to a supervisor marking a
-student's weekly log — works end to end with role-based access control,
-hashed passwords and parameterized queries.
+operations implemented through the SQLAlchemy ORM, where every table is a
+Python model class. The complete internship workflow — from a company
+posting an internship to a supervisor marking a student's weekly log —
+works end to end with role-based access control and hashed passwords.
 
 ## 7.2 Limitations
 

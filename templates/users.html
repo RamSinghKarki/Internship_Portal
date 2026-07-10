@@ -17,7 +17,7 @@
         <td>{{ u.id }}</td>
         <td>{{ u.name }}</td>
         <td>{{ u.email }}</td>
-        <td>{{ u.role_name }}</td>
+        <td>{{ u.role.role_name }}</td>
         <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
             {% if u.id != session.user_id %}

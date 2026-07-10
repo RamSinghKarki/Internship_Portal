@@ -4,7 +4,7 @@
 # ============================================================
 
 from flask import render_template, request, redirect, url_for, session, flash
-from db import get_db, my_company
+from models import db, Internship, Application, current_company
 
 
 # ---------- ADD INTERNSHIP (CREATE) ----------
@@ -13,18 +13,16 @@ def add_internship():
         return redirect(url_for('login'))
 
     if request.method == 'POST':
-        db = get_db()
-        cur = db.cursor()
-        me = my_company(cur)
-        cur.execute(
-            "INSERT INTO internships (company_id, title, description, required_skills, "
-            "duration_weeks, stipend, vacancies) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            (me['id'], request.form['title'], request.form['description'],
-             request.form['required_skills'], request.form['duration_weeks'] or None,
-             request.form['stipend'], request.form['vacancies'] or None)
-        )
-        db.commit()
-        db.close()
+        me = current_company()
+        intern = Internship(company_id=me.id,
+                            title=request.form['title'],
+                            description=request.form['description'],
+                            required_skills=request.form['required_skills'],
+                            duration_weeks=request.form['duration_weeks'] or None,
+                            stipend=request.form['stipend'],
+                            vacancies=request.form['vacancies'] or None)
+        db.session.add(intern)
+        db.session.commit()
         flash('Internship posted.')
         return redirect(url_for('internships'))
 
@@ -36,48 +34,39 @@ def edit_internship(id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_company(cur)
-    cur.execute("SELECT * FROM internships WHERE id = %s AND company_id = %s", (id, me['id']))
-    internship = cur.fetchone()
-
+    me = current_company()
+    internship = Internship.query.filter_by(id=id, company_id=me.id).first()
     if not internship:
-        db.close()
         flash('Internship not found.')
         return redirect(url_for('internships'))
 
     if request.method == 'POST':
-        cur.execute(
-            "UPDATE internships SET title = %s, description = %s, required_skills = %s, "
-            "duration_weeks = %s, stipend = %s, vacancies = %s, status = %s WHERE id = %s",
-            (request.form['title'], request.form['description'],
-             request.form['required_skills'], request.form['duration_weeks'] or None,
-             request.form['stipend'], request.form['vacancies'] or None,
-             request.form['status'], id)
-        )
-        db.commit()
-        db.close()
+        internship.title = request.form['title']
+        internship.description = request.form['description']
+        internship.required_skills = request.form['required_skills']
+        internship.duration_weeks = request.form['duration_weeks'] or None
+        internship.stipend = request.form['stipend']
+        internship.vacancies = request.form['vacancies'] or None
+        internship.status = request.form['status']
+        db.session.commit()
         flash('Internship updated.')
         return redirect(url_for('internships'))
 
-    db.close()
     return render_template('edit_internship.html', internship=internship)
 
 
 # ---------- DELETE INTERNSHIP (DELETE - own posts only) ----------
-# its applications and logs are removed by ON DELETE CASCADE
+# its applications and logs are removed automatically (cascade)
 def delete_internship(id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_company(cur)
-    cur.execute("DELETE FROM internships WHERE id = %s AND company_id = %s", (id, me['id']))
-    db.commit()
-    db.close()
-    flash('Internship deleted.')
+    me = current_company()
+    internship = Internship.query.filter_by(id=id, company_id=me.id).first()
+    if internship:
+        db.session.delete(internship)
+        db.session.commit()
+        flash('Internship deleted.')
     return redirect(url_for('internships'))
 
 
@@ -86,29 +75,15 @@ def applicants(internship_id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_company(cur)
-    cur.execute("SELECT * FROM internships WHERE id = %s AND company_id = %s",
-                (internship_id, me['id']))
-    internship = cur.fetchone()
+    me = current_company()
+    internship = Internship.query.filter_by(id=internship_id, company_id=me.id).first()
     if not internship:
-        db.close()
         flash('Internship not found.')
         return redirect(url_for('internships'))
 
-    cur.execute("""
-        SELECT applications.id, applications.status, applications.cover_letter,
-               users.name AS student_name, users.email AS student_email,
-               students.roll_number, students.department, students.semester, students.skills
-        FROM applications
-        JOIN students ON applications.student_id = students.id
-        JOIN users    ON students.user_id = users.id
-        WHERE applications.internship_id = %s
-    """, (internship_id,))
-    apps = cur.fetchall()
-    db.close()
-    return render_template('applicants.html', internship=internship, applications=apps)
+    # applications come through the relationship on the model
+    return render_template('applicants.html', internship=internship,
+                           applications=internship.applications)
 
 
 # ---------- UPDATE APPLICATION STATUS (UPDATE) ----------
@@ -116,20 +91,14 @@ def update_status(id):
     if session.get('role') != 'company':
         return redirect(url_for('login'))
 
-    db = get_db()
-    cur = db.cursor()
-    me = my_company(cur)
-    # only allow changing applications of this company's internships
-    cur.execute("""
-        UPDATE applications
-        JOIN internships ON applications.internship_id = internships.id
-        SET applications.status = %s
-        WHERE applications.id = %s AND internships.company_id = %s
-    """, (request.form['status'], id, me['id']))
-    db.commit()
+    me = current_company()
+    application = db.session.get(Application, id)
+    # only applications of this company's internships
+    if not application or application.internship.company_id != me.id:
+        flash('Not found.')
+        return redirect(url_for('internships'))
 
-    cur.execute("SELECT internship_id FROM applications WHERE id = %s", (id,))
-    row = cur.fetchone()
-    db.close()
+    application.status = request.form['status']
+    db.session.commit()
     flash('Status updated.')
-    return redirect(url_for('applicants', internship_id=row['internship_id']))
+    return redirect(url_for('applicants', internship_id=application.internship_id))

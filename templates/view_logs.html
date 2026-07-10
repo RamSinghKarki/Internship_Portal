@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Log Book of {{ application.student_name }} - {{ application.title }}</h2>
+<h2>Log Book of {{ application.student.user.name }} - {{ application.internship.title }}</h2>
 
 {% if logs|length == 0 %}
     <p>The student has not submitted any logs yet.</p>

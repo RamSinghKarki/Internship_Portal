@@ -19,7 +19,7 @@
     <label>Company</label>
     <select name="company_id" required>
         {% for c in companies %}
-            <option value="{{ c.id }}">{{ c.name }}</option>
+            <option value="{{ c.id }}">{{ c.user.name }}</option>
         {% endfor %}
     </select>
 
