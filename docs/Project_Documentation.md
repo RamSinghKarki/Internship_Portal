@@ -1,107 +1,389 @@
-# INTERNSHIP PORTAL
+**[College Logo]**
 
-## A Web-Based Internship Management System
+# [Your College Name]
 
-**Mid-Term Project Report**
+*(Affiliated to [University Name])*
 
-Submitted by: **[Your Name]**
-Roll No: **[Your Roll Number]**
-Program: **[Your Program, e.g. BSc CSIT / BCA]**
+[College Address]
 
-Submitted to: **[Department Name]**
-**[Your College Name]**
+A
 
-Supervisor: **[Supervisor / Sir's Name]**
+Mid-defense Report
 
-Date: **[Month Year]**
+On
+
+**Internship Portal**
+
+For the partial fulfillment of requirements for the degree of Bachelor of
+[Your Program] under [University Name]
+
+**Submitted To**
+
+Department of [Department Name]
+
+[Your College Name]
+
+**Under the Supervision of**
+
+[Supervisor Name]
+
+[Designation], Department of [Department Name]
+
+**Submitted By:**
+
+[Your Name] ([Your Roll Number])
+
+Bachelor of [Your Program], [Semester] Semester
+
+[Month, Year]
+
+\newpage
+
+## Student Declaration
+
+I hereby declare that this project work entitled "Internship Portal" is an
+original work carried out by me under the supervision of [Supervisor Name],
+[Designation], Department of [Department Name], [Your College Name]. This
+project is submitted as a partial fulfillment of the requirements for the
+degree of Bachelor of [Your Program] under [University Name]. I further
+declare that this project has not been submitted previously, either in whole
+or in part, for any degree or diploma at any university or educational
+institution. All sources of information used in this report have been
+properly acknowledged through appropriate references. The work presented in
+this report represents the progress completed up to the Mid-Term Defense
+stage of the project.
+
+**Submitted By**
+
+[Your Name] ([Your Roll Number])
+
+Bachelor of [Your Program], [Semester] Semester, [Month, Year]
+
+\newpage
+
+## Acknowledgement
+
+I would like to express my sincere gratitude to my respected supervisor,
+**[Supervisor Name]**, [Designation], Department of [Department Name],
+[Your College Name], for the continuous guidance, valuable suggestions,
+encouragement, and constructive feedback throughout the development of my
+project, **Internship Portal**.
+
+I am also thankful to the **Department of [Department Name], [Your College
+Name]**, for providing me with the opportunity, resources, and academic
+environment required to carry out this project successfully.
+
+I would also like to express my heartfelt appreciation to all my teachers,
+classmates, friends, and family members for their continuous support and
+motivation during every phase of this project.
+
+Finally, I would like to thank everyone who directly or indirectly
+contributed to the successful completion of the mid-term phase of this
+project.
 
 \newpage
 
 ## Abstract
 
-Internship Portal is a web application that connects students looking for internships with companies offering them. Students can browse open internships and apply with a cover letter. Companies can post internships and select the best applicants. After selection, the student keeps a weekly log book of the work done, and a supervisor from the company reviews each log and gives feedback with marks. An admin manages all the users of the system.
+Every semester, students struggle to find internships, companies struggle to
+collect and manage applications, and colleges have no organized record of
+what students actually do during their internship period. Applications are
+usually exchanged through email or personal contacts, selection results are
+communicated informally, and weekly progress is rarely documented anywhere.
 
-The system is built with **Python (Flask)** for the web application and **MySQL** for the database. The main goal of this phase of the project was to achieve **database connectivity** and implement all four **CRUD operations** (Create, Read, Update, Delete) using raw SQL queries.
+To address these challenges, **Internship Portal** is developed as a
+web-based internship management system that connects four types of users on
+one platform. Students create a profile and apply to internships with a
+cover letter; companies post internships and select or reject applicants;
+supervisors from the company follow the weekly log book of selected students
+and give feedback with marks; and an administrator manages all users of the
+system.
+
+The system is developed using **Python Flask**, **MySQL**, **PyMySQL**,
+**HTML**, and **CSS**. All database operations are written as raw SQL
+queries demonstrating full **CRUD** (Create, Read, Update, Delete)
+functionality, with parameterized queries for security and hashed password
+storage.
+
+The primary objective of this phase of the project was to achieve complete
+database connectivity and implement all CRUD operations through a role-based
+web application. The complete workflow — from posting an internship to
+supervisor evaluation of weekly logs — is implemented and tested.
 
 \newpage
 
 ## Table of Contents
 
-1. Introduction
-2. Problem Statement
-3. Objectives
-4. System Analysis
-5. System Design
-6. Implementation
-7. Testing
-8. Progress Status
-9. Conclusion and Future Work
-10. References
+- Chapter 1: Introduction
+- Chapter 2: Survey of Technologies
+- Chapter 3: Requirements and Analysis
+- Chapter 4: Design
+- Chapter 5: Implementation and Testing
+- Chapter 6: Results and Discussion
+- Chapter 7: Conclusion
+- References
 
 \newpage
 
-## 1. Introduction
+## List of Figures
 
-Finding an internship is an important step for every student, but the process is often unorganized. Students ask around personally, companies collect applications by email, and colleges have no easy way to follow what their students are doing during the internship.
+- **Figure 3.6.1:** UML Class Diagram
+- **Figure 3.6.2:** Use Case Diagram
+- **Figure 3.6.3:** Data Flow Diagram (Level-0)
+- **Figure 3.6.4:** Data Flow Diagram (Level-1)
+- **Figure 4.2.1:** System Architecture
+- **Figure 4.3.1:** ER Diagram / Database Schema
+- **Figure 4.4.1:** Landing Page
+- **Figure 4.4.2:** Login Page
+- **Figure 4.4.3:** Registration Pages
+- **Figure 4.4.4:** Student Dashboard and Internship List
+- **Figure 4.4.5:** Company Applicants Page
+- **Figure 4.4.6:** Weekly Log Book and Supervisor Feedback
+- **Figure 4.4.7:** Admin User Management
 
-Internship Portal solves this by bringing everyone to one website:
+## List of Tables
 
-- **Students** create a profile with their skills, browse internships and apply online.
-- **Companies** post internship openings and review all applicants in one place.
-- **Supervisors** (company staff) follow the weekly progress of selected students.
-- **Admin** looks after the whole system and its users.
+- **Table 3.3:** Planning and Scheduling
+- **Table 3.4:** Software and Hardware Requirements
+- **Table 4.3.1 – 4.3.8:** Database Table Structures
+- **Table 5.5:** Test Cases
 
-## 2. Problem Statement
+## List of Abbreviations
 
-At present, there is no single system where students, companies and supervisors can work together during an internship. This causes problems such as:
+| Abbreviation | Full Form |
+|---|---|
+| CRUD | Create, Read, Update and Delete |
+| CSS | Cascading Style Sheets |
+| DBMS | Database Management System |
+| DFD | Data Flow Diagram |
+| ER | Entity Relationship |
+| FK | Foreign Key |
+| FR | Functional Requirement |
+| HTML | HyperText Markup Language |
+| HTTP | HyperText Transfer Protocol |
+| NFR | Non-Functional Requirement |
+| PK | Primary Key |
+| SQL | Structured Query Language |
+| UI | User Interface |
+| UML | Unified Modeling Language |
+
+\newpage
+
+# CHAPTER 1: INTRODUCTION
+
+## 1.1 Background
+
+Internships are an essential part of every technical degree, but the process
+of finding and managing them is still largely manual. Students learn about
+openings through notice boards or personal contacts, apply by email, and
+receive results informally. Companies have no single place to collect and
+compare applicants, and once an internship starts, the student's weekly work
+is almost never recorded or evaluated systematically.
+
+Internship Portal is a web-based system designed to organize this entire
+workflow on one platform. Students browse and apply to internships online,
+companies review applicants and make selections, company supervisors follow
+each selected student's weekly log book and evaluate it with feedback and
+marks, and an administrator oversees all users of the system.
+
+## 1.2 Objectives
+
+- To build a web application with complete MySQL database connectivity.
+- To implement all CRUD operations (Create, Read, Update, Delete) using raw SQL queries.
+- To provide secure, role-based access for four types of users (admin, student, company, supervisor).
+- To manage the complete internship workflow: posting, application with cover letter, selection, and withdrawal.
+- To maintain a weekly progress log of every selected student with supervisor feedback and marks.
+
+## 1.3 Purpose, Scope and Applicability
+
+### 1.3.1 Purpose
+
+The purpose of Internship Portal is to provide a single organized platform
+where the complete internship life cycle — from posting an opening to
+evaluating a student's weekly progress — is recorded and managed.
+
+### 1.3.2 Scope
+
+The system includes role-based registration and login, internship posting
+and management by companies, student applications with cover letters,
+applicant selection, weekly progress logs with supervisor feedback and
+marks, role-specific dashboards, and user administration. It is designed
+for colleges and companies that take student interns.
+
+### 1.3.3 Applicability
+
+Internship Portal can be used by any college to connect its students with
+partner companies, and by companies to manage their internship programs and
+track intern progress through their own supervisors.
+
+## 1.4 Achievements
+
+The following work has been completed during the mid-term phase:
+
+- Database design completed (8 tables with primary keys, foreign keys and cascade rules).
+- Database connectivity from Python implemented using PyMySQL.
+- All four CRUD operations implemented with raw SQL across the system.
+- Role-based registration, login and session management implemented for all four roles.
+- Complete workflow implemented: post internship → apply → select → weekly logs → feedback and marks.
+- Public landing page and role-specific dashboards implemented.
+- Manual testing of all user journeys completed.
+
+## 1.5 Organization of Report
+
+This report is divided into seven chapters. Chapter One introduces the
+project. Chapter Two discusses existing systems and the chosen technologies.
+Chapter Three explains the system requirements and analysis. Chapter Four
+presents the system design. Chapter Five describes implementation and
+testing. Chapter Six discusses the results, while Chapter Seven concludes
+the project with limitations and future scope.
+
+\newpage
+
+# CHAPTER 2: SURVEY OF TECHNOLOGIES
+
+## 2.1 Review of Existing System
+
+Several existing platforms such as **LinkedIn** and **Internshala** were
+studied during the development of Internship Portal. These platforms
+provide facilities for finding internships and jobs at a large scale.
+However, they are designed as open public marketplaces: a college has no
+control over which companies participate, no record of its own students'
+applications, and — most importantly — no mechanism to track what a student
+actually does every week during the internship.
+
+In most colleges, the internship process is still handled manually. Openings
+are shared through notice boards or messaging groups, students apply by
+email, and selection results are communicated informally. Weekly progress
+reports, if they exist at all, are paper-based and rarely evaluated.
+
+To overcome these limitations, Internship Portal provides a closed,
+college-scale platform where companies post openings, students apply with a
+cover letter, and — after selection — every week of the internship is
+logged by the student and evaluated by a company supervisor with feedback
+and marks.
+
+## 2.2 Technologies Used
+
+- **Python Flask** — a lightweight web framework, chosen over heavier frameworks because it keeps the routing, templates and logic simple and visible.
+- **MySQL** — a widely used relational DBMS that stores all system data in 8 related tables.
+- **PyMySQL** — the library that connects Python to MySQL; all queries are written as raw SQL to demonstrate direct database operations.
+- **HTML + Jinja Templates** — page structure, with one shared base layout.
+- **CSS** — plain custom stylesheet (no framework), with colors defined once as variables.
+- **Git / GitHub** — version control.
+
+\newpage
+
+# CHAPTER 3: REQUIREMENTS AND ANALYSIS
+
+## 3.1 Problem Definition
+
+There is no single system where students, companies and supervisors can
+work together during an internship. This causes several problems:
 
 - Students do not know which companies are offering internships.
-- Companies receive applications through many different channels and lose track of them.
-- There is no record of what work the student actually did every week.
+- Companies receive applications through many informal channels and lose track of them.
+- There is no record of what work a student actually performs each week.
 - Supervisor feedback is informal and never stored anywhere.
+- The college administration has no overview of users and activities.
 
-## 3. Objectives
+## 3.2 Requirements Specification
 
-The main objectives of this project are:
+The requirements of the Internship Portal system are classified into
+Functional Requirements and Non-Functional Requirements.
 
-1. To build a web application connected to a MySQL database.
-2. To implement all CRUD operations (Create, Read, Update, Delete) using SQL.
-3. To provide role-based login for four types of users (admin, student, company, supervisor).
-4. To let students apply for internships and companies select applicants.
-5. To keep a weekly progress log of every selected student with supervisor feedback and marks.
+### Functional Requirements
 
-## 4. System Analysis
+- **FR-1:** The system shall allow students, companies and supervisors to register with role-specific details.
+- **FR-2:** The system shall allow registered users to log in with email and password, and log out.
+- **FR-3:** The system shall reject registration with an already-used email address.
+- **FR-4:** The system shall identify each user's role at login and show only pages and data belonging to that role.
+- **FR-5:** A company shall be able to post an internship with title, description, required skills, duration, stipend and vacancies.
+- **FR-6:** A company shall be able to edit, close or delete only its own internships.
+- **FR-7:** A student shall be able to browse and search open internships and apply with a cover letter.
+- **FR-8:** The system shall prevent a student from applying twice to the same internship.
+- **FR-9:** A student shall be able to view the status of their applications and withdraw an application.
+- **FR-10:** A company shall be able to view applicants with their details and mark each application as selected or rejected.
+- **FR-11:** A selected student shall be able to submit weekly progress logs (week number, work done).
+- **FR-12:** A supervisor shall be able to view the selected students of their own company, read their weekly logs, and give feedback with marks.
+- **FR-13:** A student shall be able to see the supervisor's feedback and marks on their logs.
+- **FR-14:** The admin shall be able to view all users and delete a user, with all related data removed automatically (cascade delete).
+- **FR-15:** The system shall show each role a dashboard with statistics relevant to that role, and a public landing page with overall counts.
 
-### 4.1 Functional Requirements
+### Non-Functional Requirements
 
-| Role | Requirements |
-|------|--------------|
-| Student | Register with details (roll no, department, semester, skills), login, browse open internships, apply with a cover letter, withdraw an application, submit weekly logs after selection |
-| Company | Register, login, post internships (title, skills, duration, stipend, vacancies), edit or delete own posts, view applicants with details, mark applicants as selected or rejected |
-| Supervisor | Register under a company, login, view selected students of that company, read their weekly logs, give feedback and marks |
-| Admin | Login, view all users of the system, delete a user |
+- **NFR-1 (Security):** Passwords shall never be stored in plain text; they are hashed using Werkzeug's password hashing functions.
+- **NFR-2 (Security):** All SQL queries shall use parameterized placeholders (`%s`) to prevent SQL injection.
+- **NFR-3 (Access control):** Every page shall verify the session role, and users shall act only on their own data.
+- **NFR-4 (Data integrity):** The database shall enforce integrity through primary keys, foreign keys, a unique email, and a unique (student, internship) pair.
+- **NFR-5 (Usability):** The interface shall be simple and usable without training, with clear feedback messages after every action.
+- **NFR-6 (Maintainability):** The code shall be organized one file per concern so changes are localized.
+- **NFR-7 (Portability):** The system shall run on any machine with Python 3 and MySQL, with only two external dependencies.
+- **NFR-8 (Performance):** Pages shall load with a small number of SQL queries using JOINs, giving fast response at college scale.
 
-### 4.2 Non-Functional Requirements
+## 3.3 Planning and Scheduling
 
-- **Security:** Passwords are stored as hashes, never in plain text. SQL queries use placeholders (`%s`) so user input cannot break the query (prevents SQL injection). Every page checks the logged-in user's role before showing anything.
-- **Usability:** Simple and clean interface built with plain HTML and CSS, easy to use without training.
-- **Maintainability:** The code is separated into small files (one file per user type), so changes are easy to make.
+**Table 3.3: Planning and Scheduling**
 
-### 4.3 Tools and Technologies
+| Phase | Duration | Work |
+|---|---|---|
+| Requirement analysis | Week 1 | Study problem, define roles and features |
+| Database design | Week 2 | ER model, 8 tables, keys and relations |
+| Authentication module | Week 3 | Registration (3 types), login, sessions |
+| Internship & application modules | Week 4–5 | Post/edit/delete, apply, select/reject |
+| Progress log module | Week 6 | Weekly logs, feedback and marks |
+| Testing & documentation | Week 7 | Manual testing, diagrams, this report |
+| Remaining work (after mid-term) | Week 8+ | File uploads, search filters, reports, deployment |
 
-| Tool | Use |
-|------|-----|
-| Python 3 | Programming language |
-| Flask | Web framework (routes, templates, sessions) |
-| MySQL | Database |
-| PyMySQL | Library that connects Python to MySQL |
-| HTML + Jinja | Web pages (templates) |
-| CSS | Styling (no framework, plain CSS) |
-| Git / GitHub | Version control |
+## 3.4 Software and Hardware Requirements
 
-## 5. System Design
+**Table 3.4: Software and Hardware Requirements**
 
-### 5.1 System Architecture
+| Category | Requirement |
+|---|---|
+| Operating System | Windows / Linux / macOS |
+| Language | Python 3 |
+| Framework | Flask |
+| Database | MySQL (via PyMySQL) |
+| Frontend | HTML, CSS, Jinja templates |
+| Tools | VS Code, Git, MySQL client |
+| Hardware | Any computer with 4 GB RAM and MySQL installed |
+
+## 3.5 Preliminary Product Description
+
+Internship Portal is a role-based web application. A visitor sees a landing
+page with live statistics and can register as a student, company or
+supervisor. After login, each role gets its own dashboard and pages:
+students browse and apply to internships and maintain a weekly log book
+after selection; companies post internships and manage applicants;
+supervisors evaluate the weekly logs of selected students at their company;
+and the admin manages all users.
+
+## 3.6 Conceptual Models
+
+### 3.6.1 UML Class Diagram
+
+![Figure 3.6.1: UML Class Diagram](uml_class_diagram.png)
+
+### 3.6.2 Use Case Diagram
+
+![Figure 3.6.2: Use Case Diagram](use_case_diagram.png)
+
+### 3.6.3 Data Flow Diagram
+
+![Figure 3.6.3: Data Flow Diagram (Level-0)](dfd_level0.png)
+
+![Figure 3.6.4: Data Flow Diagram (Level-1)](dfd_level1.png)
+
+\newpage
+
+# CHAPTER 4: DESIGN
+
+## 4.1 Introduction
+
+This chapter presents the architecture of the system, the database design
+with all table structures, and the interface design.
+
+## 4.2 System Design
 
 The system uses a simple three-layer architecture:
 
@@ -109,73 +391,91 @@ The system uses a simple three-layer architecture:
 Browser (HTML/CSS)  <-->  Flask (Python, routes/)  <-->  MySQL (database)
 ```
 
-1. The user opens a page in the browser and submits a form.
-2. Flask receives the request, runs the matching function from the `routes/` folder.
-3. The function executes SQL queries on MySQL through PyMySQL and renders an HTML template with the result.
+1. The user opens a page or submits a form in the browser.
+2. Flask matches the URL in `app.py` and runs the corresponding function from the `routes/` folder.
+3. The function executes SQL on MySQL through PyMySQL and renders an HTML template with the result.
 
-### 5.2 ER Diagram
+The project is organized as follows:
 
-**[ Insert your ER diagram image here ]**
+```
+Internship_Portal/
+├── app.py              main file: connects every URL to its function
+├── db.py               database connection + shared helper functions
+├── routes/             page functions, one file per part of the site
+│   ├── auth.py         register (3 types), login, logout
+│   ├── main.py         landing page, dashboard, internship list
+│   ├── student.py      apply, my applications, weekly logs
+│   ├── company.py      post/edit/delete internships, applicants
+│   ├── supervisor.py   my students, view logs, give feedback
+│   └── admin.py        manage users
+├── database.sql        creates the database, 8 tables and admin account
+├── static/style.css    all styling (plain CSS)
+└── templates/          HTML pages (all extend base.html)
+```
 
-### 5.3 Database Design
+## 4.3 Database Design
 
-The database `internship_db` has **8 tables**:
+**[ Insert Figure 4.3.1: your ER diagram here ]**
 
-**Table: roles** — the four types of users
+The database `internship_db` has 8 tables. All foreign keys use
+`ON DELETE CASCADE`, so deleting a user automatically removes all of that
+user's data.
+
+**Table 4.3.1: roles** — the four types of users
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
 | role_name | VARCHAR(20), UNIQUE | admin / student / company / supervisor |
 
-**Table: users** — central login table
+**Table 4.3.2: users** — central login table
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| role_id | INT | Foreign Key -> roles(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| role_id | INT | FK → roles(id) |
 | name | VARCHAR(100) | |
 | email | VARCHAR(100), UNIQUE | |
 | password | VARCHAR(255) | stored as hash |
 | created_at | TIMESTAMP | |
 
-**Table: students** — extra details of a student user
+**Table 4.3.3: students** — extra details of a student user
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| user_id | INT, UNIQUE | Foreign Key -> users(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| user_id | INT, UNIQUE | FK → users(id) |
 | roll_number | VARCHAR(50) | |
 | department | VARCHAR(100) | |
 | semester | INT | |
 | skills | VARCHAR(255) | |
 
-**Table: companies** — extra details of a company user
+**Table 4.3.4: companies** — extra details of a company user
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| user_id | INT, UNIQUE | Foreign Key -> users(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| user_id | INT, UNIQUE | FK → users(id) |
 | industry | VARCHAR(100) | |
 | location | VARCHAR(100) | |
 | description | TEXT | |
 
-**Table: supervisors** — company staff who guide students
+**Table 4.3.5: supervisors** — company staff who guide students
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| user_id | INT, UNIQUE | Foreign Key -> users(id) |
-| company_id | INT | Foreign Key -> companies(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| user_id | INT, UNIQUE | FK → users(id) |
+| company_id | INT | FK → companies(id) |
 | designation | VARCHAR(100) | |
 | department | VARCHAR(100) | |
 
-**Table: internships** — posted by companies
+**Table 4.3.6: internships** — posted by companies
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| company_id | INT | Foreign Key -> companies(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| company_id | INT | FK → companies(id) |
 | title | VARCHAR(200) | |
 | description | TEXT | |
 | required_skills | VARCHAR(255) | |
@@ -185,96 +485,86 @@ The database `internship_db` has **8 tables**:
 | status | VARCHAR(20) | open / closed |
 | posted_date | TIMESTAMP | |
 
-**Table: applications** — a student applies to an internship
+**Table 4.3.7: applications** — a student applies to an internship
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| student_id | INT | Foreign Key -> students(id) |
-| internship_id | INT | Foreign Key -> internships(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| student_id | INT | FK → students(id) |
+| internship_id | INT | FK → internships(id) |
 | cover_letter | TEXT | |
 | status | VARCHAR(20) | applied / selected / rejected |
 | applied_date | TIMESTAMP | |
 
-A student cannot apply twice to the same internship (UNIQUE constraint on student_id + internship_id).
+A UNIQUE constraint on (student_id, internship_id) prevents duplicate
+applications.
 
-**Table: progress_logs** — weekly work reports
+**Table 4.3.8: progress_logs** — weekly work reports
 
 | Column | Type | Key |
-|--------|------|-----|
-| id | INT, AUTO_INCREMENT | Primary Key |
-| application_id | INT | Foreign Key -> applications(id) |
-| supervisor_id | INT | Foreign Key -> supervisors(id) |
+|---|---|---|
+| id | INT, AUTO_INCREMENT | PK |
+| application_id | INT | FK → applications(id) |
+| supervisor_id | INT | FK → supervisors(id) |
 | week_number | INT | |
 | description | TEXT | work done by the student |
 | feedback | TEXT | written by the supervisor |
 | marks | INT | out of 10 |
 | submitted_date | TIMESTAMP | |
 
-All foreign keys use **ON DELETE CASCADE**, so when the admin deletes a user, all of that user's data (profile, internships, applications, logs) is removed automatically by the database.
+## 4.4 Interface Design
 
-### 5.4 UML Class Diagram
+The interface uses one shared layout (`base.html`) with a navigation bar
+that changes according to the logged-in role, and a plain CSS stylesheet.
 
-**[ Insert your UML class diagram image here ]**
+**[ Insert screenshots here as Figures 4.4.1 – 4.4.7: landing page, login
+page, registration pages, student dashboard and internship list, company
+applicants page, weekly log book with supervisor feedback, admin user
+management ]**
 
-## 6. Implementation
+\newpage
 
-### 6.1 Project Structure
+# CHAPTER 5: IMPLEMENTATION AND TESTING
 
-```
-Internship_Portal/
-|-- app.py              main file: connects every URL to its function
-|-- db.py               database connection + shared helper functions
-|-- routes/             page functions, one file per part of the site
-|   |-- auth.py         register (3 types), login, logout
-|   |-- main.py         landing page, dashboard, internship list
-|   |-- student.py      apply, my applications, weekly logs
-|   |-- company.py      post/edit/delete internships, applicants
-|   |-- supervisor.py   my students, view logs, give feedback
-|   |-- admin.py        manage users
-|-- database.sql        creates the database, 8 tables and admin account
-|-- static/style.css    all styling
-|-- templates/          HTML pages (all extend base.html)
-```
+## 5.1 Implementation Approach
 
-### 6.2 Database Connectivity
+The application is implemented in Python Flask with raw SQL through PyMySQL.
+`app.py` acts as a routing table: every URL of the site is connected to a
+function in the `routes/` folder using `app.add_url_rule()`. Each function
+opens a database connection with `get_db()` (defined in `db.py`), executes
+its SQL with `cursor.execute()`, commits if data was changed, closes the
+connection, and renders an HTML template.
 
-The function `get_db()` in `db.py` connects Python to MySQL using PyMySQL:
+Login stores the user's id, name and role in the Flask session; every page
+first checks `session['role']` before showing anything.
+
+## 5.2 Coding Details and Code Efficiency
+
+Database connection (`db.py`):
 
 ```python
 def get_db():
     return pymysql.connect(
-        host='localhost',
-        user='root',
-        password='......',
+        host='localhost', user='root', password='......',
         database='internship_db',
-        cursorclass=pymysql.cursors.DictCursor
-    )
+        cursorclass=pymysql.cursors.DictCursor)
 ```
 
-Every page function opens a connection, runs its SQL with `cursor.execute()`, commits if data was changed, and closes the connection.
-
-### 6.3 CRUD Operations
-
-| Operation | SQL | Where it is used |
-|-----------|-----|------------------|
-| Create | INSERT INTO | registration (users + role table), post internship, apply, submit weekly log |
-| Read | SELECT (with JOIN) | login, landing page counts, internship list, applications, applicants, logs, users list |
-| Update | UPDATE | edit internship, select/reject an application, supervisor feedback and marks |
-| Delete | DELETE FROM | delete internship, withdraw application, delete user |
-
-Example of a CREATE operation (student applies to an internship):
+Registration inserts into two tables using the new user's id
+(`cursor.lastrowid`) as the foreign key:
 
 ```python
 cur.execute(
-    "INSERT INTO applications (student_id, internship_id, cover_letter) "
-    "VALUES (%s, %s, %s)",
-    (me['id'], internship_id, request.form['cover_letter'])
-)
-db.commit()
+    "INSERT INTO users (role_id, name, email, password) VALUES (%s, %s, %s, %s)",
+    (role_id_of(cur, 'student'), name, email, generate_password_hash(password)))
+new_user_id = cur.lastrowid
+cur.execute(
+    "INSERT INTO students (user_id, roll_number, department, semester, skills) "
+    "VALUES (%s, %s, %s, %s, %s)",
+    (new_user_id, roll_number, department, semester, skills))
 ```
 
-Example of a READ operation with JOIN (student's applications with company name):
+Reading uses JOINs so one query fetches related data from several tables:
 
 ```sql
 SELECT applications.id, applications.status,
@@ -286,28 +576,38 @@ JOIN users       ON companies.user_id = users.id
 WHERE applications.student_id = %s
 ```
 
-### 6.4 Login and Sessions
+Code efficiency measures: parameterized queries (`%s`) prevent SQL
+injection; JOINs avoid multiple round trips to the database; `ON DELETE
+CASCADE` lets the database clean up related rows instead of many DELETE
+statements; and shared helpers (`get_db()`, `my_student()`, `my_company()`,
+`my_supervisor()`) avoid repeated code.
 
-When a user logs in, the system joins the `users` and `roles` tables, checks the password hash, and saves the user's id, name and role in the Flask session. Every page first checks `session['role']` — for example, only a user with role `company` can post an internship.
+## 5.3 Testing Approach
 
-### 6.5 Security Measures
+The system was tested manually by walking through every user journey for
+all four roles — registering, logging in, and performing every action each
+role is allowed (and checking forbidden actions are blocked). The database
+was inspected after each step to confirm the SQL operations worked
+correctly.
 
-1. **Password hashing** — `generate_password_hash()` is used at registration and `check_password_hash()` at login. Plain passwords are never stored.
-2. **SQL injection prevention** — every query uses `%s` placeholders; user input is never joined into the SQL string directly.
-3. **Role checking** — every page verifies the session role before doing anything.
-4. **Ownership checking** — a company can only edit/delete its own internships; a student can only withdraw their own applications; a supervisor can only see logs of students at their own company.
+## 5.4 Modifications and Improvements
 
-### 6.6 Screenshots
+During development the following improvements were made over the first
+version:
 
-**[ Insert screenshots here: landing page, login, register, student internship list, company applicants page, weekly log book, supervisor feedback, admin users page ]**
+- Code was reorganized from one large file into a `routes/` folder (one file per role) with `app.py` as a clear URL table.
+- Dashboards were changed to show each role only its own relevant statistics instead of system-wide numbers.
+- A public landing page with live database counts was added.
+- The database was extended from an initial 3-table prototype to the full 8-table design matching the ER model.
+- The CSS was refined with variables so the whole color scheme can be changed in one place.
 
-## 7. Testing
+## 5.5 Test Cases
 
-The system was tested manually by going through every user journey. Some of the test cases:
+**Table 5.5: Test Cases**
 
 | # | Test Case | Steps | Expected Result | Result |
-|---|-----------|-------|-----------------|--------|
-| 1 | Student registration | Fill the student form and submit | Row created in users and students tables, redirected to login | Pass |
+|---|---|---|---|---|
+| 1 | Student registration | Fill the student form and submit | Rows created in users and students, redirect to login | Pass |
 | 2 | Duplicate email | Register again with the same email | "Email is already registered" message | Pass |
 | 3 | Wrong password | Login with wrong password | "Invalid email or password" message | Pass |
 | 4 | Post internship | Login as company, fill the post form | Internship appears in the list | Pass |
@@ -316,37 +616,64 @@ The system was tested manually by going through every user journey. Some of the 
 | 7 | Select applicant | Company changes status to selected | Status badge changes to "selected" | Pass |
 | 8 | Weekly log | Selected student submits week 1 log | Log appears in the log book | Pass |
 | 9 | Feedback | Supervisor writes feedback and marks | Feedback and marks visible to the student | Pass |
-| 10 | Delete user | Admin deletes a company | Company, its internships and applications are all removed (cascade) | Pass |
+| 10 | Delete user | Admin deletes a company | Company, its internships and applications removed (cascade) | Pass |
 | 11 | Access control | Student opens a company-only page | Redirected away | Pass |
 
-## 8. Progress Status (Mid-Term)
+\newpage
 
-### Completed
+# CHAPTER 6: RESULTS AND DISCUSSION
 
-- Database design with 8 tables and relationships (foreign keys, cascade delete)
-- Database connectivity from Python using PyMySQL
-- All CRUD operations with raw SQL
-- Role-based registration and login (4 roles)
-- Full workflow: post -> apply -> select -> weekly logs -> feedback and marks
-- Landing page with live counts from the database
+## 6.1 Test Reports
 
-### Remaining (planned for final defense)
+All 11 test cases in Table 5.5 pass. The complete workflow was verified end
+to end: a company posted an internship, a student applied with a cover
+letter, the company selected the student, the student submitted weekly
+logs, the supervisor gave feedback with marks that became visible to the
+student, and the admin viewed and deleted users with cascade removal of
+their data. Role-based access control was verified by attempting to open
+pages of other roles, which correctly redirect away.
 
-- Resume/file upload for students
-- Search and filter for internships
-- Email notification when an applicant is selected
-- Reports for admin (e.g. internships per company)
-- Deployment on a live server
+## 6.2 User Documentation
 
-## 9. Conclusion and Future Work
+- **Student:** Register with your details → login → browse internships → apply with a cover letter → after selection, open My Applications → Weekly Logs to submit each week's work and read the supervisor's feedback and marks.
+- **Company:** Register → login → Post Internship → view applicants of each post → mark them selected or rejected → edit or close the internship when filled.
+- **Supervisor:** Register under your company → login → My Students shows selected interns → open a student's log book → write feedback and marks for each week.
+- **Admin:** Login (default account: admin@portal.com) → Users page lists everyone → delete a user if needed.
 
-This phase of the project successfully achieved its main objective: a working web application with full database connectivity and all four CRUD operations implemented through raw SQL queries. The complete internship workflow — from a company posting an internship to a supervisor marking a student's weekly log — works end to end.
+\newpage
 
-In the next phase, the system can be extended with file uploads, search, notifications and reports, and finally deployed to a live server so real users can access it.
+# CHAPTER 7: CONCLUSION
 
-## 10. References
+## 7.1 Conclusion
+
+This phase of the project successfully achieved its main objective: a
+working web application with full database connectivity and all four CRUD
+operations implemented through raw SQL queries. The complete internship
+workflow — from a company posting an internship to a supervisor marking a
+student's weekly log — works end to end with role-based access control,
+hashed passwords and parameterized queries.
+
+## 7.2 Limitations
+
+- No file uploads yet (resume, verification documents, log attachments).
+- Search supports only internship titles; there are no advanced filters.
+- No email notifications when an applicant is selected.
+- The system runs on a local development server, not a live deployment.
+
+## 7.3 Future Scope
+
+- Resume and document upload for students.
+- Search and filter by skills, duration and stipend.
+- Email notifications for selection results and new feedback.
+- Reports for the admin (internships per company, application statistics).
+- Deployment on a live server with a production database.
+
+\newpage
+
+## References
 
 1. Flask Documentation — https://flask.palletsprojects.com/
 2. MySQL Documentation — https://dev.mysql.com/doc/
 3. PyMySQL Documentation — https://pymysql.readthedocs.io/
 4. Jinja Template Documentation — https://jinja.palletsprojects.com/
+5. Werkzeug Documentation — https://werkzeug.palletsprojects.com/
