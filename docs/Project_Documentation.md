@@ -386,11 +386,10 @@ with all table structures, and the interface design.
 
 ## 4.2 System Design
 
-The system uses a simple three-layer architecture:
+The system uses a three-layer architecture: the presentation layer (the
+web browser), the application layer (Flask), and the data layer (MySQL).
 
-```
-Browser (HTML/CSS)  <-->  Flask (Python, routes/)  <-->  MySQL (database)
-```
+![Figure 4.2.1: System Architecture](system_architecture.png)
 
 1. The user opens a page or submits a form in the browser.
 2. Flask matches the URL in `app.py` and runs the corresponding function from the `routes/` folder.
