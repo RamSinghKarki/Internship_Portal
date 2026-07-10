@@ -393,7 +393,20 @@ web browser), the application layer (Flask), and the data layer (MySQL).
 
 1. The user opens a page or submits a form in the browser.
 2. Flask matches the URL in `app.py` and runs the corresponding function from the `routes/` folder.
-3. The function executes SQL on MySQL through PyMySQL and renders an HTML template with the result.
+3. The function reads or changes data through the SQLAlchemy ORM, which sends the SQL to MySQL, and renders an HTML template with the result.
+
+**Example — how one request flows through the system.** When a student
+clicks *Apply* on an internship, the browser sends an HTTP POST request to
+`/apply/5`. In the application layer, `app.py` matches this URL and calls
+the `apply()` function in `routes/student.py`. The function first checks
+the Flask session to confirm the logged-in user is a student, then creates
+an `Application` model object with the student's id, the internship id and
+the cover letter, and calls `db.session.add()` and `db.session.commit()`.
+SQLAlchemy generates the corresponding `INSERT` statement and sends it to
+MySQL with all values as bound parameters. Finally the function redirects
+the browser to the *My Applications* page, whose query returns the new
+application as a Python object and the template renders it as HTML. Every
+page of the system follows this same path through the three layers.
 
 The project is organized as follows:
 
