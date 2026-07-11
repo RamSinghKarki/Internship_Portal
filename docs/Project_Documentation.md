@@ -309,6 +309,8 @@ Functional Requirements and Non-Functional Requirements.
 - **FR-13:** A student shall be able to see the supervisor's feedback and marks on their logs.
 - **FR-14:** The admin shall be able to view all users and delete a user, with all related data removed automatically (cascade delete).
 - **FR-15:** The system shall show each role a dashboard with statistics relevant to that role, and a public landing page with overall counts.
+- **FR-16:** A student shall be required to upload an identity document (pdf or image) during registration; the document shall be visible to companies.
+- **FR-17:** The system shall allow internships to be searched by keyword (title, description, skills) and filtered by skill.
 
 ### Non-Functional Requirements
 
@@ -675,15 +677,15 @@ works end to end with role-based access control and hashed passwords.
 
 ## 7.2 Limitations
 
-- No file uploads yet (resume, verification documents, log attachments).
-- Search supports only internship titles; there are no advanced filters.
+- Resume uploads and weekly log attachments are not yet supported (identity documents are uploaded at registration).
+- Search supports keywords and skills; filters by duration and stipend are not yet available.
 - No email notifications when an applicant is selected.
 - The system runs on a local development server, not a live deployment.
 
 ## 7.3 Future Scope
 
-- Resume and document upload for students.
-- Search and filter by skills, duration and stipend.
+- Resume upload and weekly log attachments for students.
+- Filtering of internships by duration and stipend.
 - Email notifications for selection results and new feedback.
 - Reports for the admin (internships per company, application statistics).
 - Deployment on a live server with a production database.
