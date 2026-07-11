@@ -2,7 +2,7 @@
 # Main pages: landing page, dashboard, internship list
 # ============================================================
 
-from flask import render_template, redirect, url_for, session
+from flask import render_template, redirect, url_for, session, request
 from models import (db, User, Student, Company, Supervisor, Internship,
                     Application, ProgressLog,
                     current_student, current_company, current_supervisor)
@@ -72,21 +72,32 @@ def internships():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
+    # optional search filters (?q=...&skill=...)
+    q = request.args.get('q', '').strip()
+    skill = request.args.get('skill', '').strip()
+
+    query = Internship.query
+    if q:        # keyword in title, description or required skills
+        like = f'%{q}%'
+        query = query.filter(Internship.title.like(like) |
+                             Internship.description.like(like) |
+                             Internship.required_skills.like(like))
+    if skill:    # skill filter
+        query = query.filter(Internship.required_skills.like(f'%{skill}%'))
+
     applied_ids = []
     if session['role'] == 'company':
         me = current_company()
-        items = (Internship.query.filter_by(company_id=me.id)
-                 .order_by(Internship.id.desc()).all())
+        query = query.filter_by(company_id=me.id)
     elif session['role'] == 'student':
         me = current_student()
         applied_ids = [a.internship_id for a in me.applications]
-        items = (Internship.query.filter_by(status='open')
-                 .order_by(Internship.id.desc()).all())
+        query = query.filter_by(status='open')
     elif session['role'] == 'supervisor':
         me = current_supervisor()
-        items = (Internship.query.filter_by(company_id=me.company_id)
-                 .order_by(Internship.id.desc()).all())
-    else:   # admin sees everything
-        items = Internship.query.order_by(Internship.id.desc()).all()
+        query = query.filter_by(company_id=me.company_id)
+    # admin sees everything
 
-    return render_template('internships.html', internships=items, applied_ids=applied_ids)
+    items = query.order_by(Internship.id.desc()).all()
+    return render_template('internships.html', internships=items,
+                           applied_ids=applied_ids, q=q, skill=skill)

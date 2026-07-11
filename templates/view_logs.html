@@ -10,11 +10,12 @@
 {% for log in logs %}
 <div class="card">
     <h3>Week {{ log.week_number }}</h3>
-    <p><b>Work done:</b> {{ log.description }}</p>
+    <p class="preserve"><b>Work done:</b>
+{{ log.description }}</p>
     <p><b>Submitted:</b> {{ log.submitted_date.strftime('%Y-%m-%d') }}</p>
 
     {% if log.feedback %}
-        <p><b>Your feedback:</b> {{ log.feedback }} &nbsp;|&nbsp; <b>Marks:</b> {{ log.marks }}</p>
+        <p class="preserve"><b>Your feedback:</b> {{ log.feedback }} &nbsp;|&nbsp; <b>Marks:</b> {{ log.marks }}</p>
     {% endif %}
 
     <form method="POST" action="{{ url_for('give_feedback', log_id=log.id) }}">

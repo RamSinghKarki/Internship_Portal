@@ -14,6 +14,7 @@
 # to its function - like a table of contents of the whole app.
 # ============================================================
 
+import os
 from flask import Flask
 from models import db
 
@@ -25,6 +26,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = \
     'mysql+pymysql://root:password@localhost/internship_db'   # <-- change 'password' to your MySQL password
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+# folder where student documents are saved
+os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
 
 from routes import main, auth, student, company, supervisor, admin
 

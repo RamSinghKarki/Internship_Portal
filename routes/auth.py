@@ -2,8 +2,26 @@
 # Auth pages: register (3 types), login, logout
 # ============================================================
 
-from flask import render_template, request, redirect, url_for, session, flash
+import os
+import time
+from flask import render_template, request, redirect, url_for, session, flash, current_app
+from werkzeug.utils import secure_filename
 from models import db, Role, User, Student, Company, Supervisor
+
+ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
+
+
+def save_document(file):
+    """Save an uploaded file into static/uploads and return its
+    relative path, or None if no valid file was given."""
+    if not file or file.filename == '':
+        return None
+    ext = file.filename.rsplit('.', 1)[-1].lower() if '.' in file.filename else ''
+    if ext not in ALLOWED_EXTENSIONS:
+        return None
+    fname = f"{int(time.time())}_{secure_filename(file.filename)}"
+    file.save(os.path.join(current_app.root_path, 'static', 'uploads', fname))
+    return f"uploads/{fname}"
 
 
 def _email_taken(email):
@@ -22,6 +40,12 @@ def register_student():
             flash('Email is already registered.')
             return redirect(url_for('register_student'))
 
+        # a valid document upload is required to create a student account
+        document = save_document(request.files.get('document'))
+        if not document:
+            flash('Please upload a valid document (pdf, png, jpg, doc or docx).')
+            return redirect(url_for('register_student'))
+
         role = Role.query.filter_by(role_name='student').first()
         user = User(role_id=role.id, name=request.form['name'], email=request.form['email'])
         user.set_password(request.form['password'])
@@ -31,7 +55,8 @@ def register_student():
                           roll_number=request.form['roll_number'],
                           department=request.form['department'],
                           semester=request.form['semester'] or None,
-                          skills=request.form['skills'])
+                          skills=request.form['skills'],
+                          document_url=document)
         db.session.add(student)     # adds the user too (relationship)
         db.session.commit()
         flash('Registration successful! Please login.')

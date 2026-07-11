@@ -27,8 +27,8 @@
     {% for log in logs %}
     <tr>
         <td>{{ log.week_number }}</td>
-        <td>{{ log.description }}</td>
-        <td>{{ log.feedback or '-' }}</td>
+        <td class="preserve">{{ log.description }}</td>
+        <td class="preserve">{{ log.feedback or '-' }}</td>
         <td>{{ log.marks if log.marks is not none else '-' }}</td>
     </tr>
     {% endfor %}

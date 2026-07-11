@@ -35,6 +35,7 @@ CREATE TABLE students (
     department  VARCHAR(100),
     semester    INT,
     skills      VARCHAR(255),
+    document_url VARCHAR(255),               -- uploaded document (ID card / citizenship)
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

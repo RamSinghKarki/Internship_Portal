@@ -16,7 +16,11 @@
             <b>Semester:</b> {{ a.student.semester }}
         </p>
         <p><b>Skills:</b> {{ a.student.skills }}</p>
-        {% if a.cover_letter %}<p><b>Cover letter:</b> {{ a.cover_letter }}</p>{% endif %}
+        {% if a.cover_letter %}<p class="preserve"><b>Cover letter:</b>
+{{ a.cover_letter }}</p>{% endif %}
+        {% if a.student.document_url %}
+            <p><b>Document:</b> <a href="{{ url_for('static', filename=a.student.document_url) }}" target="_blank">View document</a></p>
+        {% endif %}
 
         <form method="POST" action="{{ url_for('update_status', id=a.id) }}">
             <select name="status">

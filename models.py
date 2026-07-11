@@ -59,6 +59,7 @@ class Student(db.Model):
     department = db.Column(db.String(100))
     semester = db.Column(db.Integer)
     skills = db.Column(db.String(255))
+    document_url = db.Column(db.String(255))   # uploaded document (ID card / citizenship)
 
     applications = db.relationship('Application', backref='student',
                                    cascade='all, delete-orphan', passive_deletes=True)

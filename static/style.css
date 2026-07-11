@@ -261,3 +261,30 @@ button.outline:hover {
     background: var(--accent);
     color: white;
 }
+
+
+/* ---------- keep user line breaks in long text ---------- */
+.preserve {
+    white-space: pre-line;
+}
+
+/* ---------- internship search bar ---------- */
+.searchbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 18px;
+}
+
+.searchbar input {
+    max-width: 320px;
+}
+
+.searchbar button {
+    margin-top: 0;
+}
+
+.muted {
+    color: var(--muted);
+    font-size: 14px;
+}

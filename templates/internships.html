@@ -3,6 +3,19 @@
 
 <h2>Internships</h2>
 
+<form method="GET" action="{{ url_for('internships') }}" class="searchbar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by title, description or skills">
+    <input type="text" name="skill" value="{{ skill }}" placeholder="Skill (e.g. Python)">
+    <button type="submit">Search</button>
+    {% if q or skill %}<a href="{{ url_for('internships') }}">Clear</a>{% endif %}
+</form>
+
+{% if (q or skill) %}
+    <p class="muted">Showing results for
+       {% if q %}"{{ q }}"{% endif %}{% if q and skill %} with skill {% endif %}
+       {% if skill %}"{{ skill }}"{% endif %} - {{ internships|length }} found.</p>
+{% endif %}
+
 {% if internships|length == 0 %}
     <p>No internships posted yet.</p>
 {% endif %}
@@ -13,7 +26,7 @@
         {% if i.status == 'closed' %}<span class="status rejected">closed</span>{% endif %}
     </h3>
     <p><b>Company:</b> {{ i.company.user.name }}</p>
-    <p>{{ i.description }}</p>
+    <p class="preserve">{{ i.description }}</p>
     <p>
         <b>Skills:</b> {{ i.required_skills }} &nbsp;|&nbsp;
         <b>Duration:</b> {{ i.duration_weeks }} weeks &nbsp;|&nbsp;
