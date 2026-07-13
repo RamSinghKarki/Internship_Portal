@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pct_badge %}
+{% block title %}My Reports{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Reports</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Subject Attendance Report</div>
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-6 col-lg-4">
+        <label class="form-label">Subject</label>
+        <select name="subject_id" class="form-select" data-autosubmit>
+          <option value="">— choose one of my subjects —</option>
+          {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if subject and subject.id == s.id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if report is not none %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+    <span>{{ subject.label }} — Student Attendance (my sessions)</span>
+    <button class="btn btn-sm btn-outline-secondary no-print" onclick="window.print()"><i class="bi bi-printer me-1"></i>Print</button>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Roll No</th><th>Student</th><th>Attended</th><th>Total</th><th class="text-end">%</th></tr></thead>
+      <tbody>
+        {% for r in report %}
+        <tr>
+          <td>{{ r.student.roll_number }}</td>
+          <td>{{ r.student.full_name }}</td>
+          <td>{{ r.attended }}</td>
+          <td>{{ r.total }}</td>
+          <td class="text-end">{{ pct_badge(r.percentage, threshold) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">No attendance recorded for this subject yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

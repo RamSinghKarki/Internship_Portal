@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import csrf_field %}
+{% block title %}Edit Attendance{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('teacher.attendance_session_view', session_id=session.id) }}">Session #{{ session.id }}</a></li>
+<li class="breadcrumb-item active">Edit</li>
+{% endblock %}
+
+{% block content %}
+<form method="post">
+  {{ csrf_field() }}
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span class="fw-semibold">
+        <i class="bi bi-pencil-square me-2 text-primary"></i>
+        Edit Attendance — {{ session.subject.label if session.subject }} · {{ session.date.strftime('%d %b %Y') }}
+      </span>
+      <div class="d-flex gap-2 no-print">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="markAll('Present')">Mark All Present</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="markAll('Absent')">Mark All Absent</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0 attendance-table">
+        <thead><tr><th>#</th><th>Roll No</th><th>Student</th><th>Status</th><th style="min-width:180px">Remarks</th></tr></thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>{{ r.student.roll_number }}</td>
+            <td>{{ r.student.full_name }}</td>
+            <td>
+              <div class="btn-group status-group" role="group">
+                {% for status in statuses %}
+                {% set color = {'Present': 'success', 'Absent': 'danger', 'Late': 'warning', 'Leave': 'info'}[status] %}
+                <input type="radio" class="btn-check" name="status_{{ r.student_id }}" id="s{{ r.student_id }}_{{ status }}" value="{{ status }}" {{ 'checked' if r.status == status }}>
+                <label class="btn btn-sm btn-outline-{{ color }}" for="s{{ r.student_id }}_{{ status }}">{{ status }}</label>
+                {% endfor %}
+              </div>
+            </td>
+            <td><input type="text" class="form-control form-control-sm" name="remarks_{{ r.student_id }}" value="{{ r.remarks or '' }}" maxlength="255"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-end gap-2">
+      <a href="{{ url_for('teacher.attendance_session_view', session_id=session.id) }}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Update Attendance</button>
+    </div>
+  </div>
+</form>
+{% endblock %}

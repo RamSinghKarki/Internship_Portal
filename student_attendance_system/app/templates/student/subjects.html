@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pct_badge %}
+{% block title %}My Subjects{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">My Subjects</li>{% endblock %}
+
+{% block content %}
+<div class="row g-3">
+  {% for row in breakdown %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <span class="badge text-bg-primary mb-1">{{ row.subject.code }}</span>
+            <h6 class="mb-0">{{ row.subject.name }}</h6>
+            <div class="text-muted small">{{ row.subject.credit_hours }} credit hours</div>
+          </div>
+          {{ pct_badge(row.percentage, threshold) }}
+        </div>
+        <div class="progress mb-2">
+          <div class="progress-bar {{ 'bg-success' if row.percentage >= threshold else 'bg-danger' }}" style="width: {{ row.percentage }}%"></div>
+        </div>
+        <div class="small text-muted">{{ row.attended }} of {{ row.total }} classes attended</div>
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="col-12">
+    <div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No subjects with attendance records yet.</div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

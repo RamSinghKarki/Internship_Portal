@@ -1,0 +1,93 @@
+{# Reusable UI building blocks #}
+
+{% macro pagination_nav(pagination, endpoint, args={}) %}
+  {% if pagination.pages > 1 %}
+  <nav aria-label="Page navigation">
+    <ul class="pagination pagination-sm justify-content-end mb-0">
+      <li class="page-item {{ 'disabled' if not pagination.has_prev }}">
+        <a class="page-link" href="{{ url_for(endpoint, page=pagination.prev_num, **args) if pagination.has_prev else '#' }}">&laquo;</a>
+      </li>
+      {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+        {% if p %}
+          <li class="page-item {{ 'active' if p == pagination.page }}">
+            <a class="page-link" href="{{ url_for(endpoint, page=p, **args) }}">{{ p }}</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+      {% endfor %}
+      <li class="page-item {{ 'disabled' if not pagination.has_next }}">
+        <a class="page-link" href="{{ url_for(endpoint, page=pagination.next_num, **args) if pagination.has_next else '#' }}">&raquo;</a>
+      </li>
+    </ul>
+  </nav>
+  {% endif %}
+{% endmacro %}
+
+{% macro search_box(placeholder='Search…', value='') %}
+  <div class="input-group input-group-sm search-box">
+    <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+    <input type="search" class="form-control" name="q" value="{{ value }}" placeholder="{{ placeholder }}">
+    <button class="btn btn-primary" type="submit">Search</button>
+  </div>
+{% endmacro %}
+
+{% macro status_badge(status) %}
+  {% set map = {'Present': 'success', 'Absent': 'danger', 'Late': 'warning', 'Leave': 'info',
+                'active': 'success', 'inactive': 'secondary', 'on_leave': 'warning',
+                'graduated': 'primary', 'suspended': 'danger'} %}
+  <span class="badge text-bg-{{ map.get(status, 'secondary') }} text-capitalize">{{ status.replace('_', ' ') }}</span>
+{% endmacro %}
+
+{% macro pct_badge(value, threshold=75) %}
+  {% set color = 'success' if value >= threshold else ('warning' if value >= threshold - 15 else 'danger') %}
+  <span class="badge text-bg-{{ color }}">{{ value }}%</span>
+{% endmacro %}
+
+{% macro stat_card(title, value, icon, color='primary', subtitle=None) %}
+  <div class="card stat-card border-0 shadow-sm h-100">
+    <div class="card-body d-flex align-items-center gap-3">
+      <div class="stat-icon bg-{{ color }}-subtle text-{{ color }}"><i class="bi {{ icon }}"></i></div>
+      <div>
+        <div class="stat-value">{{ value }}</div>
+        <div class="stat-title">{{ title }}</div>
+        {% if subtitle %}<div class="stat-subtitle">{{ subtitle }}</div>{% endif %}
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro delete_modal(modal_id, action_url, item_label) %}
+  <div class="modal fade" id="{{ modal_id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="bi bi-exclamation-triangle text-danger me-2"></i>Confirm Deletion</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Are you sure you want to delete <strong>{{ item_label }}</strong>? This action cannot be undone.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <form method="post" action="{{ action_url }}" class="d-inline">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endmacro %}
+
+{% macro csrf_field() %}
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+{% endmacro %}
+
+{% macro photo_or_initial(name, photo, size=36) %}
+  {% if photo %}
+    <img src="{{ url_for('static', filename='uploads/' + photo) }}" class="rounded-circle object-fit-cover" width="{{ size }}" height="{{ size }}" alt="{{ name }}">
+  {% else %}
+    <span class="avatar-circle" style="width:{{ size }}px;height:{{ size }}px;font-size:{{ (size * 0.42)|round|int }}px">{{ name[:1]|upper }}</span>
+  {% endif %}
+{% endmacro %}

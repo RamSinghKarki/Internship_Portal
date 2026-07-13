@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}My Schedule{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">My Schedule</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-calendar-week me-2 text-primary"></i>My Weekly Schedule</div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered align-top mb-0">
+        <thead>
+          <tr>{% for day in days %}<th class="text-center" style="min-width:150px">{{ day }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          <tr>
+            {% for day in days %}
+            <td class="timetable-day">
+              {% for s in grid[day] %}
+              <div class="timetable-slot">
+                <div class="fw-semibold">{{ s.subject.code if s.subject }}</div>
+                <div>{{ s.time_label }}</div>
+                <div class="text-muted">Sec {{ s.section.name if s.section }}{{ ' · ' ~ s.room_number if s.room_number }}</div>
+              </div>
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

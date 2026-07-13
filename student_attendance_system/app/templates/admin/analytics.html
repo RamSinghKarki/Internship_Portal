@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pct_badge %}
+{% block title %}Analytics{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Analytics</li>{% endblock %}
+
+{% block content %}
+<h5 class="fw-bold mb-3">Attendance Analytics</h5>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Monthly Attendance (12 months)</div>
+      <div class="card-body"><div style="height:280px"><canvas id="monthlyChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-thermometer-half me-2 text-primary"></i>Weekday Heatmap</div>
+      <div class="card-body"><div style="height:280px"><canvas id="heatmapChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-calendar-day me-2 text-primary"></i>Daily Attendance (last 14 days)</div>
+      <div class="card-body"><div style="height:260px"><canvas id="dailyChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-book me-2 text-primary"></i>Subject Comparison</div>
+      <div class="card-body"><div style="height:260px"><canvas id="subjectChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-diagram-3 me-2 text-primary"></i>Department Comparison</div>
+      <div class="card-body"><div style="height:260px"><canvas id="deptChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person-video3 me-2 text-primary"></i>Teacher-wise Attendance Sessions</div>
+      <div class="card-body"><div style="height:260px"><canvas id="teacherChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-trophy me-2 text-success"></i>Top 10 Students by Attendance</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>#</th><th>Student</th><th>Roll No</th><th class="text-end">%</th></tr></thead>
+          <tbody>
+            {% for r in ranking %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><a href="{{ url_for('admin.student_view', student_id=r.student.id) }}">{{ r.student.full_name }}</a></td>
+              <td>{{ r.student.roll_number }}</td>
+              <td class="text-end">{{ pct_badge(r.percentage) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No data yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-arrow-down-circle me-2 text-danger"></i>Bottom 10 Students by Attendance</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>#</th><th>Student</th><th>Roll No</th><th class="text-end">%</th></tr></thead>
+          <tbody>
+            {% for r in bottom %}
+            <tr>
+              <td>{{ loop.index }}</td>
+              <td><a href="{{ url_for('admin.student_view', student_id=r.student.id) }}">{{ r.student.full_name }}</a></td>
+              <td>{{ r.student.roll_number }}</td>
+              <td class="text-end">{{ pct_badge(r.percentage) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No data yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const monthly = await fetchJSON('{{ url_for("api.chart_monthly_trend", months=12) }}');
+    lineChart('monthlyChart', monthly.map(r => r.month), monthly.map(r => r.percentage), 'Attendance %');
+
+    const heat = await fetchJSON('{{ url_for("api.chart_weekday_heatmap") }}');
+    barChart('heatmapChart', heat.map(r => r.label), heat.map(r => r.percentage), 'Attendance %', CHART_COLORS.sky, true);
+
+    const daily = await fetchJSON('{{ url_for("api.chart_daily_trend") }}');
+    lineChart('dailyChart', daily.map(r => r.label), daily.map(r => r.percentage), 'Attendance %');
+
+    const subj = await fetchJSON('{{ url_for("api.chart_subject_comparison") }}');
+    barChart('subjectChart', subj.map(r => r.label), subj.map(r => r.percentage), 'Attendance %');
+
+    const dept = await fetchJSON('{{ url_for("api.chart_department_comparison") }}');
+    barChart('deptChart', dept.map(r => r.label), dept.map(r => r.percentage), 'Attendance %', CHART_COLORS.lightBlue);
+
+    const teachers = await fetchJSON('{{ url_for("api.chart_teacher_sessions") }}');
+    const el = document.getElementById('teacherChart');
+    new Chart(el, {
+      type: 'bar',
+      data: { labels: teachers.map(r => r.label),
+              datasets: [{ label: 'Sessions', data: teachers.map(r => r.count), backgroundColor: CHART_COLORS.slate, borderRadius: 5 }] },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                 scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } },
+    });
+  } catch (e) { console.error(e); }
+});
+</script>
+{% endblock %}

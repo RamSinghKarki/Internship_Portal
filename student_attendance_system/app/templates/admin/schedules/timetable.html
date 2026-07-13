@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Weekly Timetable{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.schedules') }}">Class Routine</a></li>
+<li class="breadcrumb-item active">Timetable</li>
+{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-calendar-week me-2 text-primary"></i>Weekly Timetable</span>
+    <form method="get" class="d-flex gap-2">
+      <select name="section_id" class="form-select form-select-sm" data-autosubmit style="max-width:230px">
+        <option value="">All sections</option>
+        {% for s in sections %}<option value="{{ s.id }}" {{ 'selected' if s.id == section_id }}>Section {{ s.name }} — {{ s.semester.label if s.semester }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+  <div class="card-body">
+    <div class="table-responsive">
+      <table class="table table-bordered align-top mb-0">
+        <thead>
+          <tr>{% for day in days %}<th class="text-center" style="min-width:150px">{{ day }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+          <tr>
+            {% for day in days %}
+            <td class="timetable-day">
+              {% for s in grid[day] %}
+              <div class="timetable-slot">
+                <div class="fw-semibold">{{ s.subject.code if s.subject }}</div>
+                <div>{{ s.time_label }}</div>
+                <div class="text-muted">{{ s.teacher.full_name if s.teacher }} · Sec {{ s.section.name if s.section }}{{ ' · ' ~ s.room_number if s.room_number }}</div>
+              </div>
+              {% endfor %}
+            </td>
+            {% endfor %}
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

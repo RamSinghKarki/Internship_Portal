@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav %}
+{% block title %}Attendance History{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Attendance History</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-funnel me-2 text-primary"></i>Filters</div>
+  <div class="card-body">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-2">
+        <label class="form-label small">From</label>
+        <input type="date" name="date_from" class="form-control form-control-sm" value="{{ filters.date_from }}">
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small">To</label>
+        <input type="date" name="date_to" class="form-control form-control-sm" value="{{ filters.date_to }}">
+      </div>
+      {% if departments is not none %}
+      <div class="col-md-2">
+        <label class="form-label small">Department</label>
+        <select name="department_id" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if d.id == filters.department_id }}>{{ d.code }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      {% if semesters is not none %}
+      <div class="col-md-2">
+        <label class="form-label small">Semester</label>
+        <select name="semester_id" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for s in semesters %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.semester_id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      {% if sections is not none %}
+      <div class="col-md-1">
+        <label class="form-label small">Section</label>
+        <select name="section_id" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for s in sections %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.section_id }}>{{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="col-md-2">
+        <label class="form-label small">Subject</label>
+        <select name="subject_id" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if s.id == filters.subject_id }}>{{ s.code }}</option>{% endfor %}
+        </select>
+      </div>
+      {% if teachers is not none %}
+      <div class="col-md-2">
+        <label class="form-label small">Teacher</label>
+        <select name="teacher_id" class="form-select form-select-sm">
+          <option value="">All</option>
+          {% for t in teachers %}<option value="{{ t.id }}" {{ 'selected' if t.id == filters.teacher_id }}>{{ t.full_name }}</option>{% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="col-md-1">
+        <button class="btn btn-primary btn-sm w-100" type="submit"><i class="bi bi-search"></i></button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>Date</th><th>Subject</th><th>Section</th><th>Teacher</th><th>Period</th><th>Present</th><th>Absent</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in pagination.items %}
+        {% set counts = s.counts() %}
+        <tr>
+          <td>{{ s.date.strftime('%d %b %Y') }}</td>
+          <td>{{ s.subject.label if s.subject }}</td>
+          <td><span class="badge text-bg-primary">{{ s.section.name if s.section }}</span></td>
+          <td>{{ s.teacher.full_name if s.teacher else '—' }}</td>
+          <td class="small">{{ s.schedule.time_label if s.schedule else '—' }}</td>
+          <td><span class="badge text-bg-success">{{ counts['Present'] + counts['Late'] }}</span></td>
+          <td><span class="badge text-bg-danger">{{ counts['Absent'] }}</span></td>
+          <td class="text-end">
+            {% if current_user.is_admin() %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.attendance_view', session_id=s.id) }}"><i class="bi bi-eye"></i></a>
+            {% else %}
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('teacher.attendance_session_view', session_id=s.id) }}"><i class="bi bi-eye"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No attendance sessions match the filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} session(s)</span>
+    {{ pagination_nav(pagination, base_endpoint, {}) }}
+  </div>
+</div>
+{% endblock %}

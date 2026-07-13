@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import stat_card, pct_badge, status_badge %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+  <h5 class="mb-0 fw-bold">Overview — {{ today.strftime('%A, %d %B %Y') }}</h5>
+  <a href="{{ url_for('admin.reports') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-file-earmark-bar-graph me-1"></i>Reports Centre</a>
+</div>
+
+<!-- Summary cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card('Total Students', totals.students, 'bi-people', 'primary') }}</div>
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card('Total Teachers', totals.teachers, 'bi-person-video3', 'info') }}</div>
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card('Subjects', totals.subjects, 'bi-book', 'success') }}</div>
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card('Departments', totals.departments, 'bi-diagram-3', 'warning') }}</div>
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card('Classes Today', totals.classes_today, 'bi-calendar-check', 'secondary') }}</div>
+  <div class="col-6 col-md-4 col-xl-2">{{ stat_card("Below " ~ threshold|int ~ "%", totals.below_threshold, 'bi-exclamation-triangle', 'danger') }}</div>
+  <div class="col-6 col-md-4 col-xl-3">{{ stat_card('Present Today', totals.present_today, 'bi-check-circle', 'success') }}</div>
+  <div class="col-6 col-md-4 col-xl-3">{{ stat_card('Absent Today', totals.absent_today, 'bi-x-circle', 'danger') }}</div>
+  <div class="col-6 col-md-4 col-xl-3">{{ stat_card("Today's Attendance", totals.today_percentage ~ '%', 'bi-percent', 'primary') }}</div>
+  <div class="col-6 col-md-4 col-xl-3">{{ stat_card('Attendance Not Taken', pending_classes|length, 'bi-clipboard-x', 'warning', 'classes pending today') }}</div>
+</div>
+
+<!-- Charts row 1 -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-8">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Monthly Attendance Trend</div>
+      <div class="card-body"><div style="height:280px"><canvas id="monthlyTrend"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-pie-chart me-2 text-primary"></i>Present vs Absent (Today)</div>
+      <div class="card-body"><div style="height:280px"><canvas id="todayStatus"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Charts row 2 -->
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-diagram-3 me-2 text-primary"></i>Department-wise Attendance</div>
+      <div class="card-body"><div style="height:250px"><canvas id="deptChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-book me-2 text-primary"></i>Subject-wise Attendance</div>
+      <div class="card-body"><div style="height:250px"><canvas id="subjectChart"></canvas></div></div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-calendar3 me-2 text-primary"></i>Attendance by Semester</div>
+      <div class="card-body"><div style="height:250px"><canvas id="semesterChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- Tables row -->
+<div class="row g-3">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between">
+        <span><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Students Below {{ threshold|int }}%</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Student</th><th>Section</th><th class="text-end">%</th></tr></thead>
+          <tbody>
+            {% for row in low_students %}
+            <tr>
+              <td><a href="{{ url_for('admin.student_view', student_id=row.student.id) }}">{{ row.student.full_name }}</a>
+                <div class="text-muted small">{{ row.student.roll_number }}</div></td>
+              <td>{{ row.student.section.name if row.student.section }}</td>
+              <td class="text-end">{{ pct_badge(row.percentage, threshold) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No students below threshold 🎉</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Attendance Activity</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Subject</th><th>Date</th><th class="text-end">Present</th></tr></thead>
+          <tbody>
+            {% for s in recent_sessions %}
+            <tr>
+              <td><a href="{{ url_for('admin.attendance_view', session_id=s.id) }}">{{ s.subject.code if s.subject }}</a>
+                <div class="text-muted small">{{ s.teacher.full_name if s.teacher }}</div></td>
+              <td class="small">{{ s.date.strftime('%d %b') }}</td>
+              <td class="text-end"><span class="badge text-bg-light">{{ s.present_count }}/{{ s.total_count }}</span></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No sessions recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-clipboard-x me-2 text-warning"></i>Attendance Not Taken Today</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Subject</th><th>Section</th><th>Time</th></tr></thead>
+          <tbody>
+            {% for s in pending_classes %}
+            <tr>
+              <td>{{ s.subject.code if s.subject }}
+                <div class="text-muted small">{{ s.teacher.full_name if s.teacher }}</div></td>
+              <td>{{ s.section.name if s.section }}</td>
+              <td class="small">{{ s.time_label }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-4">All classes covered ✔</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const monthly = await fetchJSON('{{ url_for("api.chart_monthly_trend") }}');
+    lineChart('monthlyTrend', monthly.map(r => r.month), monthly.map(r => r.percentage), 'Attendance %');
+
+    const today = await fetchJSON('{{ url_for("api.chart_today_status") }}');
+    doughnutChart('todayStatus', ['Present', 'Absent', 'Late', 'Leave'],
+      [today.Present, today.Absent, today.Late, today.Leave],
+      [CHART_COLORS.green, CHART_COLORS.red, CHART_COLORS.amber, CHART_COLORS.sky]);
+
+    const dept = await fetchJSON('{{ url_for("api.chart_department_comparison") }}');
+    barChart('deptChart', dept.map(r => r.label), dept.map(r => r.percentage), 'Attendance %');
+
+    const subj = await fetchJSON('{{ url_for("api.chart_subject_comparison") }}');
+    barChart('subjectChart', subj.map(r => r.label), subj.map(r => r.percentage), 'Attendance %', CHART_COLORS.sky);
+
+    const sem = await fetchJSON('{{ url_for("api.chart_semester_comparison") }}');
+    barChart('semesterChart', sem.map(r => r.label), sem.map(r => r.percentage), 'Attendance %', CHART_COLORS.lightBlue);
+  } catch (e) { console.error(e); }
+});
+</script>
+{% endblock %}

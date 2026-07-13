@@ -1,0 +1,167 @@
+/* =====================================================================
+   Student Attendance Management System — global stylesheet
+   Palette: blue / white / gray
+   ===================================================================== */
+:root {
+  --primary: #1d4ed8;
+  --primary-dark: #1e3a8a;
+  --sidebar-bg: #0f172a;
+  --sidebar-hover: #1e293b;
+  --content-bg: #f1f5f9;
+  --border: #e2e8f0;
+  --sidebar-width: 250px;
+}
+
+body {
+  background: var(--content-bg);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 0.925rem;
+}
+
+/* ------------------------------------------------------------ layout */
+.app-wrapper { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--sidebar-bg);
+  color: #cbd5e1;
+  position: fixed;
+  top: 0; bottom: 0; left: 0;
+  overflow-y: auto;
+  z-index: 1040;
+  transition: margin-left .25s ease;
+}
+.sidebar.collapsed { margin-left: calc(-1 * var(--sidebar-width)); }
+
+.sidebar-brand {
+  display: flex; align-items: center; gap: .6rem;
+  padding: 1.1rem 1.25rem;
+  font-size: 1.15rem; font-weight: 700; color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.sidebar-brand i { color: #60a5fa; font-size: 1.4rem; }
+
+.sidebar-nav { padding: .75rem 0 2rem; }
+.nav-section {
+  padding: .9rem 1.25rem .35rem;
+  font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+  color: #64748b; font-weight: 600;
+}
+.sidebar-nav .nav-link {
+  display: flex; align-items: center; gap: .65rem;
+  color: #cbd5e1; padding: .55rem 1.25rem;
+  font-size: .875rem; border-left: 3px solid transparent;
+}
+.sidebar-nav .nav-link i { font-size: 1rem; width: 1.1rem; text-align: center; }
+.sidebar-nav .nav-link:hover { background: var(--sidebar-hover); color: #fff; }
+.sidebar-nav .nav-link.active {
+  background: rgba(29, 78, 216, .25);
+  color: #fff; border-left-color: #3b82f6;
+}
+
+.main-area {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex; flex-direction: column;
+  min-width: 0;
+  transition: margin-left .25s ease;
+}
+.sidebar.collapsed + .main-area { margin-left: 0; }
+
+/* ------------------------------------------------------------ topbar */
+.topbar {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: .55rem 1.25rem;
+  display: flex; align-items: center; gap: .75rem;
+  position: sticky; top: 0; z-index: 1030;
+}
+.topbar-title { font-weight: 600; color: #334155; }
+.sidebar-toggle { color: #334155; padding: 0 .25rem; }
+.user-menu {
+  display: flex; align-items: center; gap: .5rem;
+  border: 1px solid var(--border); border-radius: 2rem;
+  padding: .25rem .75rem .25rem .3rem; background: #fff;
+  font-size: .875rem;
+}
+.avatar-circle {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--primary); color: #fff; font-weight: 600;
+}
+
+/* ------------------------------------------------------------ content */
+.content { padding: 1.5rem; flex: 1; }
+.app-footer {
+  padding: .8rem 1.5rem; font-size: .8rem; color: #64748b;
+  border-top: 1px solid var(--border); background: #fff;
+}
+.breadcrumb { font-size: .8rem; margin-bottom: 0; }
+
+.card { border-radius: .65rem; }
+.card-header { font-size: .9rem; }
+
+/* stat cards */
+.stat-card .stat-icon {
+  width: 52px; height: 52px; border-radius: .75rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.5rem; flex-shrink: 0;
+}
+.stat-card .stat-value { font-size: 1.45rem; font-weight: 700; line-height: 1.1; color: #0f172a; }
+.stat-card .stat-title { font-size: .78rem; color: #64748b; }
+.stat-card .stat-subtitle { font-size: .72rem; color: #94a3b8; }
+
+/* tables */
+.table { font-size: .875rem; }
+.table thead th {
+  background: #f8fafc; color: #475569;
+  font-size: .75rem; text-transform: uppercase; letter-spacing: .04em;
+  border-bottom-width: 1px;
+}
+.table-hover tbody tr:hover { background: #f8fafc; }
+
+.search-box { max-width: 340px; }
+
+/* attendance marking */
+.status-group .btn-check:checked + .btn { font-weight: 600; }
+.attendance-table td { vertical-align: middle; }
+
+/* timetable */
+.timetable-day { min-height: 90px; }
+.timetable-slot {
+  background: #eff6ff; border-left: 3px solid var(--primary);
+  border-radius: .4rem; padding: .45rem .6rem; margin-bottom: .4rem;
+  font-size: .78rem;
+}
+
+/* ------------------------------------------------------------ login */
+.login-page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 55%, #3b82f6 100%);
+  padding: 1rem;
+}
+.login-card { width: 100%; max-width: 440px; border-radius: 1rem; }
+.login-logo {
+  width: 68px; height: 68px; margin: 0 auto;
+  border-radius: 1.1rem; background: #eff6ff; color: var(--primary);
+  display: flex; align-items: center; justify-content: center; font-size: 2rem;
+}
+
+/* progress bars in reports */
+.progress { height: 8px; border-radius: 6px; }
+
+/* print */
+@media print {
+  .sidebar, .topbar, .app-footer, .breadcrumb, .no-print { display: none !important; }
+  .main-area { margin-left: 0 !important; }
+  .content { padding: 0; }
+  .card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}
+
+/* responsive */
+@media (max-width: 991.98px) {
+  .sidebar { margin-left: calc(-1 * var(--sidebar-width)); }
+  .sidebar.show-mobile { margin-left: 0; box-shadow: 0 0 0 100vmax rgba(15, 23, 42, .45); }
+  .main-area { margin-left: 0; }
+}

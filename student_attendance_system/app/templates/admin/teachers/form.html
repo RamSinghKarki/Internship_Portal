@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import csrf_field %}
+{% block title %}{{ 'Edit' if teacher else 'Add' }} Teacher{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.teachers') }}">Teachers</a></li>
+<li class="breadcrumb-item active">{{ 'Edit' if teacher else 'Add' }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-person-video3 me-2 text-primary"></i>{{ 'Edit Teacher' if teacher else 'New Teacher' }}</div>
+  <div class="card-body">
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {{ csrf_field() }}
+      <h6 class="text-primary mb-3">Personal Information</h6>
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Employee ID <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="employee_id" value="{{ teacher.employee_id if teacher else '' }}" required placeholder="e.g. EMP-010">
+        </div>
+        <div class="col-md-5 mb-3">
+          <label class="form-label">Full Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" name="full_name" value="{{ teacher.full_name if teacher else '' }}" required>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Gender</label>
+          <select class="form-select" name="gender">
+            <option value="">—</option>
+            {% for g in ['Male', 'Female', 'Other'] %}
+            <option value="{{ g }}" {{ 'selected' if teacher and teacher.gender == g }}>{{ g }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Date of Birth</label>
+          <input type="date" class="form-control" name="date_of_birth" value="{{ teacher.date_of_birth.isoformat() if teacher and teacher.date_of_birth else '' }}">
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Email <span class="text-danger">*</span></label>
+          <input type="email" class="form-control" name="email" value="{{ teacher.email if teacher else '' }}" required>
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Phone</label>
+          <input type="tel" class="form-control" name="phone" value="{{ teacher.phone if teacher else '' }}">
+        </div>
+        <div class="col-md-5 mb-3">
+          <label class="form-label">Address</label>
+          <input type="text" class="form-control" name="address" value="{{ teacher.address if teacher else '' }}">
+        </div>
+      </div>
+
+      <h6 class="text-primary mb-3 mt-2">Professional Information</h6>
+      <div class="row">
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Qualification</label>
+          <input type="text" class="form-control" name="qualification" value="{{ teacher.qualification if teacher else '' }}" placeholder="e.g. M.Sc. CS">
+        </div>
+        <div class="col-md-3 mb-3">
+          <label class="form-label">Designation</label>
+          <input type="text" class="form-control" name="designation" value="{{ teacher.designation if teacher else '' }}" placeholder="e.g. Assistant Professor">
+        </div>
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Department</label>
+          <select class="form-select" name="department_id">
+            <option value="">—</option>
+            {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if teacher and teacher.department_id == d.id }}>{{ d.name }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Joining Date</label>
+          <input type="date" class="form-control" name="joining_date" value="{{ teacher.joining_date.isoformat() if teacher and teacher.joining_date else '' }}">
+        </div>
+        <div class="col-md-2 mb-3">
+          <label class="form-label">Status</label>
+          <select class="form-select" name="employment_status">
+            {% for st in ['active', 'on_leave', 'inactive'] %}
+            <option value="{{ st }}" {{ 'selected' if teacher and teacher.employment_status == st }}>{{ st.replace('_',' ')|title }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <h6 class="text-primary mb-3 mt-2">Photo &amp; Account</h6>
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label class="form-label">Photo <span class="text-muted small">(jpg/png, max 2&nbsp;MB)</span></label>
+          <input type="file" class="form-control" name="photo" accept="image/*">
+        </div>
+        <div class="col-md-4 mb-3">
+          <label class="form-label">{{ 'Reset Login Password' if teacher else 'Login Password' }}</label>
+          <input type="password" class="form-control" name="password" minlength="6"
+                 placeholder="{{ 'leave blank to keep current' if teacher else 'default: teacher123' }}">
+          <div class="form-text">Username is the employee ID (lowercase).</div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{{ 'Save Changes' if teacher else 'Create Teacher' }}</button>
+        <a href="{{ url_for('admin.teachers') }}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

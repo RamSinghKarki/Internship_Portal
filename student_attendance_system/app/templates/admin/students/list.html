@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav, search_box, delete_modal, status_badge, photo_or_initial %}
+{% block title %}Students{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Students</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-people me-2 text-primary"></i>Students</span>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <select name="department_id" class="form-select form-select-sm" data-autosubmit style="max-width:150px">
+          <option value="">All depts</option>
+          {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if d.id == department_id }}>{{ d.code }}</option>{% endfor %}
+        </select>
+        <select name="semester_id" class="form-select form-select-sm" data-autosubmit style="max-width:180px">
+          <option value="">All semesters</option>
+          {% for s in semesters %}<option value="{{ s.id }}" {{ 'selected' if s.id == semester_id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+        <select name="section_id" class="form-select form-select-sm" data-autosubmit style="max-width:130px">
+          <option value="">All sections</option>
+          {% for s in sections %}<option value="{{ s.id }}" {{ 'selected' if s.id == section_id }}>{{ s.name }} ({{ s.semester.name if s.semester }})</option>{% endfor %}
+        </select>
+        <select name="status" class="form-select form-select-sm" data-autosubmit style="max-width:130px">
+          <option value="">All status</option>
+          {% for st in ['active', 'inactive', 'graduated', 'suspended'] %}
+          <option value="{{ st }}" {{ 'selected' if status == st }}>{{ st|title }}</option>
+          {% endfor %}
+        </select>
+        {{ search_box('Search name, roll, reg no…', q) }}
+      </form>
+      <a href="{{ url_for('admin.student_add') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Student</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Student</th><th>Roll No</th><th>Reg. No</th><th>Department</th><th>Semester</th><th>Section</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in pagination.items %}
+        <tr>
+          <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              {{ photo_or_initial(s.full_name, s.photo) }}
+              <div>
+                <a href="{{ url_for('admin.student_view', student_id=s.id) }}" class="fw-semibold text-decoration-none">{{ s.full_name }}</a>
+                <div class="text-muted small">{{ s.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ s.roll_number }}</td>
+          <td>{{ s.registration_number }}</td>
+          <td>{{ s.department.code if s.department else '—' }}</td>
+          <td>{{ s.semester.name if s.semester else '—' }}</td>
+          <td>{{ s.section.name if s.section else '—' }}</td>
+          <td>{{ status_badge(s.status) }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.student_view', student_id=s.id) }}" title="Profile"><i class="bi bi-eye"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.student_edit', student_id=s.id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del{{ s.id }}" title="Delete"><i class="bi bi-trash"></i></button>
+            {{ delete_modal('del' ~ s.id, url_for('admin.student_delete', student_id=s.id), s.full_name) }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="9" class="text-center text-muted py-4">No students found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} student(s)</span>
+    {{ pagination_nav(pagination, 'admin.students', {'q': q, 'department_id': department_id or '', 'semester_id': semester_id or '', 'section_id': section_id or '', 'status': status}) }}
+  </div>
+</div>
+{% endblock %}

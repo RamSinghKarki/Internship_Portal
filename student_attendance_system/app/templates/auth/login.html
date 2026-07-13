@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Sign In{% endblock %}
+
+{% block auth_content %}
+<div class="login-page">
+  <div class="login-card card border-0 shadow-lg">
+    <div class="card-body p-4 p-md-5">
+      <div class="text-center mb-4">
+        <div class="login-logo"><i class="bi bi-mortarboard-fill"></i></div>
+        <h4 class="fw-bold mt-3 mb-1">Student Attendance System</h4>
+        <p class="text-muted small mb-0">Sign in to continue to your dashboard</p>
+      </div>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} py-2 small">{{ message }}</div>
+        {% endfor %}
+      {% endwith %}
+
+      <form method="post" novalidate>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="mb-3">
+          <label class="form-label">Username or Email</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-person"></i></span>
+            <input type="text" class="form-control" name="username" required autofocus placeholder="e.g. admin">
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+            <input type="password" class="form-control" name="password" required placeholder="••••••••">
+          </div>
+        </div>
+        <div class="form-check mb-4">
+          <input class="form-check-input" type="checkbox" name="remember" id="remember">
+          <label class="form-check-label small" for="remember">Keep me signed in</label>
+        </div>
+        <button type="submit" class="btn btn-primary w-100 py-2">
+          <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+        </button>
+      </form>
+
+      <div class="text-center text-muted small mt-4">
+        Demo accounts — admin / admin123 · (teacher) EMP-001 / teacher123 · (student) REG-2025-0001 / student123
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

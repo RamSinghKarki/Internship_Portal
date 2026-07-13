@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav, delete_modal %}
+{% block title %}Teacher Subject Assignment{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Subject Assignment</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-link-45deg me-2 text-primary"></i>Teacher Subject Assignments</span>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <form method="get" class="d-flex gap-2">
+        <select name="teacher_id" class="form-select form-select-sm" data-autosubmit style="max-width:200px">
+          <option value="">All teachers</option>
+          {% for t in teachers %}<option value="{{ t.id }}" {{ 'selected' if t.id == teacher_id }}>{{ t.full_name }}</option>{% endfor %}
+        </select>
+        <select name="subject_id" class="form-select form-select-sm" data-autosubmit style="max-width:200px">
+          <option value="">All subjects</option>
+          {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if s.id == subject_id }}>{{ s.code }}</option>{% endfor %}
+        </select>
+      </form>
+      <a href="{{ url_for('admin.assignment_add') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Assign Subject</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Teacher</th><th>Subject</th><th>Semester</th><th>Section</th><th>Academic Year</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for a in pagination.items %}
+        <tr>
+          <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+          <td>{{ a.teacher.full_name if a.teacher }}</td>
+          <td>{{ a.subject.label if a.subject }}</td>
+          <td>{{ a.semester.name if a.semester }}</td>
+          <td><span class="badge text-bg-primary">{{ a.section.name if a.section }}</span></td>
+          <td>{{ a.academic_year }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.assignment_edit', assignment_id=a.id) }}"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del{{ a.id }}"><i class="bi bi-trash"></i></button>
+            {{ delete_modal('del' ~ a.id, url_for('admin.assignment_delete', assignment_id=a.id), 'this assignment') }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No assignments found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} assignment(s)</span>
+    {{ pagination_nav(pagination, 'admin.assignments', {'teacher_id': teacher_id or '', 'subject_id': subject_id or ''}) }}
+  </div>
+</div>
+{% endblock %}

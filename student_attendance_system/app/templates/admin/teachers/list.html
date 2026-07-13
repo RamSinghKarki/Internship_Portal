@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav, search_box, delete_modal, status_badge, photo_or_initial %}
+{% block title %}Teachers{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Teachers</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-person-video3 me-2 text-primary"></i>Teachers</span>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <select name="department_id" class="form-select form-select-sm" data-autosubmit style="max-width:180px">
+          <option value="">All departments</option>
+          {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if d.id == department_id }}>{{ d.code }}</option>{% endfor %}
+        </select>
+        <select name="status" class="form-select form-select-sm" data-autosubmit style="max-width:140px">
+          <option value="">All status</option>
+          <option value="active" {{ 'selected' if status == 'active' }}>Active</option>
+          <option value="on_leave" {{ 'selected' if status == 'on_leave' }}>On Leave</option>
+          <option value="inactive" {{ 'selected' if status == 'inactive' }}>Inactive</option>
+        </select>
+        {{ search_box('Search name, ID or email…', q) }}
+      </form>
+      <a href="{{ url_for('admin.teacher_add') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Teacher</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Teacher</th><th>Employee ID</th><th>Designation</th><th>Department</th><th>Phone</th><th>Status</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for t in pagination.items %}
+        <tr>
+          <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+          <td>
+            <div class="d-flex align-items-center gap-2">
+              {{ photo_or_initial(t.full_name, t.photo) }}
+              <div>
+                <a href="{{ url_for('admin.teacher_view', teacher_id=t.id) }}" class="fw-semibold text-decoration-none">{{ t.full_name }}</a>
+                <div class="text-muted small">{{ t.email }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ t.employee_id }}</td>
+          <td>{{ t.designation or '—' }}</td>
+          <td>{{ t.department.code if t.department else '—' }}</td>
+          <td>{{ t.phone or '—' }}</td>
+          <td>{{ status_badge(t.employment_status) }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.teacher_view', teacher_id=t.id) }}" title="Profile"><i class="bi bi-eye"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.teacher_edit', teacher_id=t.id) }}" title="Edit"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del{{ t.id }}" title="Delete"><i class="bi bi-trash"></i></button>
+            {{ delete_modal('del' ~ t.id, url_for('admin.teacher_delete', teacher_id=t.id), t.full_name) }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No teachers found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} teacher(s)</span>
+    {{ pagination_nav(pagination, 'admin.teachers', {'q': q, 'department_id': department_id or '', 'status': status}) }}
+  </div>
+</div>
+{% endblock %}

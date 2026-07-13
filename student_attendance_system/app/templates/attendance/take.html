@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import csrf_field, photo_or_initial %}
+{% block title %}Take Attendance{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Take Attendance</li>{% endblock %}
+
+{% block content %}
+<!-- Step 1: selection -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-header bg-white fw-semibold"><i class="bi bi-funnel me-2 text-primary"></i>Select Class</div>
+  <div class="card-body">
+    <form method="get" class="row g-3 align-items-end">
+      <div class="col-md-3 col-lg-2">
+        <label class="form-label">Semester</label>
+        <select name="semester_id" class="form-select" data-autosubmit>
+          <option value="">— select —</option>
+          {% for s in semesters %}<option value="{{ s.id }}" {{ 'selected' if s.id == semester_id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Section</label>
+        <select name="section_id" class="form-select" data-autosubmit {{ 'disabled' if not semester_id }}>
+          <option value="">— select —</option>
+          {% for s in sections %}<option value="{{ s.id }}" {{ 'selected' if s.id == section_id }}>{{ s.name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Subject</label>
+        <select name="subject_id" class="form-select" data-autosubmit {{ 'disabled' if not section_id }}>
+          <option value="">— select —</option>
+          {% for s in subjects %}<option value="{{ s.id }}" {{ 'selected' if s.id == subject_id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">Date</label>
+        <input type="date" name="date" class="form-control" value="{{ the_date.isoformat() }}" max="{{ now.strftime('%Y-%m-%d') }}" onchange="this.form.submit()">
+      </div>
+      <div class="col-md-2 col-lg-3">
+        <label class="form-label">Class Period <span class="text-muted small">(optional)</span></label>
+        <select name="schedule_id" class="form-select" data-autosubmit>
+          <option value="">— any / unscheduled —</option>
+          {% for p in periods %}<option value="{{ p.id }}" {{ 'selected' if p.id == schedule_id }}>{{ p.day_of_week }} {{ p.time_label }}{{ ' · ' ~ p.room_number if p.room_number }}</option>{% endfor %}
+        </select>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if existing %}
+<div class="alert alert-warning d-flex justify-content-between align-items-center">
+  <span><i class="bi bi-exclamation-triangle me-2"></i>Attendance for this class, date and period has <strong>already been taken</strong>.</span>
+  <a class="btn btn-sm btn-outline-dark" href="{{ url_for('teacher.attendance_session_view', session_id=existing.id) }}">View / Edit Session</a>
+</div>
+{% elif students %}
+<!-- Step 2: roster -->
+<form method="post" action="{{ url_for('teacher.attendance_save') }}">
+  {{ csrf_field() }}
+  <input type="hidden" name="semester_id" value="{{ semester_id }}">
+  <input type="hidden" name="section_id" value="{{ section_id }}">
+  <input type="hidden" name="subject_id" value="{{ subject_id }}">
+  <input type="hidden" name="schedule_id" value="{{ schedule_id or '' }}">
+  <input type="hidden" name="date" value="{{ the_date.isoformat() }}">
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <span class="fw-semibold"><i class="bi bi-clipboard-check me-2 text-primary"></i>Mark Attendance — {{ the_date.strftime('%A, %d %B %Y') }} ({{ students|length }} students)</span>
+      <div class="d-flex gap-2 no-print">
+        <button type="button" class="btn btn-sm btn-outline-success" onclick="markAll('Present')"><i class="bi bi-check-all me-1"></i>Mark All Present</button>
+        <button type="button" class="btn btn-sm btn-outline-danger" onclick="markAll('Absent')">Mark All Absent</button>
+        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetMarks()"><i class="bi bi-arrow-counterclockwise me-1"></i>Reset</button>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table align-middle mb-0 attendance-table">
+        <thead><tr><th>#</th><th>Student</th><th>Roll No</th><th>Status</th><th style="min-width:180px">Remarks</th></tr></thead>
+        <tbody>
+          {% for st in students %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                {{ photo_or_initial(st.full_name, st.photo, 32) }}
+                <span>{{ st.full_name }}</span>
+              </div>
+            </td>
+            <td>{{ st.roll_number }}</td>
+            <td>
+              <div class="btn-group status-group" role="group">
+                {% for status in statuses %}
+                {% set color = {'Present': 'success', 'Absent': 'danger', 'Late': 'warning', 'Leave': 'info'}[status] %}
+                <input type="radio" class="btn-check" name="status_{{ st.id }}" id="s{{ st.id }}_{{ status }}" value="{{ status }}" {{ 'checked' if status == 'Present' }}>
+                <label class="btn btn-sm btn-outline-{{ color }}" for="s{{ st.id }}_{{ status }}">{{ status }}</label>
+                {% endfor %}
+              </div>
+            </td>
+            <td><input type="text" class="form-control form-control-sm" name="remarks_{{ st.id }}" maxlength="255" placeholder="optional"></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="card-footer bg-white d-flex justify-content-end gap-2">
+      <a href="{{ url_for('teacher.attendance_take') }}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary"><i class="bi bi-save me-1"></i>Save Attendance</button>
+    </div>
+  </div>
+</form>
+{% elif semester_id and section_id and subject_id %}
+<div class="alert alert-info"><i class="bi bi-info-circle me-2"></i>No active students found in the selected section.</div>
+{% else %}
+<div class="text-center text-muted py-5">
+  <i class="bi bi-arrow-up-circle fs-1 d-block mb-2"></i>
+  Select semester, section and subject above to load the student roster.
+</div>
+{% endif %}
+{% endblock %}

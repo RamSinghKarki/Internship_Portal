@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav, search_box, delete_modal %}
+{% block title %}Subjects{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Subjects</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-book me-2 text-primary"></i>Subjects</span>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <select name="department_id" class="form-select form-select-sm" data-autosubmit style="max-width:180px">
+          <option value="">All departments</option>
+          {% for d in departments %}<option value="{{ d.id }}" {{ 'selected' if d.id == department_id }}>{{ d.code }}</option>{% endfor %}
+        </select>
+        <select name="semester_id" class="form-select form-select-sm" data-autosubmit style="max-width:200px">
+          <option value="">All semesters</option>
+          {% for s in semesters %}<option value="{{ s.id }}" {{ 'selected' if s.id == semester_id }}>{{ s.label }}</option>{% endfor %}
+        </select>
+        {{ search_box('Search code or name…', q) }}
+      </form>
+      <a href="{{ url_for('admin.subject_add') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Subject</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Code</th><th>Name</th><th>Credits</th><th>Department</th><th>Semester</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in pagination.items %}
+        <tr>
+          <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+          <td><span class="badge text-bg-primary">{{ s.code }}</span></td>
+          <td>{{ s.name }}</td>
+          <td>{{ s.credit_hours }}</td>
+          <td>{{ s.department.code if s.department }}</td>
+          <td>{{ s.semester.label if s.semester }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.report_subject', subject_id=s.id) }}" title="Report"><i class="bi bi-file-earmark-bar-graph"></i></a>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.subject_edit', subject_id=s.id) }}"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del{{ s.id }}"><i class="bi bi-trash"></i></button>
+            {{ delete_modal('del' ~ s.id, url_for('admin.subject_delete', subject_id=s.id), s.label) }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="text-center text-muted py-4">No subjects found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} subject(s)</span>
+    {{ pagination_nav(pagination, 'admin.subjects', {'q': q, 'department_id': department_id or '', 'semester_id': semester_id or ''}) }}
+  </div>
+</div>
+{% endblock %}

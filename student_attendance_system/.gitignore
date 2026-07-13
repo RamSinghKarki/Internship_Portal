@@ -1,0 +1,13 @@
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.venv/
+
+# Local database & env
+attendance.db
+.env
+
+# Uploaded photos (user-generated content)
+app/static/uploads/*
+!app/static/uploads/.gitkeep

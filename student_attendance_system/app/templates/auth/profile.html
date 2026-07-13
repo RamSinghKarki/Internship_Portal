@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import csrf_field, photo_or_initial %}
+{% block title %}My Profile{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">My Profile</li>{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center p-4">
+        {% set profile = current_user.teacher or current_user.student %}
+        {{ photo_or_initial(current_user.display_name, profile.photo if profile else None, 96) }}
+        <h5 class="mt-3 mb-0">{{ current_user.display_name }}</h5>
+        <span class="badge text-bg-primary text-capitalize mt-1">{{ current_user.role_name }}</span>
+        <hr>
+        <div class="text-start small">
+          <p class="mb-2"><i class="bi bi-person me-2 text-muted"></i>{{ current_user.username }}</p>
+          <p class="mb-2"><i class="bi bi-envelope me-2 text-muted"></i>{{ current_user.email }}</p>
+          {% if current_user.last_login %}
+          <p class="mb-0"><i class="bi bi-clock me-2 text-muted"></i>Last login: {{ current_user.last_login.strftime('%Y-%m-%d %H:%M') }} UTC</p>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-shield-lock me-2"></i>Change Password</div>
+      <div class="card-body">
+        <form method="post" novalidate>
+          {{ csrf_field() }}
+          <div class="mb-3">
+            <label class="form-label">Current Password</label>
+            <input type="password" class="form-control" name="current_password" required>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">New Password</label>
+              <input type="password" class="form-control" name="new_password" minlength="6" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" class="form-control" name="confirm_password" minlength="6" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

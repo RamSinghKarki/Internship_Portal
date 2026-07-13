@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import status_badge, pct_badge, photo_or_initial %}
+{% block title %}{{ student.full_name }}{% endblock %}
+{% block breadcrumb_items %}
+<li class="breadcrumb-item"><a href="{{ url_for('admin.students') }}">Students</a></li>
+<li class="breadcrumb-item active">{{ student.full_name }}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body text-center">
+        {{ photo_or_initial(student.full_name, student.photo, 96) }}
+        <h5 class="mt-3 mb-0">{{ student.full_name }}</h5>
+        <div class="text-muted">{{ student.roll_number }} · {{ student.registration_number }}</div>
+        <div class="mt-1">{{ status_badge(student.status) }}</div>
+        <hr>
+        <div class="text-start small">
+          <p class="mb-2"><i class="bi bi-diagram-3 me-2 text-muted"></i>{{ student.department.name if student.department else '—' }}</p>
+          <p class="mb-2"><i class="bi bi-calendar3 me-2 text-muted"></i>{{ student.semester.label if student.semester else '—' }} — Section {{ student.section.name if student.section else '—' }}</p>
+          <p class="mb-2"><i class="bi bi-envelope me-2 text-muted"></i>{{ student.email }}</p>
+          <p class="mb-2"><i class="bi bi-telephone me-2 text-muted"></i>{{ student.phone or '—' }}</p>
+          <p class="mb-2"><i class="bi bi-person-heart me-2 text-muted"></i>{{ student.guardian_name or '—' }} {{ '(' ~ student.guardian_contact ~ ')' if student.guardian_contact }}</p>
+          <p class="mb-2"><i class="bi bi-geo-alt me-2 text-muted"></i>{{ student.address or '—' }}</p>
+          <p class="mb-0"><i class="bi bi-calendar-event me-2 text-muted"></i>Admitted: {{ student.admission_year or '—' }}</p>
+        </div>
+        <hr>
+        <div class="d-flex gap-2 justify-content-center">
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.student_edit', student_id=student.id) }}"><i class="bi bi-pencil me-1"></i>Edit</a>
+          <a class="btn btn-sm btn-outline-primary" href="{{ url_for('admin.report_student', student_id=student.id) }}"><i class="bi bi-file-earmark-bar-graph me-1"></i>Full Report</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3">
+          <div class="fs-3 fw-bold {{ 'text-success' if percentage >= threshold else 'text-danger' }}">{{ percentage }}%</div>
+          <div class="text-muted small">Overall Attendance</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3">
+          <div class="fs-3 fw-bold text-primary">{{ attended }}</div>
+          <div class="text-muted small">Classes Attended</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm text-center p-3">
+          <div class="fs-3 fw-bold text-secondary">{{ total }}</div>
+          <div class="text-muted small">Total Classes</div>
+        </div>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm mb-4">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-book me-2 text-primary"></i>Subject-wise Attendance</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead><tr><th>Subject</th><th>Attended</th><th style="width:35%">Progress</th><th class="text-end">%</th></tr></thead>
+          <tbody>
+            {% for row in breakdown %}
+            <tr>
+              <td>{{ row.subject.label }}</td>
+              <td>{{ row.attended }}/{{ row.total }}</td>
+              <td><div class="progress"><div class="progress-bar {{ 'bg-success' if row.percentage >= threshold else 'bg-danger' }}" style="width: {{ row.percentage }}%"></div></div></td>
+              <td class="text-end">{{ pct_badge(row.percentage, threshold) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No attendance recorded.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Monthly Attendance</div>
+      <div class="card-body"><div style="height:220px"><canvas id="monthlyChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const monthly = {{ monthly|tojson }};
+  lineChart('monthlyChart', monthly.map(r => r.month), monthly.map(r => r.percentage), 'Attendance %');
+});
+</script>
+{% endblock %}

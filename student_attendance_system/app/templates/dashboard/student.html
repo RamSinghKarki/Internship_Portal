@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import stat_card, pct_badge, status_badge, photo_or_initial %}
+{% block title %}My Dashboard{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+  <div class="col-lg-4">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body text-center">
+        {{ photo_or_initial(student.full_name, student.photo, 84) }}
+        <h5 class="mt-3 mb-0">{{ student.full_name }}</h5>
+        <div class="text-muted small">{{ student.roll_number }} · {{ student.registration_number }}</div>
+        <hr>
+        <div class="row text-start small g-2">
+          <div class="col-6"><span class="text-muted">Department</span><br>{{ student.department.name if student.department else '—' }}</div>
+          <div class="col-6"><span class="text-muted">Semester</span><br>{{ student.semester.label if student.semester else '—' }}</div>
+          <div class="col-6"><span class="text-muted">Section</span><br>{{ student.section.name if student.section else '—' }}</div>
+          <div class="col-6"><span class="text-muted">Status</span><br>{{ status_badge(student.status) }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">{{ stat_card('Overall Attendance', percentage ~ '%', 'bi-percent', 'success' if percentage >= threshold else 'danger') }}</div>
+      <div class="col-md-4">{{ stat_card('Classes Attended', attended, 'bi-check-circle', 'primary') }}</div>
+      <div class="col-md-4">{{ stat_card('Total Classes', total, 'bi-collection', 'info') }}</div>
+    </div>
+    {% if percentage < threshold and total > 0 %}
+    <div class="alert alert-danger d-flex align-items-center gap-2">
+      <i class="bi bi-exclamation-triangle-fill fs-5"></i>
+      <div>Your attendance is <strong>below {{ threshold|int }}%</strong>. Please attend classes regularly to avoid exam eligibility issues.</div>
+    </div>
+    {% endif %}
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-graph-up me-2 text-primary"></i>Monthly Attendance</div>
+      <div class="card-body"><div style="height:210px"><canvas id="monthlyChart"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-book me-2 text-primary"></i>Subject-wise Attendance</span>
+        <a href="{{ url_for('student.report') }}" class="btn btn-sm btn-outline-primary no-print"><i class="bi bi-download me-1"></i>PDF</a>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead><tr><th>Subject</th><th>Attended</th><th style="width:35%">Progress</th><th class="text-end">%</th></tr></thead>
+          <tbody>
+            {% for row in breakdown %}
+            <tr>
+              <td>{{ row.subject.label }}</td>
+              <td>{{ row.attended }}/{{ row.total }}</td>
+              <td><div class="progress"><div class="progress-bar {{ 'bg-success' if row.percentage >= threshold else 'bg-danger' }}" style="width: {{ row.percentage }}%"></div></div></td>
+              <td class="text-end">{{ pct_badge(row.percentage, threshold) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="4" class="text-center text-muted py-4">No attendance recorded yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Attendance</div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead><tr><th>Date</th><th>Subject</th><th class="text-end">Status</th></tr></thead>
+          <tbody>
+            {% for r in recent %}
+            <tr>
+              <td class="small">{{ r.session.date.strftime('%d %b %Y') }}</td>
+              <td>{{ r.session.subject.code if r.session.subject }}</td>
+              <td class="text-end">{{ status_badge(r.status) }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3" class="text-center text-muted py-4">Nothing here yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const monthly = {{ monthly|tojson }};
+  lineChart('monthlyChart', monthly.map(r => r.month), monthly.map(r => r.percentage), 'Attendance %');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}Reports{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Reports</li>{% endblock %}
+
+{% block content %}
+<h5 class="fw-bold mb-3">Reports Centre</h5>
+<div class="row g-3">
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person me-2 text-primary"></i>Student Attendance Report</div>
+      <div class="card-body">
+        <p class="text-muted small">Overall, subject-wise and monthly attendance for a single student. Printable with PDF and Excel export.</p>
+        <form action="" method="get" onsubmit="event.preventDefault(); const id=this.student_id.value; if(id) window.location='{{ url_for('admin.reports') }}/student/'+id;">
+          <div class="input-group">
+            <select class="form-select" name="student_id" required>
+              <option value="">— choose student —</option>
+              {% for s in students %}<option value="{{ s.id }}">{{ s.roll_number }} — {{ s.full_name }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Open</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-person-video3 me-2 text-primary"></i>Teacher Report</div>
+      <div class="card-body">
+        <p class="text-muted small">Classes conducted, subjects assigned, attendance sessions and monthly summary.</p>
+        <form action="" method="get" onsubmit="event.preventDefault(); const id=this.teacher_id.value; if(id) window.location='{{ url_for('admin.reports') }}/teacher/'+id;">
+          <div class="input-group">
+            <select class="form-select" name="teacher_id" required>
+              <option value="">— choose teacher —</option>
+              {% for t in teachers %}<option value="{{ t.id }}">{{ t.employee_id }} — {{ t.full_name }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Open</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-book me-2 text-primary"></i>Subject Report</div>
+      <div class="card-body">
+        <p class="text-muted small">Total classes, average attendance, per-student percentages and low-attendance list.</p>
+        <form action="" method="get" onsubmit="event.preventDefault(); const id=this.subject_id.value; if(id) window.location='{{ url_for('admin.reports') }}/subject/'+id;">
+          <div class="input-group">
+            <select class="form-select" name="subject_id" required>
+              <option value="">— choose subject —</option>
+              {% for s in subjects %}<option value="{{ s.id }}">{{ s.label }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Open</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-header bg-white fw-semibold"><i class="bi bi-diagram-3 me-2 text-primary"></i>Department Report</div>
+      <div class="card-body">
+        <p class="text-muted small">Department attendance summary across all its subjects with trend chart.</p>
+        <form action="" method="get" onsubmit="event.preventDefault(); const id=this.dept_id.value; if(id) window.location='{{ url_for('admin.reports') }}/department/'+id;">
+          <div class="input-group">
+            <select class="form-select" name="dept_id" required>
+              <option value="">— choose department —</option>
+              {% for d in departments %}<option value="{{ d.id }}">{{ d.name }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-primary" type="submit">Open</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import pagination_nav, delete_modal %}
+{% block title %}Class Routine{% endblock %}
+{% block breadcrumb_items %}<li class="breadcrumb-item active">Class Routine</li>{% endblock %}
+
+{% block content %}
+<div class="card border-0 shadow-sm">
+  <div class="card-header bg-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <span class="fw-semibold"><i class="bi bi-clock-history me-2 text-primary"></i>Class Routine</span>
+    <div class="d-flex gap-2 flex-wrap align-items-center">
+      <form method="get" class="d-flex gap-2 flex-wrap">
+        <select name="day" class="form-select form-select-sm" data-autosubmit style="max-width:150px">
+          <option value="">All days</option>
+          {% for d in days %}<option value="{{ d }}" {{ 'selected' if d == day }}>{{ d }}</option>{% endfor %}
+        </select>
+        <select name="section_id" class="form-select form-select-sm" data-autosubmit style="max-width:170px">
+          <option value="">All sections</option>
+          {% for s in sections %}<option value="{{ s.id }}" {{ 'selected' if s.id == section_id }}>{{ s.name }} ({{ s.semester.name if s.semester }})</option>{% endfor %}
+        </select>
+        <select name="teacher_id" class="form-select form-select-sm" data-autosubmit style="max-width:190px">
+          <option value="">All teachers</option>
+          {% for t in teachers %}<option value="{{ t.id }}" {{ 'selected' if t.id == teacher_id }}>{{ t.full_name }}</option>{% endfor %}
+        </select>
+      </form>
+      <a href="{{ url_for('admin.timetable') }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-calendar-week me-1"></i>Timetable View</a>
+      <a href="{{ url_for('admin.schedule_add') }}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Add Class</a>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover align-middle mb-0">
+      <thead><tr><th>#</th><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Section</th><th>Room</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for s in pagination.items %}
+        <tr>
+          <td>{{ loop.index + (pagination.page - 1) * pagination.per_page }}</td>
+          <td>{{ s.day_of_week }}</td>
+          <td class="small">{{ s.time_label }}</td>
+          <td>{{ s.subject.label if s.subject }}</td>
+          <td>{{ s.teacher.full_name if s.teacher }}</td>
+          <td><span class="badge text-bg-primary">{{ s.section.name if s.section }}</span></td>
+          <td>{{ s.room_number or '—' }}</td>
+          <td class="text-end">
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('admin.schedule_edit', schedule_id=s.id) }}"><i class="bi bi-pencil"></i></a>
+            <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#del{{ s.id }}"><i class="bi bi-trash"></i></button>
+            {{ delete_modal('del' ~ s.id, url_for('admin.schedule_delete', schedule_id=s.id), 'this class period') }}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="text-center text-muted py-4">No classes scheduled.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+    <span class="small text-muted">{{ pagination.total }} class period(s)</span>
+    {{ pagination_nav(pagination, 'admin.schedules', {'day': day, 'section_id': section_id or '', 'teacher_id': teacher_id or ''}) }}
+  </div>
+</div>
+{% endblock %}
