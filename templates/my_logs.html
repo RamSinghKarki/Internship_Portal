@@ -1,29 +1,30 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Weekly Log Book - {{ application.internship.title }}</h2>
+<h2 class="mb-4">Weekly Log Book — {{ application.internship.title }}</h2>
 
-<form class="box" method="POST">
-    <label>Week Number</label>
-    <input type="number" name="week_number" min="1" required>
+<div class="card shadow-sm mb-4" style="max-width: 560px;">
+  <div class="card-body">
+    <form method="POST">
+        <div class="mb-3"><label class="form-label">Week Number</label>
+            <input type="number" name="week_number" class="form-control" min="1" required></div>
+        <div class="mb-3"><label class="form-label">Work Done This Week</label>
+            <textarea name="description" class="form-control" rows="3" required></textarea></div>
+        <button type="submit" class="btn btn-primary">Submit Log</button>
+    </form>
+  </div>
+</div>
 
-    <label>Work Done This Week</label>
-    <textarea name="description" rows="3" required></textarea>
-
-    <button type="submit">Submit Log</button>
-</form>
-
-<h3>Submitted Logs</h3>
+<h4 class="mb-3">Submitted Logs</h4>
 {% if logs|length == 0 %}
     <p>No logs submitted yet.</p>
 {% else %}
-<table>
-    <tr>
-        <th>Week</th>
-        <th>Work Done</th>
-        <th>Supervisor Feedback</th>
-        <th>Marks</th>
-    </tr>
+<div class="table-responsive">
+<table class="table table-bordered table-striped align-middle bg-white shadow-sm">
+    <thead class="table-dark">
+    <tr><th>Week</th><th>Work Done</th><th>Supervisor Feedback</th><th>Marks</th></tr>
+    </thead>
+    <tbody>
     {% for log in logs %}
     <tr>
         <td>{{ log.week_number }}</td>
@@ -32,9 +33,11 @@
         <td>{{ log.marks if log.marks is not none else '-' }}</td>
     </tr>
     {% endfor %}
+    </tbody>
 </table>
+</div>
 {% endif %}
 
-<p><a href="{{ url_for('my_applications') }}">Back to my applications</a></p>
+<a href="{{ url_for('my_applications') }}" class="btn btn-link px-0">Back to my applications</a>
 
 {% endblock %}

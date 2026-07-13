@@ -269,7 +269,8 @@ and marks.
 - **SQLAlchemy ORM (Flask-SQLAlchemy)** — maps every database table to a Python model class, so rows are handled as objects; taught in class and used for all CRUD operations.
 - **PyMySQL** — the driver through which SQLAlchemy connects to MySQL.
 - **HTML + Jinja Templates** — page structure, with one shared base layout.
-- **CSS** — plain custom stylesheet (no framework), with colors defined once as variables.
+- **Bootstrap 5** — CSS framework used for the navigation bar, cards, tables, badges, forms and responsive grid; served locally from the static folder so the system works without internet.
+- **CSS** — a small custom stylesheet for additions such as preserving line breaks in long text.
 - **Git / GitHub** — version control.
 
 \newpage
@@ -424,7 +425,7 @@ x-noop
 │   ├── supervisor.py   my students, view logs, give feedback
 │   └── admin.py        manage users
 ├── database.sql        creates the database, 8 tables and admin account
-├── static/style.css    all styling (plain CSS)
+├── static/             Bootstrap 5 (local) + small custom stylesheet
 └── templates/          HTML pages (all extend base.html)
 ```
 
@@ -530,7 +531,7 @@ applications.
 ## 4.4 Interface Design
 
 The interface uses one shared layout (`base.html`) with a navigation bar
-that changes according to the logged-in role, and a plain CSS stylesheet.
+that changes according to the logged-in role, styled with the Bootstrap 5 framework and a small custom stylesheet.
 
 **[ Insert screenshots here as Figures 4.4.1 – 4.4.7: landing page, login
 page, registration pages, student dashboard and internship list, company

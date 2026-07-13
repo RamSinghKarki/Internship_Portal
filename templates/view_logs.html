@@ -1,35 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Log Book of {{ application.student.user.name }} - {{ application.internship.title }}</h2>
+<h2 class="mb-4">Log Book of {{ application.student.user.name }} — {{ application.internship.title }}</h2>
 
 {% if logs|length == 0 %}
     <p>The student has not submitted any logs yet.</p>
 {% endif %}
 
 {% for log in logs %}
-<div class="card">
-    <h3>Week {{ log.week_number }}</h3>
-    <p class="preserve"><b>Work done:</b>
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h5 class="card-title">Week {{ log.week_number }}</h5>
+    <p class="card-text preserve"><b>Work done:</b>
 {{ log.description }}</p>
-    <p><b>Submitted:</b> {{ log.submitted_date.strftime('%Y-%m-%d') }}</p>
+    <p class="card-text text-muted">Submitted: {{ log.submitted_date.strftime('%Y-%m-%d') }}</p>
 
     {% if log.feedback %}
-        <p class="preserve"><b>Your feedback:</b> {{ log.feedback }} &nbsp;|&nbsp; <b>Marks:</b> {{ log.marks }}</p>
+        <div class="alert alert-success py-2">
+            <span class="preserve"><b>Your feedback:</b> {{ log.feedback }}</span>
+            &nbsp;|&nbsp; <b>Marks:</b> {{ log.marks }}
+        </div>
     {% endif %}
 
     <form method="POST" action="{{ url_for('give_feedback', log_id=log.id) }}">
-        <label>Feedback</label>
-        <textarea name="feedback" rows="2" required>{{ log.feedback or '' }}</textarea>
-
-        <label>Marks (out of 10)</label>
-        <input type="number" name="marks" min="0" max="10" value="{{ log.marks or '' }}">
-
-        <button type="submit">Save Feedback</button>
+        <div class="mb-2"><label class="form-label">Feedback</label>
+            <textarea name="feedback" class="form-control" rows="2" required>{{ log.feedback or '' }}</textarea></div>
+        <div class="mb-2" style="max-width: 200px;"><label class="form-label">Marks (out of 10)</label>
+            <input type="number" name="marks" class="form-control" min="0" max="10" value="{{ log.marks or '' }}"></div>
+        <button type="submit" class="btn btn-primary btn-sm">Save Feedback</button>
     </form>
+  </div>
 </div>
 {% endfor %}
 
-<p><a href="{{ url_for('students') }}">Back to my students</a></p>
+<a href="{{ url_for('students') }}" class="btn btn-link px-0">Back to my students</a>
 
 {% endblock %}

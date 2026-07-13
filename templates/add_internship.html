@@ -1,28 +1,28 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Post New Internship</h2>
+<h2 class="mb-4">Post New Internship</h2>
 
-<form class="box" method="POST">
-    <label>Title</label>
-    <input type="text" name="title" required>
-
-    <label>Description</label>
-    <textarea name="description" rows="4"></textarea>
-
-    <label>Required Skills</label>
-    <input type="text" name="required_skills" placeholder="e.g. Python, MySQL">
-
-    <label>Duration (weeks)</label>
-    <input type="number" name="duration_weeks" min="1">
-
-    <label>Stipend</label>
-    <input type="text" name="stipend" placeholder="e.g. Rs. 10000/month">
-
-    <label>Vacancies</label>
-    <input type="number" name="vacancies" min="1">
-
-    <button type="submit">Post</button>
-</form>
+<div class="card shadow-sm" style="max-width: 560px;">
+  <div class="card-body">
+    <form method="POST">
+        <div class="mb-3"><label class="form-label">Title</label>
+            <input type="text" name="title" class="form-control" required></div>
+        <div class="mb-3"><label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4"></textarea></div>
+        <div class="mb-3"><label class="form-label">Required Skills</label>
+            <input type="text" name="required_skills" class="form-control" placeholder="e.g. Python, MySQL"></div>
+        <div class="row">
+            <div class="col-md-4 mb-3"><label class="form-label">Duration (weeks)</label>
+                <input type="number" name="duration_weeks" class="form-control" min="1"></div>
+            <div class="col-md-4 mb-3"><label class="form-label">Stipend</label>
+                <input type="text" name="stipend" class="form-control" placeholder="e.g. Rs. 10000/month"></div>
+            <div class="col-md-4 mb-3"><label class="form-label">Vacancies</label>
+                <input type="number" name="vacancies" class="form-control" min="1"></div>
+        </div>
+        <button type="submit" class="btn btn-primary">Post</button>
+    </form>
+  </div>
+</div>
 
 {% endblock %}

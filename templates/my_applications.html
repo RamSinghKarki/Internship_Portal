@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>My Applications</h2>
+<h2 class="mb-4">My Applications</h2>
 
 {% if applications|length == 0 %}
     <p>You have not applied to any internships yet.</p>
 {% else %}
-<table>
+<div class="table-responsive">
+<table class="table table-bordered table-striped align-middle bg-white shadow-sm">
+    <thead class="table-dark">
     <tr>
         <th>Internship</th>
         <th>Company</th>
@@ -14,24 +16,32 @@
         <th>Status</th>
         <th>Action</th>
     </tr>
+    </thead>
+    <tbody>
     {% for a in applications %}
     <tr>
         <td>{{ a.internship.title }}</td>
         <td>{{ a.internship.company.user.name }}</td>
         <td>{{ a.applied_date.strftime('%Y-%m-%d') }}</td>
-        <td><span class="status {{ a.status }}">{{ a.status }}</span></td>
+        <td>
+            {% if a.status == 'selected' %}<span class="badge bg-success">selected</span>
+            {% elif a.status == 'rejected' %}<span class="badge bg-danger">rejected</span>
+            {% else %}<span class="badge bg-primary">applied</span>{% endif %}
+        </td>
         <td>
             {% if a.status == 'selected' %}
-                <a href="{{ url_for('my_logs', application_id=a.id) }}">Weekly Logs</a>
+                <a href="{{ url_for('my_logs', application_id=a.id) }}" class="btn btn-outline-primary btn-sm">Weekly Logs</a>
             {% else %}
-                <form method="POST" action="{{ url_for('withdraw', id=a.id) }}">
-                    <button type="submit" class="danger" onclick="return confirm('Withdraw this application?')">Withdraw</button>
+                <form method="POST" action="{{ url_for('withdraw', id=a.id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Withdraw this application?')">Withdraw</button>
                 </form>
             {% endif %}
         </td>
     </tr>
     {% endfor %}
+    </tbody>
 </table>
+</div>
 {% endif %}
 
 {% endblock %}

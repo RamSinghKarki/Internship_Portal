@@ -1,26 +1,38 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Create an Account</h2>
+<h2 class="mb-4">Create an Account</h2>
 
-<div class="stats">
-    <div class="card">
-        <h3>Student</h3>
-        <p>Browse internships, apply and keep a weekly log book.</p>
-        <a href="{{ url_for('register_student') }}"><button>Register as Student</button></a>
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Student</h5>
+                <p class="card-text">Browse internships, apply and keep a weekly log book.</p>
+                <a href="{{ url_for('register_student') }}" class="btn btn-primary mt-auto">Register as Student</a>
+            </div>
+        </div>
     </div>
-    <div class="card">
-        <h3>Company</h3>
-        <p>Post internships and select the best applicants.</p>
-        <a href="{{ url_for('register_company') }}"><button>Register as Company</button></a>
+    <div class="col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Company</h5>
+                <p class="card-text">Post internships and select the best applicants.</p>
+                <a href="{{ url_for('register_company') }}" class="btn btn-primary mt-auto">Register as Company</a>
+            </div>
+        </div>
     </div>
-    <div class="card">
-        <h3>Supervisor</h3>
-        <p>Guide selected students and review their weekly logs.</p>
-        <a href="{{ url_for('register_supervisor') }}"><button>Register as Supervisor</button></a>
+    <div class="col-md-4">
+        <div class="card h-100 text-center shadow-sm">
+            <div class="card-body d-flex flex-column">
+                <h5 class="card-title">Supervisor</h5>
+                <p class="card-text">Guide selected students and review their weekly logs.</p>
+                <a href="{{ url_for('register_supervisor') }}" class="btn btn-primary mt-auto">Register as Supervisor</a>
+            </div>
+        </div>
     </div>
 </div>
 
-<p>Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
+<p class="mt-4">Already have an account? <a href="{{ url_for('login') }}">Login</a></p>
 
 {% endblock %}

@@ -1,34 +1,33 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Edit Internship</h2>
+<h2 class="mb-4">Edit Internship</h2>
 
-<form class="box" method="POST">
-    <label>Title</label>
-    <input type="text" name="title" value="{{ internship.title }}" required>
-
-    <label>Description</label>
-    <textarea name="description" rows="4">{{ internship.description }}</textarea>
-
-    <label>Required Skills</label>
-    <input type="text" name="required_skills" value="{{ internship.required_skills }}">
-
-    <label>Duration (weeks)</label>
-    <input type="number" name="duration_weeks" value="{{ internship.duration_weeks }}" min="1">
-
-    <label>Stipend</label>
-    <input type="text" name="stipend" value="{{ internship.stipend }}">
-
-    <label>Vacancies</label>
-    <input type="number" name="vacancies" value="{{ internship.vacancies }}" min="1">
-
-    <label>Status</label>
-    <select name="status">
-        <option value="open"   {% if internship.status == 'open'   %}selected{% endif %}>open</option>
-        <option value="closed" {% if internship.status == 'closed' %}selected{% endif %}>closed</option>
-    </select>
-
-    <button type="submit">Save Changes</button>
-</form>
+<div class="card shadow-sm" style="max-width: 560px;">
+  <div class="card-body">
+    <form method="POST">
+        <div class="mb-3"><label class="form-label">Title</label>
+            <input type="text" name="title" value="{{ internship.title }}" class="form-control" required></div>
+        <div class="mb-3"><label class="form-label">Description</label>
+            <textarea name="description" class="form-control" rows="4">{{ internship.description }}</textarea></div>
+        <div class="mb-3"><label class="form-label">Required Skills</label>
+            <input type="text" name="required_skills" value="{{ internship.required_skills }}" class="form-control"></div>
+        <div class="row">
+            <div class="col-md-4 mb-3"><label class="form-label">Duration (weeks)</label>
+                <input type="number" name="duration_weeks" value="{{ internship.duration_weeks }}" class="form-control" min="1"></div>
+            <div class="col-md-4 mb-3"><label class="form-label">Stipend</label>
+                <input type="text" name="stipend" value="{{ internship.stipend }}" class="form-control"></div>
+            <div class="col-md-4 mb-3"><label class="form-label">Vacancies</label>
+                <input type="number" name="vacancies" value="{{ internship.vacancies }}" class="form-control" min="1"></div>
+        </div>
+        <div class="mb-3"><label class="form-label">Status</label>
+            <select name="status" class="form-select">
+                <option value="open"   {% if internship.status == 'open'   %}selected{% endif %}>open</option>
+                <option value="closed" {% if internship.status == 'closed' %}selected{% endif %}>closed</option>
+            </select></div>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+  </div>
+</div>
 
 {% endblock %}

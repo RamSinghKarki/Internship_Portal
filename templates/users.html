@@ -1,33 +1,32 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>All Users</h2>
+<h2 class="mb-4">All Users</h2>
 
-<table>
-    <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Role</th>
-        <th>Joined</th>
-        <th>Action</th>
-    </tr>
+<div class="table-responsive">
+<table class="table table-bordered table-striped align-middle bg-white shadow-sm">
+    <thead class="table-dark">
+    <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr>
+    </thead>
+    <tbody>
     {% for u in users %}
     <tr>
         <td>{{ u.id }}</td>
         <td>{{ u.name }}</td>
         <td>{{ u.email }}</td>
-        <td>{{ u.role.role_name }}</td>
+        <td><span class="badge bg-secondary">{{ u.role.role_name }}</span></td>
         <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
             {% if u.id != session.user_id %}
             <form method="POST" action="{{ url_for('delete_user', id=u.id) }}">
-                <button type="submit" class="danger" onclick="return confirm('Delete this user and all their data?')">Delete</button>
+                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this user and all their data?')">Delete</button>
             </form>
             {% endif %}
         </td>
     </tr>
     {% endfor %}
+    </tbody>
 </table>
+</div>
 
 {% endblock %}

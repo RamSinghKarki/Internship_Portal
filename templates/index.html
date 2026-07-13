@@ -1,43 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<!-- ---------- Hero section ---------- -->
-<div class="hero">
-    <h1>Find Your Internship.<br>Grow Your Career.</h1>
-    <p>Internship Portal connects students with companies and keeps
-       supervisors involved every week — all in one place.</p>
-    <p>
-        <a href="{{ url_for('register') }}"><button>Get Started</button></a>
-        <a href="{{ url_for('login') }}"><button class="outline">Login</button></a>
-    </p>
+<div class="text-center py-5">
+    <h1 class="display-5 fw-bold">Find Your Internship.<br>Grow Your Career.</h1>
+    <p class="lead text-muted mx-auto" style="max-width: 560px;">Internship Portal connects students
+       with companies and keeps supervisors involved every week — all in one place.</p>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
+    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Login</a>
 </div>
 
-<!-- ---------- Live numbers from the database ---------- -->
-<div class="stats">
-    <div class="card"><div class="number">{{ counts.students }}</div>Students Joined</div>
-    <div class="card"><div class="number">{{ counts.companies }}</div>Companies</div>
-    <div class="card"><div class="number">{{ counts.supervisors }}</div>Supervisors</div>
-    <div class="card"><div class="number">{{ counts.internships }}</div>Internships Posted</div>
+<div class="row g-3 mb-5">
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body">
+        <div class="fs-1 fw-bold">{{ counts.students }}</div><div class="text-muted">Students Joined</div>
+    </div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body">
+        <div class="fs-1 fw-bold">{{ counts.companies }}</div><div class="text-muted">Companies</div>
+    </div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body">
+        <div class="fs-1 fw-bold">{{ counts.supervisors }}</div><div class="text-muted">Supervisors</div>
+    </div></div></div>
+    <div class="col-6 col-md-3"><div class="card text-center shadow-sm"><div class="card-body">
+        <div class="fs-1 fw-bold">{{ counts.internships }}</div><div class="text-muted">Internships Posted</div>
+    </div></div></div>
 </div>
 
-<!-- ---------- How it works ---------- -->
-<h2>How It Works</h2>
-<div class="stats">
-    <div class="card">
-        <h3>1. Students</h3>
-        <p>Create a profile with your skills, browse open internships
-           and apply with a cover letter.</p>
-    </div>
-    <div class="card">
-        <h3>2. Companies</h3>
-        <p>Post internships, review applicants and select
-           the best students for the job.</p>
-    </div>
-    <div class="card">
-        <h3>3. Supervisors</h3>
-        <p>Follow the weekly log book of selected students and
-           give feedback with marks.</p>
-    </div>
+<h2 class="mb-3">How It Works</h2>
+<div class="row g-3">
+    <div class="col-md-4"><div class="card h-100 shadow-sm"><div class="card-body">
+        <h5 class="card-title">1. Students</h5>
+        <p class="card-text">Create a profile with your skills, browse open internships and apply with a cover letter.</p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card h-100 shadow-sm"><div class="card-body">
+        <h5 class="card-title">2. Companies</h5>
+        <p class="card-text">Post internships, review applicants and select the best students for the job.</p>
+    </div></div></div>
+    <div class="col-md-4"><div class="card h-100 shadow-sm"><div class="card-body">
+        <h5 class="card-title">3. Supervisors</h5>
+        <p class="card-text">Follow the weekly log book of selected students and give feedback with marks.</p>
+    </div></div></div>
 </div>
 
 {% endblock %}

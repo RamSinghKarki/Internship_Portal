@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Welcome, {{ session.name }}!</h2>
+<h2 class="mb-4">Welcome, {{ session.name }}!</h2>
 
-<div class="stats">
+<div class="row g-3 mb-4">
     {% for label, number in stats %}
-    <div class="card">
-        <div class="number">{{ number }}</div>
-        {{ label }}
+    <div class="col-6 col-md-4 col-lg">
+        <div class="card text-center shadow-sm h-100"><div class="card-body">
+            <div class="fs-2 fw-bold">{{ number }}</div>
+            <div class="text-muted">{{ label }}</div>
+        </div></div>
     </div>
     {% endfor %}
 </div>

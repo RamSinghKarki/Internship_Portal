@@ -1,60 +1,67 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Internships</h2>
+<h2 class="mb-4">Internships</h2>
 
-<form method="GET" action="{{ url_for('internships') }}" class="searchbar">
-    <input type="text" name="q" value="{{ q }}" placeholder="Search by title, description or skills">
-    <input type="text" name="skill" value="{{ skill }}" placeholder="Skill (e.g. Python)">
-    <button type="submit">Search</button>
-    {% if q or skill %}<a href="{{ url_for('internships') }}">Clear</a>{% endif %}
+<form method="GET" action="{{ url_for('internships') }}" class="row g-2 mb-3">
+    <div class="col-md-5">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by title, description or skills">
+    </div>
+    <div class="col-md-3">
+        <input type="text" name="skill" value="{{ skill }}" class="form-control" placeholder="Skill (e.g. Python)">
+    </div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary">Search</button></div>
+    {% if q or skill %}
+        <div class="col-auto"><a href="{{ url_for('internships') }}" class="btn btn-outline-secondary">Clear</a></div>
+    {% endif %}
 </form>
 
 {% if (q or skill) %}
-    <p class="muted">Showing results for
+    <p class="text-muted">Showing results for
        {% if q %}"{{ q }}"{% endif %}{% if q and skill %} with skill {% endif %}
-       {% if skill %}"{{ skill }}"{% endif %} - {{ internships|length }} found.</p>
+       {% if skill %}"{{ skill }}"{% endif %} — {{ internships|length }} found.</p>
 {% endif %}
 
 {% if internships|length == 0 %}
-    <p>No internships posted yet.</p>
+    <p>No internships found.</p>
 {% endif %}
 
 {% for i in internships %}
-<div class="card">
-    <h3>{{ i.title }}
-        {% if i.status == 'closed' %}<span class="status rejected">closed</span>{% endif %}
-    </h3>
-    <p><b>Company:</b> {{ i.company.user.name }}</p>
-    <p class="preserve">{{ i.description }}</p>
-    <p>
-        <b>Skills:</b> {{ i.required_skills }} &nbsp;|&nbsp;
-        <b>Duration:</b> {{ i.duration_weeks }} weeks &nbsp;|&nbsp;
-        <b>Stipend:</b> {{ i.stipend }} &nbsp;|&nbsp;
-        <b>Vacancies:</b> {{ i.vacancies }}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ i.title }}
+        {% if i.status == 'closed' %}<span class="badge bg-secondary">closed</span>
+        {% else %}<span class="badge bg-success">open</span>{% endif %}
+    </h5>
+    <h6 class="card-subtitle mb-2 text-muted">{{ i.company.user.name }}</h6>
+    <p class="card-text preserve">{{ i.description }}</p>
+    <p class="card-text">
+        <span class="badge text-bg-light border">Skills: {{ i.required_skills }}</span>
+        <span class="badge text-bg-light border">Duration: {{ i.duration_weeks }} weeks</span>
+        <span class="badge text-bg-light border">Stipend: {{ i.stipend }}</span>
+        <span class="badge text-bg-light border">Vacancies: {{ i.vacancies }}</span>
     </p>
 
-    {# Student can apply with a cover letter #}
     {% if session.role == 'student' %}
         {% if i.id in applied_ids %}
-            <span class="status">Already applied</span>
+            <span class="badge bg-info text-dark">Already applied</span>
         {% else %}
             <form method="POST" action="{{ url_for('apply', internship_id=i.id) }}">
-                <label>Cover Letter</label>
-                <textarea name="cover_letter" rows="2" placeholder="Why are you a good fit?"></textarea>
-                <button type="submit">Apply</button>
+                <label class="form-label">Cover Letter</label>
+                <textarea name="cover_letter" class="form-control mb-2" rows="3" placeholder="Why are you a good fit?"></textarea>
+                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
             </form>
         {% endif %}
     {% endif %}
 
-    {# Company can manage its own posts #}
     {% if session.role == 'company' %}
-        <a href="{{ url_for('applicants', internship_id=i.id) }}">View applicants</a> |
-        <a href="{{ url_for('edit_internship', id=i.id) }}">Edit</a>
-        <form method="POST" action="{{ url_for('delete_internship', id=i.id) }}" style="display:inline">
-            <button type="submit" class="danger" onclick="return confirm('Delete this internship?')">Delete</button>
+        <a href="{{ url_for('applicants', internship_id=i.id) }}" class="btn btn-outline-primary btn-sm">View applicants</a>
+        <a href="{{ url_for('edit_internship', id=i.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+        <form method="POST" action="{{ url_for('delete_internship', id=i.id) }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this internship?')">Delete</button>
         </form>
     {% endif %}
+  </div>
 </div>
 {% endfor %}
 

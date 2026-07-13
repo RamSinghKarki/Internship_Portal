@@ -1,39 +1,48 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2>Applicants for: {{ internship.title }}</h2>
+<h2 class="mb-4">Applicants for: {{ internship.title }}</h2>
 
 {% if applications|length == 0 %}
     <p>No one has applied yet.</p>
-{% else %}
-    {% for a in applications %}
-    <div class="card">
-        <h3>{{ a.student.user.name }} <span class="status {{ a.status }}">{{ a.status }}</span></h3>
-        <p>
-            <b>Email:</b> {{ a.student.user.email }} &nbsp;|&nbsp;
-            <b>Roll No:</b> {{ a.student.roll_number }} &nbsp;|&nbsp;
-            <b>Department:</b> {{ a.student.department }} &nbsp;|&nbsp;
-            <b>Semester:</b> {{ a.student.semester }}
-        </p>
-        <p><b>Skills:</b> {{ a.student.skills }}</p>
-        {% if a.cover_letter %}<p class="preserve"><b>Cover letter:</b>
-{{ a.cover_letter }}</p>{% endif %}
-        {% if a.student.document_url %}
-            <p><b>Document:</b> <a href="{{ url_for('static', filename=a.student.document_url) }}" target="_blank">View document</a></p>
-        {% endif %}
+{% endif %}
 
-        <form method="POST" action="{{ url_for('update_status', id=a.id) }}">
-            <select name="status">
+{% for a in applications %}
+<div class="card shadow-sm mb-3">
+  <div class="card-body">
+    <h5 class="card-title">{{ a.student.user.name }}
+        {% if a.status == 'selected' %}<span class="badge bg-success">selected</span>
+        {% elif a.status == 'rejected' %}<span class="badge bg-danger">rejected</span>
+        {% else %}<span class="badge bg-primary">applied</span>{% endif %}
+    </h5>
+    <p class="card-text mb-1">
+        <span class="badge text-bg-light border">Email: {{ a.student.user.email }}</span>
+        <span class="badge text-bg-light border">Roll No: {{ a.student.roll_number }}</span>
+        <span class="badge text-bg-light border">Department: {{ a.student.department }}</span>
+        <span class="badge text-bg-light border">Semester: {{ a.student.semester }}</span>
+    </p>
+    <p class="card-text mb-1"><b>Skills:</b> {{ a.student.skills }}</p>
+    {% if a.cover_letter %}<p class="card-text preserve mb-1"><b>Cover letter:</b>
+{{ a.cover_letter }}</p>{% endif %}
+    {% if a.student.document_url %}
+        <p class="card-text mb-2"><b>Document:</b>
+           <a href="{{ url_for('static', filename=a.student.document_url) }}" target="_blank">View document</a></p>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('update_status', id=a.id) }}" class="row g-2">
+        <div class="col-auto">
+            <select name="status" class="form-select form-select-sm">
                 <option value="applied"  {% if a.status == 'applied'  %}selected{% endif %}>applied</option>
                 <option value="selected" {% if a.status == 'selected' %}selected{% endif %}>selected</option>
                 <option value="rejected" {% if a.status == 'rejected' %}selected{% endif %}>rejected</option>
             </select>
-            <button type="submit">Update Status</button>
-        </form>
-    </div>
-    {% endfor %}
-{% endif %}
+        </div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary btn-sm">Update Status</button></div>
+    </form>
+  </div>
+</div>
+{% endfor %}
 
-<p><a href="{{ url_for('internships') }}">Back to internships</a></p>
+<a href="{{ url_for('internships') }}" class="btn btn-link px-0">Back to internships</a>
 
 {% endblock %}

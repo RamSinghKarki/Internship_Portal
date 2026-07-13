@@ -43,7 +43,11 @@ Internship_Portal/
 │   └── admin.py        <- manage users
 ├── database.sql        <- creates the database, 8 tables and admin account
 ├── requirements.txt
-├── static/style.css    <- all styling (plain CSS, colors set in :root variables)
+├── static/
+│   ├── bootstrap.min.css   <- Bootstrap 5 (served locally, works offline)
+│   ├── bootstrap.bundle.min.js
+│   ├── style.css           <- small custom additions
+│   └── uploads/            <- student documents
 └── templates/          <- plain HTML + Jinja pages (all extend base.html)
 ```
 
