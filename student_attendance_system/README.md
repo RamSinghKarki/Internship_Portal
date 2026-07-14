@@ -47,7 +47,7 @@ analytics with PDF/Excel export.
 
 ```
 student_attendance_system/
-├── run.py                  # dev entry point
+├── app.py                  # application entry point (dev server)
 ├── config.py               # env-driven configuration
 ├── seed.py                 # demo data seeder
 ├── requirements.txt
@@ -87,7 +87,7 @@ cd student_attendance_system
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 python seed.py          # creates tables + demo data
-python run.py           # http://127.0.0.1:5000
+python app.py           # http://127.0.0.1:5000
 ```
 
 ## MySQL Setup (production)
@@ -101,7 +101,7 @@ GRANT ALL PRIVILEGES ON attendance_db.* TO 'attendance_user'@'localhost';
 ```bash
 export DATABASE_URL="mysql+pymysql://attendance_user:strong-password@localhost:3306/attendance_db?charset=utf8mb4"
 export SECRET_KEY="a-long-random-string"
-python seed.py && python run.py
+python seed.py && python app.py
 ```
 
 ## Demo Credentials (after seeding)

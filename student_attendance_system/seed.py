@@ -5,7 +5,7 @@ teachers, students, assignments, a weekly routine and ~6 weeks of randomized
 attendance so every dashboard, report and chart has data.
 
 Usage:
-    python seed.py            (or: flask --app run seed)
+    python seed.py            (or: flask --app app seed)
 
 Default credentials after seeding:
     admin      admin / admin123
