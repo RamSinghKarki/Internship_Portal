@@ -1,8 +1,11 @@
-"""Demo data seeder.
+"""OPTIONAL demo data seeder — for demonstrations and testing only.
 
 Creates roles, an administrator, departments, semesters, sections, subjects,
 teachers, students, assignments, a weekly routine and ~6 weeks of randomized
 attendance so every dashboard, report and chart has data.
+
+WARNING: this wipes the existing database first. For a clean production
+setup with no demo data, run init_db.py instead.
 
 Usage:
     python seed.py            (or: flask --app app seed)

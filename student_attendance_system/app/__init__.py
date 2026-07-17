@@ -72,14 +72,14 @@ def create_app(config_class=Config):
 
     # CLI helpers -------------------------------------------------------
     @app.cli.command("init-db")
-    def init_db():
-        """Create all tables."""
-        db.create_all()
-        print("Database tables created.")
+    def init_db_command():
+        """Create tables plus roles, admin account and default settings."""
+        from init_db import run as init_run
+        init_run()
 
     @app.cli.command("seed")
     def seed_command():
-        """Create tables and load demo data."""
+        """Create tables and load demo data (optional, for demonstrations)."""
         from seed import run as seed_run
         seed_run()
 

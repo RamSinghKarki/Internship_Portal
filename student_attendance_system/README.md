@@ -49,7 +49,8 @@ analytics with PDF/Excel export.
 student_attendance_system/
 ├── app.py                  # application entry point (dev server)
 ├── config.py               # env-driven configuration
-├── seed.py                 # demo data seeder
+├── init_db.py              # clean database setup (roles + admin, no demo data)
+├── seed.py                 # optional demo data seeder
 ├── requirements.txt
 └── app/
     ├── __init__.py         # app factory, blueprint registration
@@ -86,9 +87,14 @@ Key integrity rules:
 cd student_attendance_system
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-python seed.py          # creates tables + demo data
+python init_db.py       # creates tables + admin account (clean, no demo data)
 python app.py           # http://127.0.0.1:5000
 ```
+
+Log in as `admin / admin123` and add departments, semesters, sections,
+subjects, teachers and students from the admin panel. To try the system
+with pre-filled demo data instead, run `python seed.py` in place of
+`init_db.py` (warning: it wipes existing data first).
 
 ## MySQL Setup (production)
 
@@ -101,16 +107,20 @@ GRANT ALL PRIVILEGES ON attendance_db.* TO 'attendance_user'@'localhost';
 ```bash
 export DATABASE_URL="mysql+pymysql://attendance_user:strong-password@localhost:3306/attendance_db?charset=utf8mb4"
 export SECRET_KEY="a-long-random-string"
-python seed.py && python app.py
+python init_db.py && python app.py
 ```
 
-## Demo Credentials (after seeding)
+## Default Credentials
 
-| Role    | Username        | Password    |
-|---------|-----------------|-------------|
-| Admin   | `admin`         | `admin123`  |
-| Teacher | `emp-001` … `emp-008` | `teacher123` |
-| Student | `reg-2025-0001` … | `student123` |
+| Setup | Role | Username | Password |
+|-------|------|----------|----------|
+| `init_db.py` (clean) | Admin | `admin` | `admin123` |
+| `seed.py` (demo, optional) | Teacher | `emp-001` … `emp-008` | `teacher123` |
+| `seed.py` (demo, optional) | Student | `reg-2025-0001` … | `student123` |
+
+Change the admin password from **My Profile** after first login.
+Teacher/student accounts are created automatically when you add their
+profiles (username = employee ID / registration number).
 
 ## Security
 
