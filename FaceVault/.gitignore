@@ -4,6 +4,7 @@ __pycache__/
 *.egg-info/
 build/
 dist/
+*.spec
 
 # Local test portraits (never commit real people's photos)
 tests/fixtures/

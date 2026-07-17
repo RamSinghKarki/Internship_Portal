@@ -120,6 +120,13 @@ QScrollBar::handle:vertical {
 QScrollBar::handle:vertical:hover { background: #56575d; }
 QScrollBar::add-line, QScrollBar::sub-line { height: 0; }
 
+QMenuBar {
+    background-color: #26272b;
+    border-bottom: 1px solid #141517;
+}
+QMenuBar::item { padding: 6px 10px; }
+QMenuBar::item:selected { background-color: #2e436e; border-radius: 4px; }
+
 QMenu {
     background-color: #2b2d31;
     border: 1px solid #46474d;

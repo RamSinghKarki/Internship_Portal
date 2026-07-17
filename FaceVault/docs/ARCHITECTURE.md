@@ -124,16 +124,22 @@ writer thread is needed because the consuming loop *is* the writer.
 The original lists 17 AI features and a 14-item roadmap. Building all of it
 at once produces none of it working well. The improved scope ladder:
 
-**v1 (implemented):** scan, EXIF, exact + near duplicates, face detection,
-alignment, embeddings, quality scoring, incremental clustering,
-rename/merge/delete people, similarity search ("find this face"),
-structured search (person/camera/date/GPS/quality), person export, CSV
-export, dashboard, people grid, duplicates view, settings, dark theme,
-CLI parity.
+**v1 (implemented):** scan, EXIF, exact + near duplicates, face detection
+(fast + accurate multi-pass modes), alignment, embeddings, quality
+scoring, incremental clustering, rename/merge/delete people, manual
+face assignment (unknown-faces workflow: assign to person / create
+person from selection), albums (create/rename/delete, add/remove
+photos), full photo browser with filters, photo viewer with face
+overlays (named boxes painted on the image), remove-from-library,
+similarity search ("find this face"), structured search
+(person/camera/date/GPS/quality), person export, CSV export, dashboard
+with scan history, duplicates view, settings, menu bar (export,
+re-cluster, cache tools), dark theme, CLI parity, PyInstaller build
+script for a standalone executable.
 
-**v2 (designed seams exist):** albums UI (tables already in the schema),
-GPS map view (lat/lon already extracted), periodic HDBSCAN maintenance
-re-cluster, FAISS at scale, Alembic, blur-aware best-photo picker.
+**v2 (designed seams exist):** GPS map view (lat/lon already extracted),
+periodic HDBSCAN maintenance re-cluster, FAISS at scale, Alembic,
+blur-aware best-photo picker.
 
 **v3+ (roadmap, unchanged from original):** scene/object tagging, OCR,
 semantic search (all three are one "CLIP-ish embedding per image" feature —

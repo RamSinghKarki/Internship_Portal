@@ -3,7 +3,10 @@ from PySide6.QtWidgets import QListWidget, QListWidgetItem
 
 SECTIONS = [
     ("dashboard", "⌂  Dashboard"),
+    ("photos", "🖼  Photos"),
     ("people", "👤  People"),
+    ("unknown", "❓  Unknown faces"),
+    ("albums", "📁  Albums"),
     ("duplicates", "⧉  Duplicates"),
     ("settings", "⚙  Settings"),
 ]

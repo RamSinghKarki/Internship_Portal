@@ -13,7 +13,16 @@ group your photos by the people in them, entirely on your own machine.
   automatically. Everything is searchable by person, camera, date, GPS and
   quality.
 
-![People view](docs/screenshot-people.png)
+The desktop app has seven sections: **Dashboard** (library stats + scan
+history), **Photos** (browse everything, filter by person/camera/unknown,
+open in a viewer that outlines each face with its name), **People**
+(auto-grouped person grid — rename, merge, export, browse), **Unknown
+faces** (assign leftover faces to people manually or create new people),
+**Albums** (curate collections from the Photos view), **Duplicates**
+(exact + near), and **Settings** (all AI thresholds).
+
+![Photos view](docs/screenshot-photos.png)
+![Photo viewer with face overlays](docs/screenshot-viewer.png)
 
 ## Quick start
 
@@ -82,6 +91,21 @@ FaceVault/
 ├── docs/            # architecture
 └── tests/           # unit + end-to-end (pytest)
 ```
+
+## Build a standalone executable
+
+To get a double-click app that doesn't need Python installed:
+
+```bash
+pip install pyinstaller
+python build_app.py
+```
+
+The result is `dist/FaceVault/` — a self-contained folder (models and
+theme bundled, still fully offline). Run the `FaceVault` executable
+inside it, or zip the folder to move it to another machine with the same
+OS. Build on the OS you're targeting (build on Windows to get a Windows
+.exe, etc.).
 
 ## Tests
 

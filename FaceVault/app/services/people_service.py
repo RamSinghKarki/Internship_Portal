@@ -86,6 +86,40 @@ class PeopleService:
             self._refresh_cover(session, target)
             session.commit()
 
+    def assign_faces(self, face_ids: list[int], person_id: int) -> int:
+        """Manually attach unknown faces to an existing person."""
+        with self.session_factory() as session:
+            person = session.get(Person, person_id)
+            if person is None:
+                raise ValueError(f"No person with id {person_id}")
+            moved = 0
+            for face_id in face_ids:
+                face = session.get(Face, face_id)
+                if face is not None:
+                    face.person_id = person_id
+                    moved += 1
+            self._refresh_cover(session, person)
+            session.commit()
+            return moved
+
+    def create_person_from_faces(self, face_ids: list[int],
+                                 name: str | None = None) -> int:
+        """Create a person from manually selected faces. Returns person id."""
+        if not face_ids:
+            raise ValueError("No faces selected")
+        with self.session_factory() as session:
+            person = Person(name=(name or "").strip() or None)
+            person.verified = bool(person.name)
+            session.add(person)
+            session.flush()
+            for face_id in face_ids:
+                face = session.get(Face, face_id)
+                if face is not None:
+                    face.person_id = person.id
+            self._refresh_cover(session, person)
+            session.commit()
+            return person.id
+
     def delete_person(self, person_id: int) -> None:
         """Delete a person; its faces return to the unknown pool (SET NULL)."""
         with self.session_factory() as session:

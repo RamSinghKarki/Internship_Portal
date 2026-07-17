@@ -3,7 +3,10 @@
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
+    QHeaderView,
     QLabel,
+    QTableWidget,
+    QTableWidgetItem,
     QVBoxLayout,
     QWidget,
 )
@@ -58,21 +61,34 @@ class DashboardView(QWidget):
             grid.addWidget(tile, i // 3, i % 3)
         layout.addLayout(grid)
 
-        self._last_scan = QLabel("")
-        self._last_scan.setObjectName("subtle")
-        layout.addWidget(self._last_scan)
-        layout.addStretch()
+        history_label = QLabel("Recent scans")
+        history_label.setObjectName("heading")
+        layout.addWidget(history_label)
+
+        self.history = QTableWidget(0, 6)
+        self.history.setHorizontalHeaderLabels(
+            ["Folder", "Status", "Files", "New", "Faces", "Failed"]
+        )
+        self.history.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
+        self.history.verticalHeader().hide()
+        self.history.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.history.setSelectionBehavior(QTableWidget.SelectRows)
+        layout.addWidget(self.history)
 
     def refresh(self) -> None:
         with self.session_factory() as session:
-            stats = Repository(session).stats()
+            repo = Repository(session)
+            stats = repo.stats()
+            scans = repo.recent_scans(limit=10)
         for key in ("images", "faces", "people", "unknown_faces", "exact_duplicate_groups"):
             self.tiles[key].set_value(stats[key])
         if self.config.db_path.is_file():
             kb = self.config.db_path.stat().st_size / 1024
             self.tiles["db_size"].set_value(f"{kb / 1024:.1f} MB" if kb > 1024 else f"{kb:.0f} KB")
-        last = stats["last_scan"]
-        self._last_scan.setText(
-            f"Last scan: {last.folder}  ({last.status}, {last.new_images} new, "
-            f"{last.faces_found} faces)" if last else "No scans yet — use Scan Folder to begin."
-        )
+
+        self.history.setRowCount(len(scans))
+        for row, scan in enumerate(scans):
+            cells = [scan.folder, scan.status, str(scan.total_files),
+                     str(scan.new_images), str(scan.faces_found), str(scan.failed)]
+            for col, text in enumerate(cells):
+                self.history.setItem(row, col, QTableWidgetItem(text))

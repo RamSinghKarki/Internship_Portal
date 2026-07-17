@@ -79,7 +79,37 @@ class Repository:
         ).all()
         return [(i, int(p, 16)) for i, p in rows]
 
+    def recent_scans(self, limit: int = 10) -> list[ScanHistory]:
+        return list(
+            self.s.scalars(
+                select(ScanHistory).order_by(ScanHistory.id.desc()).limit(limit)
+            )
+        )
+
+    def remove_images(self, image_ids: list[int]) -> int:
+        """Remove images from the library (faces cascade). Files on disk
+        are never touched."""
+        removed = 0
+        for image_id in image_ids:
+            img = self.s.get(Image, image_id)
+            if img is not None:
+                self.s.delete(img)
+                removed += 1
+        self.s.commit()
+        return removed
+
     # ---- faces / persons --------------------------------------------
+    def unknown_faces(self) -> list[Face]:
+        """Every face without a person, regardless of quality — for the
+        manual assignment UI."""
+        return list(
+            self.s.scalars(
+                select(Face)
+                .where(Face.person_id.is_(None))
+                .order_by(Face.quality.desc())
+            )
+        )
+
     def unassigned_faces(self, min_quality: float) -> list[Face]:
         return list(
             self.s.scalars(

@@ -29,10 +29,13 @@ from ..services.scan_service import ScanService
 from ..themes import load_theme
 from ..widgets.info_panel import InfoPanel
 from ..widgets.sidebar import Sidebar
+from .albums_view import AlbumsView
 from .dashboard_view import DashboardView
 from .duplicates_view import DuplicatesView
 from .people_view import PeopleView
+from .photos_view import PhotosView
 from .settings_view import SettingsView
+from .unknown_faces_view import UnknownFacesView
 
 
 class ScanThread(QThread):
@@ -100,13 +103,19 @@ class MainWindow(QMainWindow):
         self.info_panel = InfoPanel()
 
         self.dashboard = DashboardView(config, self.session_factory)
+        self.photos = PhotosView(config, self.session_factory)
         self.people = PeopleView(config, self.session_factory)
+        self.unknown = UnknownFacesView(config, self.session_factory)
+        self.albums = AlbumsView(config, self.session_factory)
         self.duplicates = DuplicatesView(config, self.session_factory)
         self.settings = SettingsView(config)
 
         self._sections = {
             "dashboard": self.dashboard,
+            "photos": self.photos,
             "people": self.people,
+            "unknown": self.unknown,
+            "albums": self.albums,
             "duplicates": self.duplicates,
             "settings": self.settings,
         }
@@ -116,6 +125,11 @@ class MainWindow(QMainWindow):
         self.sidebar.section_selected.connect(self._switch_section)
         self.people.person_selected.connect(self.info_panel.show_person)
         self.people.data_changed.connect(self.refresh_all)
+        self.photos.data_changed.connect(self.refresh_all)
+        self.unknown.data_changed.connect(self.refresh_all)
+        self.albums.data_changed.connect(self.refresh_all)
+
+        self._build_menus()
 
         splitter = QSplitter(Qt.Horizontal)
         splitter.addWidget(self.sidebar)
@@ -136,6 +150,70 @@ class MainWindow(QMainWindow):
             self.scan_button.setEnabled(False)
 
         self.refresh_all()
+
+    # ---- menus -------------------------------------------------------
+    def _build_menus(self) -> None:
+        bar = self.menuBar()
+
+        file_menu = bar.addMenu("&File")
+        file_menu.addAction("Scan Folder…", self._pick_folder)
+        file_menu.addAction("Export library CSV…", self._export_csv)
+        file_menu.addSeparator()
+        file_menu.addAction("Quit", self.close)
+
+        tools_menu = bar.addMenu("&Tools")
+        tools_menu.addAction("Re-cluster unknown faces", self._recluster)
+        tools_menu.addAction("Clear thumbnail cache", self._clear_thumb_cache)
+
+        help_menu = bar.addMenu("&Help")
+        help_menu.addAction("About FaceVault", self._about)
+
+    def _export_csv(self) -> None:
+        from ..services.export_service import ExportService
+
+        dest, _ = QFileDialog.getSaveFileName(
+            self, "Export library CSV", "facevault.csv", "CSV files (*.csv)"
+        )
+        if dest:
+            n = ExportService(self.config, self.session_factory).export_images_csv(
+                Path(dest)
+            )
+            QMessageBox.information(self, "Export", f"Wrote {n} row(s) to {dest}")
+
+    def _recluster(self) -> None:
+        """Re-run identity assignment — useful after changing thresholds
+        in Settings or after manual assignments gave people better centroids."""
+        from ..services.people_service import PeopleService
+
+        with self.session_factory() as session:
+            result = PeopleService(self.config, self.session_factory).assign_identities(
+                session
+            )
+        self.refresh_all()
+        QMessageBox.information(
+            self, "Re-cluster",
+            f"{result['faces_matched']} face(s) matched to existing people\n"
+            f"{result['new_people']} new people created\n"
+            f"{result['unknown_faces']} face(s) still unknown",
+        )
+
+    def _clear_thumb_cache(self) -> None:
+        import shutil
+
+        shutil.rmtree(self.config.cache_dir, ignore_errors=True)
+        self.config.ensure_dirs()
+        QMessageBox.information(self, "Cache", "Thumbnail cache cleared.")
+
+    def _about(self) -> None:
+        from .. import __version__
+
+        QMessageBox.about(
+            self, "About FaceVault",
+            f"<b>FaceVault {__version__}</b><br>"
+            "Offline photo library with local face recognition.<br>"
+            "All AI runs on this device — your photos never leave it.<br><br>"
+            "Detection: YuNet · Embeddings: SFace (OpenCV Zoo, Apache-2.0)",
+        )
 
     # ---- navigation --------------------------------------------------
     def _switch_section(self, key: str) -> None:

@@ -4,9 +4,10 @@ double-click opens the person's photos."""
 from pathlib import Path
 
 from PySide6.QtCore import QSize, Qt, Signal
-from PySide6.QtGui import QIcon, QPixmap
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QDialog,
+    QFileDialog,
     QInputDialog,
     QLabel,
     QListWidget,
@@ -19,30 +20,25 @@ from PySide6.QtWidgets import (
 
 from ..config import AppConfig
 from ..database.models import Face
+from ..services.export_service import ExportService
 from ..services.people_service import PeopleService
 from ..services.thumbnail_service import ThumbnailService
+from ..widgets.photo_grid import PhotoGrid
+from ..widgets.photo_viewer import PhotoViewerDialog
 
 
 class PersonPhotosDialog(QDialog):
-    def __init__(self, title: str, image_paths: list[str],
-                 thumbs: ThumbnailService, parent=None):
+    def __init__(self, title: str, images: list[tuple[int, str]],
+                 thumbs: ThumbnailService, session_factory, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
-        self.resize(760, 560)
+        self.resize(820, 600)
         layout = QVBoxLayout(self)
-        grid = QListWidget()
-        grid.setViewMode(QListWidget.IconMode)
-        grid.setIconSize(QSize(160, 160))
-        grid.setResizeMode(QListWidget.Adjust)
-        grid.setSpacing(10)
-        grid.setWordWrap(True)
-        for path in image_paths:
-            thumb = thumbs.image_thumbnail(path)
-            item = QListWidgetItem(Path(path).name)
-            if thumb:
-                item.setIcon(QIcon(str(thumb)))
-            item.setToolTip(path)
-            grid.addItem(item)
+        grid = PhotoGrid(thumbs)
+        grid.set_images(images)
+        grid.open_requested.connect(
+            lambda index: PhotoViewerDialog(images, index, session_factory, self).exec()
+        )
         layout.addWidget(grid)
 
 
@@ -128,8 +124,9 @@ class PeopleView(QWidget):
         detail = self.people_service.person_detail(pid)
         dlg = PersonPhotosDialog(
             f"{detail['name']} — {detail['photo_count']} photo(s)",
-            [path for _id, path in detail["images"]],
+            detail["images"],
             self.thumbs,
+            self.session_factory,
             self,
         )
         dlg.exec()
@@ -142,6 +139,7 @@ class PeopleView(QWidget):
         menu = QMenu(self)
         act_rename = menu.addAction("Rename…")
         act_merge = menu.addAction("Merge into…")
+        act_export = menu.addAction("Export photos to folder…")
         act_delete = menu.addAction("Delete person (faces become unknown)")
         chosen = menu.exec(self.grid.mapToGlobal(pos))
 
@@ -163,6 +161,13 @@ class PeopleView(QWidget):
                 target = others[labels.index(choice)]
                 self.people_service.merge(pid, target["id"])
                 self.data_changed.emit()
+        elif chosen is act_export:
+            dest = QFileDialog.getExistingDirectory(self, "Export photos to…")
+            if dest:
+                n = ExportService(self.config, self.session_factory).export_person_photos(
+                    pid, Path(dest)
+                )
+                QMessageBox.information(self, "Export", f"Copied {n} photo(s) to {dest}")
         elif chosen is act_delete:
             confirm = QMessageBox.question(
                 self, "Delete person",
