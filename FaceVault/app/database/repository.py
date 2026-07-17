@@ -31,18 +31,72 @@ class Repository:
         rows = self.s.execute(select(Image.path, Image.mtime, Image.size_bytes)).all()
         return {p: (m, sz) for p, m, sz in rows}
 
+    # ---- favorites / trash -------------------------------------------
+    def set_favorite(self, image_ids: list[int], value: bool) -> None:
+        for image_id in image_ids:
+            img = self.s.get(Image, image_id)
+            if img is not None:
+                img.favorite = value
+        self.s.commit()
+
+    def set_trashed(self, image_ids: list[int], value: bool) -> None:
+        for image_id in image_ids:
+            img = self.s.get(Image, image_id)
+            if img is not None:
+                img.trashed = value
+        self.s.commit()
+
+    def trashed_images(self) -> list[Image]:
+        return list(
+            self.s.scalars(
+                select(Image).where(Image.trashed.is_(True)).order_by(Image.id.desc())
+            )
+        )
+
+    # ---- memories ----------------------------------------------------
+    def on_this_day(self, month: int, day: int, limit: int = 24) -> list[Image]:
+        """Photos taken on this calendar day in any year — like Google
+        Photos' 'Memories'. SQLite strftime works on the stored datetime."""
+        return list(
+            self.s.scalars(
+                select(Image)
+                .where(Image.trashed.is_(False))
+                .where(Image.taken_at.is_not(None))
+                .where(func.strftime("%m-%d", Image.taken_at) == f"{month:02d}-{day:02d}")
+                .order_by(Image.taken_at.desc())
+                .limit(limit)
+            )
+        )
+
+    def scanned_folders(self) -> list[str]:
+        """Distinct folders from scan history, for one-click rescan."""
+        rows = self.s.scalars(
+            select(ScanHistory.folder).distinct().order_by(ScanHistory.folder)
+        ).all()
+        return list(rows)
+
     # ---- stats ------------------------------------------------------
     def stats(self) -> dict:
-        images = self.s.scalar(select(func.count(Image.id))) or 0
+        images = self.s.scalar(
+            select(func.count(Image.id)).where(Image.trashed.is_(False))
+        ) or 0
         faces = self.s.scalar(select(func.count(Face.id))) or 0
         persons = self.s.scalar(select(func.count(Person.id))) or 0
         unknown = (
             self.s.scalar(select(func.count(Face.id)).where(Face.person_id.is_(None))) or 0
         )
+        favorites = self.s.scalar(
+            select(func.count(Image.id)).where(
+                Image.favorite.is_(True), Image.trashed.is_(False)
+            )
+        ) or 0
+        trashed = self.s.scalar(
+            select(func.count(Image.id)).where(Image.trashed.is_(True))
+        ) or 0
         dup_groups = self.s.scalar(
             select(func.count()).select_from(
                 select(Image.file_hash)
-                .where(Image.file_hash.is_not(None))
+                .where(Image.file_hash.is_not(None), Image.trashed.is_(False))
                 .group_by(Image.file_hash)
                 .having(func.count(Image.id) > 1)
                 .subquery()
@@ -56,6 +110,8 @@ class Repository:
             "faces": faces,
             "people": persons,
             "unknown_faces": unknown,
+            "favorites": favorites,
+            "trashed": trashed,
             "exact_duplicate_groups": dup_groups,
             "last_scan": last_scan,
         }
@@ -64,7 +120,7 @@ class Repository:
     def exact_duplicate_groups(self) -> list[list[Image]]:
         dup_hashes = self.s.scalars(
             select(Image.file_hash)
-            .where(Image.file_hash.is_not(None))
+            .where(Image.file_hash.is_not(None), Image.trashed.is_(False))
             .group_by(Image.file_hash)
             .having(func.count(Image.id) > 1)
         ).all()
@@ -75,7 +131,9 @@ class Repository:
 
     def images_with_phash(self) -> list[tuple[int, int]]:
         rows = self.s.execute(
-            select(Image.id, Image.phash).where(Image.phash.is_not(None))
+            select(Image.id, Image.phash).where(
+                Image.phash.is_not(None), Image.trashed.is_(False)
+            )
         ).all()
         return [(i, int(p, 16)) for i, p in rows]
 
@@ -101,11 +159,12 @@ class Repository:
     # ---- faces / persons --------------------------------------------
     def unknown_faces(self) -> list[Face]:
         """Every face without a person, regardless of quality — for the
-        manual assignment UI."""
+        manual assignment UI. Faces of trashed photos are hidden."""
         return list(
             self.s.scalars(
                 select(Face)
-                .where(Face.person_id.is_(None))
+                .join(Image, Image.id == Face.image_id)
+                .where(Face.person_id.is_(None), Image.trashed.is_(False))
                 .order_by(Face.quality.desc())
             )
         )
@@ -152,7 +211,7 @@ class Repository:
             self.s.scalars(
                 select(Image)
                 .join(Face, Face.image_id == Image.id)
-                .where(Face.person_id == person_id)
+                .where(Face.person_id == person_id, Image.trashed.is_(False))
                 .distinct()
                 .order_by(Image.taken_at.desc().nullslast(), Image.id.desc())
             )

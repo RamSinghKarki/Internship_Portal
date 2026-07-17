@@ -183,6 +183,39 @@ def cmd_similar(args) -> int:
     return 0
 
 
+def cmd_export_people(args) -> int:
+    from .services.export_service import ExportService
+
+    cfg, factory = _services(args)
+    result = ExportService(cfg, factory).export_people_to_folders(
+        Path(args.dest), include_unknown=args.include_unknown
+    )
+    print(f"Copied {result['copied']} photo(s) into {len(result['folders'])} folder(s):")
+    for folder, n in sorted(result["folders"].items()):
+        print(f"  {folder}/  ({n} photos)")
+    return 0
+
+
+def cmd_rescan(args) -> int:
+    from .services.scan_service import ScanService
+
+    cfg, factory = _services(args)
+    with factory() as session:
+        folders = Repository(session).scanned_folders()
+    if not folders:
+        print("No previously scanned folders.")
+        return 0
+    scan = ScanService(cfg, factory)
+    for folder in folders:
+        if not Path(folder).is_dir():
+            print(f"skipping missing folder: {folder}")
+            continue
+        summary = scan.scan(Path(folder))
+        print(f"{folder}: {summary['new_images']} new, "
+              f"{summary['skipped']} unchanged, {summary['faces_found']} faces")
+    return 0
+
+
 def cmd_export_person(args) -> int:
     from .services.export_service import ExportService
 
@@ -266,6 +299,18 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("image")
     p.add_argument("-k", type=int, default=10)
     p.set_defaults(func=cmd_similar)
+
+    p = sub.add_parser(
+        "export-people",
+        help="copy the library into one folder per person (Google-Photos style)",
+    )
+    p.add_argument("dest")
+    p.add_argument("--include-unknown", action="store_true",
+                   help="also export photos whose faces are all unknown")
+    p.set_defaults(func=cmd_export_people)
+
+    p = sub.add_parser("rescan", help="re-scan every previously scanned folder")
+    p.set_defaults(func=cmd_rescan)
 
     p = sub.add_parser("export-person", help="copy a person's photos to a folder")
     p.add_argument("id", type=int)

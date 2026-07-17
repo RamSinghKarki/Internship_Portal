@@ -1,5 +1,13 @@
-"""Dashboard: library statistics at a glance."""
+"""Dashboard: library statistics, memories ("on this day"), scan history."""
 
+from datetime import date
+
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import (
+    QListWidget,
+    QListWidgetItem,
+)
 from PySide6.QtWidgets import (
     QFrame,
     QGridLayout,
@@ -54,12 +62,23 @@ class DashboardView(QWidget):
             "faces": StatTile("Faces"),
             "people": StatTile("People"),
             "unknown_faces": StatTile("Unknown faces"),
+            "favorites": StatTile("Favorites"),
             "exact_duplicate_groups": StatTile("Duplicate groups"),
-            "db_size": StatTile("Database size"),
         }
         for i, tile in enumerate(self.tiles.values()):
             grid.addWidget(tile, i // 3, i % 3)
         layout.addLayout(grid)
+
+        self._memories_label = QLabel("Memories — on this day")
+        self._memories_label.setObjectName("heading")
+        layout.addWidget(self._memories_label)
+        self.memories = QListWidget()
+        self.memories.setViewMode(QListWidget.IconMode)
+        self.memories.setIconSize(QSize(110, 110))
+        self.memories.setFixedHeight(150)
+        self.memories.setFlow(QListWidget.LeftToRight)
+        self.memories.setWrapping(False)
+        layout.addWidget(self.memories)
 
         history_label = QLabel("Recent scans")
         history_label.setObjectName("heading")
@@ -80,11 +99,31 @@ class DashboardView(QWidget):
             repo = Repository(session)
             stats = repo.stats()
             scans = repo.recent_scans(limit=10)
-        for key in ("images", "faces", "people", "unknown_faces", "exact_duplicate_groups"):
+        for key in ("images", "faces", "people", "unknown_faces", "favorites",
+                    "exact_duplicate_groups"):
             self.tiles[key].set_value(stats[key])
-        if self.config.db_path.is_file():
-            kb = self.config.db_path.stat().st_size / 1024
-            self.tiles["db_size"].set_value(f"{kb / 1024:.1f} MB" if kb > 1024 else f"{kb:.0f} KB")
+
+        # Memories strip — hidden entirely when today has no anniversaries.
+        today = date.today()
+        with self.session_factory() as session:
+            memories = Repository(session).on_this_day(today.month, today.day)
+        self.memories.clear()
+        visible = bool(memories)
+        self._memories_label.setVisible(visible)
+        self.memories.setVisible(visible)
+        if visible:
+            from ..services.thumbnail_service import ThumbnailService
+
+            thumbs = ThumbnailService(self.config)
+            for img in memories:
+                year = img.taken_at.strftime("%Y") if img.taken_at else ""
+                item = QListWidgetItem(year)
+                item.setToolTip(img.path)
+                thumb = thumbs.image_thumbnail(img.path)
+                if thumb:
+                    item.setIcon(QIcon(str(thumb)))
+                item.setSizeHint(QSize(125, 140))
+                self.memories.addItem(item)
 
         self.history.setRowCount(len(scans))
         for row, scan in enumerate(scans):

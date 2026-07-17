@@ -29,4 +29,20 @@ def create_session_factory(db_path: Path) -> sessionmaker[Session]:
         cursor.close()
 
     Base.metadata.create_all(engine)
+    _migrate(engine)
     return sessionmaker(bind=engine, expire_on_commit=False)
+
+
+def _migrate(engine) -> None:
+    """Lightweight in-place migrations for libraries created by older
+    versions (create_all only creates missing tables, never columns)."""
+    with engine.begin() as conn:
+        cols = {row[1] for row in conn.exec_driver_sql("PRAGMA table_info(images)")}
+        if "favorite" not in cols:
+            conn.exec_driver_sql(
+                "ALTER TABLE images ADD COLUMN favorite BOOLEAN NOT NULL DEFAULT 0"
+            )
+        if "trashed" not in cols:
+            conn.exec_driver_sql(
+                "ALTER TABLE images ADD COLUMN trashed BOOLEAN NOT NULL DEFAULT 0"
+            )

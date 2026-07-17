@@ -7,7 +7,7 @@ between trusting and debugging your library.
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from PySide6.QtGui import QColor, QFont, QKeySequence, QPainter, QPen, QPixmap, QShortcut
 from PySide6.QtWidgets import (
     QDialog,
@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
 
 from sqlalchemy import select
 
-from ..database.models import Face
+from ..database.models import Face, Image
 
 ACCENT = QColor("#3574f0")
 UNKNOWN = QColor("#e0a030")
@@ -44,19 +44,59 @@ class PhotoViewerDialog(QDialog):
         nav = QHBoxLayout()
         prev_btn = QPushButton("◀  Previous")
         next_btn = QPushButton("Next  ▶")
+        self._fav_btn = QPushButton("☆ Favorite")
+        self._fav_btn.clicked.connect(self._toggle_favorite)
+        self._play_btn = QPushButton("▶ Slideshow")
+        self._play_btn.setCheckable(True)
+        self._play_btn.toggled.connect(self._toggle_slideshow)
         self._caption = QLabel("")
         self._caption.setObjectName("subtle")
         prev_btn.clicked.connect(lambda: self._step(-1))
         next_btn.clicked.connect(lambda: self._step(1))
         QShortcut(QKeySequence(Qt.Key_Left), self, lambda: self._step(-1))
         QShortcut(QKeySequence(Qt.Key_Right), self, lambda: self._step(1))
+        QShortcut(QKeySequence(Qt.Key_F), self, self._toggle_favorite)
         nav.addWidget(prev_btn)
         nav.addWidget(next_btn)
+        nav.addWidget(self._fav_btn)
+        nav.addWidget(self._play_btn)
         nav.addStretch()
         nav.addWidget(self._caption)
         layout.addLayout(nav)
 
+        # Slideshow advances every 3 s and loops back to the start.
+        self._timer = QTimer(self)
+        self._timer.setInterval(3000)
+        self._timer.timeout.connect(
+            lambda: (self._step(1) if self.index < len(self.images) - 1
+                     else self._jump(0))
+        )
+
         self._show()
+
+    def _jump(self, index: int) -> None:
+        self.index = index
+        self._show()
+
+    def _toggle_slideshow(self, playing: bool) -> None:
+        self._play_btn.setText("⏸ Stop" if playing else "▶ Slideshow")
+        self._timer.start() if playing else self._timer.stop()
+
+    def _toggle_favorite(self) -> None:
+        image_id, _ = self.images[self.index]
+        with self.session_factory() as session:
+            img = session.get(Image, image_id)
+            if img is not None:
+                img.favorite = not img.favorite
+                session.commit()
+        self._update_fav_button()
+
+    def _update_fav_button(self) -> None:
+        image_id, _ = self.images[self.index]
+        with self.session_factory() as session:
+            img = session.get(Image, image_id)
+            fav = bool(img and img.favorite)
+        self._fav_btn.setText("★ Favorited" if fav else "☆ Favorite")
 
     def _step(self, delta: int) -> None:
         new = self.index + delta
@@ -111,6 +151,7 @@ class PhotoViewerDialog(QDialog):
         name = Path(path).name
         self.setWindowTitle(f"{name}  —  {self.index + 1}/{len(self.images)}")
         self._caption.setText(path)
+        self._update_fav_button()
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)

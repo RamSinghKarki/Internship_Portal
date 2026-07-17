@@ -8,6 +8,7 @@ SECTIONS = [
     ("unknown", "❓  Unknown faces"),
     ("albums", "📁  Albums"),
     ("duplicates", "⧉  Duplicates"),
+    ("trash", "🗑  Trash"),
     ("settings", "⚙  Settings"),
 ]
 

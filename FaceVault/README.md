@@ -13,13 +13,32 @@ group your photos by the people in them, entirely on your own machine.
   automatically. Everything is searchable by person, camera, date, GPS and
   quality.
 
-The desktop app has seven sections: **Dashboard** (library stats + scan
-history), **Photos** (browse everything, filter by person/camera/unknown,
-open in a viewer that outlines each face with its name), **People**
-(auto-grouped person grid — rename, merge, export, browse), **Unknown
-faces** (assign leftover faces to people manually or create new people),
-**Albums** (curate collections from the Photos view), **Duplicates**
-(exact + near), and **Settings** (all AI thresholds).
+The desktop app has eight sections: **Dashboard** (library stats,
+"Memories — on this day", scan history), **Photos** (timeline grouped by
+month, filter by person/camera/favorites/unknown, viewer with face
+overlays and slideshow), **People** (auto-grouped person grid — rename,
+merge, export, browse), **Unknown faces** (assign leftover faces to
+people manually or create new people), **Albums**, **Duplicates**
+(exact + near), **Trash** (restore or delete permanently), and
+**Settings**.
+
+**Save photos into folders by face (Google-Photos style):**
+`File → Export people to folders…` copies your library into
+`Destination/<Person name>/` — one folder per person, photos with several
+people copied into each of their folders, optionally an `Unknown faces/`
+folder. From the CLI:
+
+```bash
+python -m app export-people ~/Desktop/ByPerson --include-unknown
+```
+
+Other Google-Photos-style features: favorites (★ in the viewer or
+right-click, filter in Photos), trash with restore, month-grouped
+timeline, "On this day" memories on the dashboard, slideshow in the
+viewer, and `Tools → Rescan all scanned folders` (or `python -m app
+rescan`) to pick up new photos in one click. Backup/sync and sharing are
+deliberately absent — they require a server, and FaceVault is 100%
+offline.
 
 ![Photos view](docs/screenshot-photos.png)
 ![Photo viewer with face overlays](docs/screenshot-viewer.png)

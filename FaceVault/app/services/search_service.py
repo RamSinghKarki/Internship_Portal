@@ -30,10 +30,13 @@ class SearchService:
         min_quality: float | None = None,
         has_gps: bool | None = None,
         unknown_faces_only: bool = False,
+        favorites_only: bool = False,
         limit: int = 500,
     ) -> list[Image]:
         with self.session_factory() as session:
-            q = select(Image).distinct()
+            q = select(Image).distinct().where(Image.trashed.is_(False))
+            if favorites_only:
+                q = q.where(Image.favorite.is_(True))
             if person_name or min_quality is not None or unknown_faces_only:
                 q = q.join(Face, Face.image_id == Image.id)
             if person_name:

@@ -135,7 +135,11 @@ similarity search ("find this face"), structured search
 (person/camera/date/GPS/quality), person export, CSV export, dashboard
 with scan history, duplicates view, settings, menu bar (export,
 re-cluster, cache tools), dark theme, CLI parity, PyInstaller build
-script for a standalone executable.
+script for a standalone executable, and the Google-Photos feature set:
+export-people-to-folders (one folder per person), month-grouped
+timeline, favorites, trash with restore (soft delete + lightweight
+in-place schema migration), "On this day" memories, slideshow,
+rescan-all-folders.
 
 **v2 (designed seams exist):** GPS map view (lat/lon already extracted),
 periodic HDBSCAN maintenance re-cluster, FAISS at scale, Alembic,

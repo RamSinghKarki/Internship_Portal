@@ -35,6 +35,7 @@ from .duplicates_view import DuplicatesView
 from .people_view import PeopleView
 from .photos_view import PhotosView
 from .settings_view import SettingsView
+from .trash_view import TrashView
 from .unknown_faces_view import UnknownFacesView
 
 
@@ -108,6 +109,7 @@ class MainWindow(QMainWindow):
         self.unknown = UnknownFacesView(config, self.session_factory)
         self.albums = AlbumsView(config, self.session_factory)
         self.duplicates = DuplicatesView(config, self.session_factory)
+        self.trash = TrashView(config, self.session_factory)
         self.settings = SettingsView(config)
 
         self._sections = {
@@ -117,6 +119,7 @@ class MainWindow(QMainWindow):
             "unknown": self.unknown,
             "albums": self.albums,
             "duplicates": self.duplicates,
+            "trash": self.trash,
             "settings": self.settings,
         }
         for view in self._sections.values():
@@ -128,6 +131,7 @@ class MainWindow(QMainWindow):
         self.photos.data_changed.connect(self.refresh_all)
         self.unknown.data_changed.connect(self.refresh_all)
         self.albums.data_changed.connect(self.refresh_all)
+        self.trash.data_changed.connect(self.refresh_all)
 
         self._build_menus()
 
@@ -155,18 +159,22 @@ class MainWindow(QMainWindow):
     def _build_menus(self) -> None:
         bar = self.menuBar()
 
-        file_menu = bar.addMenu("&File")
-        file_menu.addAction("Scan Folder…", self._pick_folder)
-        file_menu.addAction("Export library CSV…", self._export_csv)
-        file_menu.addSeparator()
-        file_menu.addAction("Quit", self.close)
+        # Keep references — menus without a Python owner can be garbage
+        # collected out from under the menubar in PySide6.
+        self._file_menu = bar.addMenu("&File")
+        self._file_menu.addAction("Scan Folder…", self._pick_folder)
+        self._file_menu.addAction("Export people to folders…", self._export_people_folders)
+        self._file_menu.addAction("Export library CSV…", self._export_csv)
+        self._file_menu.addSeparator()
+        self._file_menu.addAction("Quit", self.close)
 
-        tools_menu = bar.addMenu("&Tools")
-        tools_menu.addAction("Re-cluster unknown faces", self._recluster)
-        tools_menu.addAction("Clear thumbnail cache", self._clear_thumb_cache)
+        self._tools_menu = bar.addMenu("&Tools")
+        self._tools_menu.addAction("Rescan all scanned folders", self._rescan_all)
+        self._tools_menu.addAction("Re-cluster unknown faces", self._recluster)
+        self._tools_menu.addAction("Clear thumbnail cache", self._clear_thumb_cache)
 
-        help_menu = bar.addMenu("&Help")
-        help_menu.addAction("About FaceVault", self._about)
+        self._help_menu = bar.addMenu("&Help")
+        self._help_menu.addAction("About FaceVault", self._about)
 
     def _export_csv(self) -> None:
         from ..services.export_service import ExportService
@@ -179,6 +187,64 @@ class MainWindow(QMainWindow):
                 Path(dest)
             )
             QMessageBox.information(self, "Export", f"Wrote {n} row(s) to {dest}")
+
+    def _export_people_folders(self) -> None:
+        """The Google-Photos 'save by face' feature: one folder per person."""
+        from ..services.export_service import ExportService
+
+        dest = QFileDialog.getExistingDirectory(
+            self, "Export people to folders — choose destination"
+        )
+        if not dest:
+            return
+        include_unknown = QMessageBox.question(
+            self, "Export people",
+            "Also export photos whose faces are all unknown\n"
+            "into an 'Unknown faces' folder?",
+        ) == QMessageBox.Yes
+        result = ExportService(self.config, self.session_factory).export_people_to_folders(
+            Path(dest), include_unknown=include_unknown
+        )
+        lines = "\n".join(
+            f"  {name}/  ({n} photos)" for name, n in sorted(result["folders"].items())
+        )
+        QMessageBox.information(
+            self, "Export complete",
+            f"Copied {result['copied']} photo(s) into "
+            f"{len(result['folders'])} folder(s):\n{lines}",
+        )
+
+    def _rescan_all(self) -> None:
+        """Re-scan every folder that was ever scanned — picks up new photos,
+        like Google Photos noticing new items in watched folders."""
+        from ..database.repository import Repository
+
+        with self.session_factory() as session:
+            folders = [f for f in Repository(session).scanned_folders()
+                       if Path(f).is_dir()]
+        if not folders:
+            QMessageBox.information(self, "Rescan", "No previously scanned folders.")
+            return
+        # Reuse the scan thread machinery folder by folder, sequentially.
+        self._rescan_queue = folders
+        self._rescan_next()
+
+    def _rescan_next(self) -> None:
+        if not getattr(self, "_rescan_queue", None):
+            self.refresh_all()
+            QMessageBox.information(self, "Rescan", "All folders rescanned.")
+            return
+        folder = self._rescan_queue.pop(0)
+        self.scan_button.setEnabled(False)
+        self.progress_bar.show()
+        self.progress_bar.setRange(0, 0)
+        self.progress_label.setText(f"Rescanning {folder}…")
+        self._scan_thread = ScanThread(self.config, self.session_factory, Path(folder))
+        self._scan_thread.progress.connect(self._on_progress)
+        self._scan_thread.finished_ok.connect(lambda _s: (self._scan_finished(),
+                                                          self._rescan_next()))
+        self._scan_thread.failed.connect(self._on_scan_failed)
+        self._scan_thread.start()
 
     def _recluster(self) -> None:
         """Re-run identity assignment — useful after changing thresholds

@@ -51,6 +51,10 @@ class Image(Base):
     gps_lon: Mapped[float | None] = mapped_column(Float)
     taken_at: Mapped[datetime | None] = mapped_column(DateTime)
     scanned_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    favorite: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Soft delete: trashed photos disappear from every view except Trash
+    # and can be restored; the file on disk is never touched.
+    trashed: Mapped[bool] = mapped_column(Boolean, default=False)
 
     faces: Mapped[list["Face"]] = relationship(
         back_populates="image", cascade="all, delete-orphan"
