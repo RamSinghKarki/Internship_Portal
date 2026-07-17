@@ -1,0 +1,11 @@
+# Core (headless CLI works with just these)
+opencv-python-headless>=4.8
+numpy>=1.24
+Pillow>=10.0
+SQLAlchemy>=2.0
+
+# Desktop GUI (optional — install to use `python -m app gui`)
+PySide6>=6.6
+
+# Development
+pytest>=7.0

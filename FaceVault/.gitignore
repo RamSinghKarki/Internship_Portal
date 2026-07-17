@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Local test portraits (never commit real people's photos)
+tests/fixtures/
+
+# Local library data if someone points FACEVAULT_DATA_DIR here
+data/
+*.db
+*.db-wal
+*.db-shm
