@@ -41,6 +41,12 @@ python -m app gui
 Re-scans are incremental — unchanged files are skipped, new photos are
 matched against the people you already named.
 
+Detection runs in **accurate** mode by default (multi-pass: high
+resolution + contrast-enhanced + mirrored, merged — better on small,
+dark and profile faces). For very large libraries use
+`python -m app scan ~/Pictures --mode fast` (~3× quicker), or change the
+default under Settings in the GUI.
+
 Your library (database + thumbnails) lives in `~/.facevault` (override
 with `--data-dir` or `FACEVAULT_DATA_DIR`). Original photos are never
 moved or modified.

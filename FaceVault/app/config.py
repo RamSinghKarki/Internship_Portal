@@ -39,6 +39,10 @@ class AppConfig:
     # used for clustering, so blurry/tiny faces don't pollute person groups.
     min_cluster_quality: float = 40.0
     detection_score_threshold: float = 0.65
+    # "fast": one detection pass. "accurate": multi-pass refinement
+    # (higher resolution + contrast-enhanced + mirrored passes, merged) —
+    # catches small, dark and profile faces at ~3x the scan cost.
+    detection_mode: str = "accurate"
     min_face_size: int = 36  # px, smaller detections are ignored
     min_cluster_size: int = 2  # faces needed to auto-create a person
     # Hamming distance (on 64-bit dHash) at or below which two images are
@@ -94,6 +98,7 @@ class AppConfig:
         "match_threshold",
         "min_cluster_quality",
         "detection_score_threshold",
+        "detection_mode",
         "min_face_size",
         "min_cluster_size",
         "near_duplicate_distance",

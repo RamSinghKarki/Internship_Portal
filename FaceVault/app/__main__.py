@@ -37,6 +37,8 @@ def cmd_scan(args) -> int:
     from .services.scan_service import ScanService
 
     cfg, factory = _services(args)
+    if args.mode:
+        cfg.detection_mode = args.mode
 
     def progress(done: int, total: int, path: str) -> None:
         name = Path(path).name
@@ -222,6 +224,8 @@ def build_parser() -> argparse.ArgumentParser:
     p = sub.add_parser("scan", help="scan a folder for photos and faces")
     p.add_argument("folder")
     p.add_argument("--full", action="store_true", help="reprocess unchanged files too")
+    p.add_argument("--mode", choices=["fast", "accurate"],
+                   help="detection mode for this scan (default: settings)")
     p.set_defaults(func=cmd_scan)
 
     p = sub.add_parser("people", help="list discovered people")

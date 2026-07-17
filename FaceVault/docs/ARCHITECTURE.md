@@ -87,6 +87,18 @@ must never see those faces re-shuffled by a later scan. Full re-clustering
 (the original design) cannot guarantee that. The O(n²) phase-2 cost applies
 only to new unassigned faces, not the library.
 
+**Detection refinement — two modes** (`ai/detector.py`): `fast` is one
+YuNet pass at ≤1280 px (~8 ms/image). `accurate` (default) runs three
+merged passes at ≤1920 px — original, CLAHE contrast-enhanced (recovers
+underexposed/backlit faces), and horizontally mirrored (recovers profile
+faces YuNet's slightly asymmetric filters miss) — plus 2× upscaling of
+sub-480px images. Passes are deduplicated by IoU, keeping the
+highest-confidence row per face, and mirrored landmarks are swapped back
+(right eye ↔ left eye) so SFace alignment stays correct (~25 ms/image).
+The next accuracy rung beyond this is swapping the model itself (SCRFD or
+RetinaFace via onnxruntime) behind the same `FaceDetector` interface —
+still offline, heavier download. *(roadmap)*
+
 **Fix 2 — quality gating before clustering** (`ai/quality.py`):
 every face gets a composite score (detector confidence 40%, Laplacian
 sharpness 35%, resolution 25%). Low-quality faces are stored and searchable

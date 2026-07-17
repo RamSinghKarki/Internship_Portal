@@ -1,6 +1,7 @@
 """Settings: tune AI thresholds; persisted via AppConfig.save()."""
 
 from PySide6.QtWidgets import (
+    QComboBox,
     QDoubleSpinBox,
     QFormLayout,
     QHBoxLayout,
@@ -48,6 +49,10 @@ class SettingsView(QWidget):
         self.det_threshold.setRange(0.30, 0.99)
         self.det_threshold.setSingleStep(0.01)
 
+        self.det_mode = QComboBox()
+        self.det_mode.addItem("Accurate — multi-pass, finds small/dark/profile faces", "accurate")
+        self.det_mode.addItem("Fast — single pass, ~3x quicker scans", "fast")
+
         self.min_face = QSpinBox()
         self.min_face.setRange(16, 300)
         self.min_face.setSuffix(" px")
@@ -65,6 +70,7 @@ class SettingsView(QWidget):
 
         form.addRow("Face match threshold", self.match_threshold)
         form.addRow("Min quality for grouping", self.min_quality)
+        form.addRow("Detection mode", self.det_mode)
         form.addRow("Detection confidence", self.det_threshold)
         form.addRow("Min face size", self.min_face)
         form.addRow("Min faces per new person", self.min_cluster)
@@ -99,6 +105,7 @@ class SettingsView(QWidget):
         self.match_threshold.setValue(c.match_threshold)
         self.min_quality.setValue(c.min_cluster_quality)
         self.det_threshold.setValue(c.detection_score_threshold)
+        self.det_mode.setCurrentIndex(max(0, self.det_mode.findData(c.detection_mode)))
         self.min_face.setValue(c.min_face_size)
         self.min_cluster.setValue(c.min_cluster_size)
         self.near_dup.setValue(c.near_duplicate_distance)
@@ -109,6 +116,7 @@ class SettingsView(QWidget):
         c.match_threshold = self.match_threshold.value()
         c.min_cluster_quality = self.min_quality.value()
         c.detection_score_threshold = self.det_threshold.value()
+        c.detection_mode = self.det_mode.currentData()
         c.min_face_size = self.min_face.value()
         c.min_cluster_size = self.min_cluster.value()
         c.near_duplicate_distance = self.near_dup.value()

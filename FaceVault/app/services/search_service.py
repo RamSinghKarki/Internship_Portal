@@ -77,6 +77,7 @@ class SearchService:
         detector = FaceDetector(
             self.config.detector_model,
             score_threshold=self.config.detection_score_threshold,
+            mode=self.config.detection_mode,
         )
         detections = detector.detect(img, min_face_size=self.config.min_face_size)
         if not detections:

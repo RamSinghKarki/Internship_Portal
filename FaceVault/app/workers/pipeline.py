@@ -69,6 +69,7 @@ class ScanPipeline:
             self._tls.detector = FaceDetector(
                 self.config.detector_model,
                 score_threshold=self.config.detection_score_threshold,
+                mode=self.config.detection_mode,
             )
             self._tls.recognizer = FaceRecognizer(self.config.recognizer_model)
         return self._tls.detector, self._tls.recognizer
