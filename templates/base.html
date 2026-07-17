@@ -31,11 +31,20 @@
           {% endif %}
           {% if session.role == 'admin' %}
             <li class="nav-item"><a class="nav-link" href="{{ url_for('users') }}">Users</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('audit_log') }}">Audit Log</a></li>
           {% endif %}
         {% endif %}
       </ul>
       <ul class="navbar-nav ms-auto align-items-lg-center">
         {% if session.user_id %}
+          <li class="nav-item me-3">
+            <a class="nav-link position-relative" href="{{ url_for('notifications') }}" title="Notifications">
+              &#128276;
+              {% if unread_count %}
+                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_count }}</span>
+              {% endif %}
+            </a>
+          </li>
           <li class="nav-item"><span class="navbar-text me-3">{{ session.name }} ({{ session.role }})</span></li>
           <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}">Logout</a></li>
         {% else %}

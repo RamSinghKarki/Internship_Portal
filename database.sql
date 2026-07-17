@@ -103,6 +103,27 @@ CREATE TABLE progress_logs (
     FOREIGN KEY (supervisor_id)  REFERENCES supervisors(id)  ON DELETE SET NULL
 );
 
+-- 9. Notifications (in-app messages for a user, shown at the bell icon)
+CREATE TABLE notifications (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    message    VARCHAR(255) NOT NULL,
+    link       VARCHAR(255),
+    is_read    BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- 10. Audit logs (who did what and when - for the admin)
+CREATE TABLE audit_logs (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT,                            -- NULL for failed logins
+    action     VARCHAR(50) NOT NULL,           -- e.g. login, register, apply
+    details    VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
 -- ---------- starting data ----------
 INSERT INTO roles (role_name) VALUES ('admin'), ('student'), ('company'), ('supervisor');
 

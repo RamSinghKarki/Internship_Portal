@@ -141,6 +141,39 @@ class ProgressLog(db.Model):
     supervisor = db.relationship('Supervisor')
 
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    link = db.Column(db.String(255))
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+
+class AuditLog(db.Model):
+    __tablename__ = 'audit_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
+    action = db.Column(db.String(50), nullable=False)
+    details = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    user = db.relationship('User')
+
+
+# ---------- notifications and audit trail ----------
+def notify(user_id, message, link=None):
+    """Queue an in-app notification (saved on the next commit)."""
+    db.session.add(Notification(user_id=user_id, message=message, link=link))
+
+
+def audit(user_id, action, details=''):
+    """Record who did what (saved on the next commit)."""
+    db.session.add(AuditLog(user_id=user_id, action=action, details=details))
+
+
 # ---------- helpers: profile row of the logged-in user ----------
 def current_student():
     return Student.query.filter_by(user_id=session['user_id']).first()

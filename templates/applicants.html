@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% block content %}
 
-<h2 class="mb-4">Applicants for: {{ internship.title }}</h2>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">Applicants for: {{ internship.title }}</h2>
+    <a href="{{ url_for('applicants_export', internship_id=internship.id) }}" class="btn btn-outline-success">Export CSV</a>
+</div>
 
 {% if applications|length == 0 %}
     <p>No one has applied yet.</p>

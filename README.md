@@ -51,6 +51,23 @@ Internship_Portal/
 └── templates/          <- plain HTML + Jinja pages (all extend base.html)
 ```
 
+## Enterprise Features
+
+- **Dashboard analytics** — KPI cards with monthly growth and Chart.js charts
+  (users by role, applications by status, applicants per internship, average
+  marks per week), rendered from live database data.
+- **In-app notifications** — bell icon with unread count; users are notified
+  when an application arrives, a decision is made, a log is submitted, or
+  feedback is given.
+- **Audit log** — every important action (logins, failed logins, registrations,
+  postings, decisions, deletions) is recorded and browsable by the admin.
+- **Search + pagination** — internship search by keyword and skill; the admin
+  user table is searchable and paginated.
+- **CSV exports** — the admin can export all users; a company can export the
+  applicants of an internship.
+- **REST API** — `GET /api/stats` (system statistics) and `GET /api/internships`
+  (open internships) return JSON for reports or a future mobile app.
+
 ## How to Run
 
 1. Install dependencies:

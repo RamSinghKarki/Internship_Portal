@@ -3,7 +3,8 @@
 # ============================================================
 
 from flask import render_template, request, redirect, url_for, session, flash
-from models import db, Application, ProgressLog, current_student
+from models import (db, Application, ProgressLog, Internship,
+                    current_student, notify, audit)
 
 
 # ---------- APPLY (CREATE - with cover letter) ----------
@@ -20,6 +21,11 @@ def apply(internship_id):
         application = Application(student_id=me.id, internship_id=internship_id,
                                   cover_letter=request.form['cover_letter'])
         db.session.add(application)
+        internship = db.session.get(Internship, internship_id)
+        notify(internship.company.user_id,
+               f'New application for "{internship.title}" from {session["name"]}',
+               url_for('applicants', internship_id=internship_id))
+        audit(session['user_id'], 'apply', f'internship #{internship_id}')
         db.session.commit()
         flash('Application submitted!')
     return redirect(url_for('my_applications'))
@@ -43,6 +49,7 @@ def withdraw(id):
     me = current_student()
     application = Application.query.filter_by(id=id, student_id=me.id).first()
     if application:
+        audit(session['user_id'], 'withdraw', f'application #{id}')
         db.session.delete(application)
         db.session.commit()
         flash('Application withdrawn.')
@@ -67,6 +74,12 @@ def my_logs(application_id):
                           week_number=request.form['week_number'] or None,
                           description=request.form['description'])
         db.session.add(log)
+        # tell the supervisors of the company about the new log
+        for sup in application.internship.company.supervisors:
+            notify(sup.user_id,
+                   f'{session["name"]} submitted a weekly log for "{application.internship.title}"',
+                   url_for('view_logs', application_id=application_id))
+        audit(session['user_id'], 'submit_log', f'application #{application_id}')
         db.session.commit()
         flash('Weekly log submitted.')
         return redirect(url_for('my_logs', application_id=application_id))

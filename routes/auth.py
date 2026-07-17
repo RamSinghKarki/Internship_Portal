@@ -6,7 +6,7 @@ import os
 import time
 from flask import render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.utils import secure_filename
-from models import db, Role, User, Student, Company, Supervisor
+from models import db, Role, User, Student, Company, Supervisor, audit
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
 
@@ -59,6 +59,8 @@ def register_student():
                           document_url=document)
         db.session.add(student)     # adds the user too (relationship)
         db.session.commit()
+        audit(user.id, 'register', f'student {user.email}')
+        db.session.commit()
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
 
@@ -81,6 +83,8 @@ def register_company():
                           location=request.form['location'],
                           description=request.form['description'])
         db.session.add(company)
+        db.session.commit()
+        audit(user.id, 'register', f'company {user.email}')
         db.session.commit()
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
@@ -105,6 +109,8 @@ def register_supervisor():
                          department=request.form['department'])
         db.session.add(sup)
         db.session.commit()
+        audit(user.id, 'register', f'supervisor {user.email}')
+        db.session.commit()
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
 
@@ -122,8 +128,12 @@ def login():
             session['user_id'] = user.id
             session['name'] = user.name
             session['role'] = user.role.role_name   # via the Role relationship
+            audit(user.id, 'login', user.email)
+            db.session.commit()
             return redirect(url_for('dashboard'))
 
+        audit(None, 'login_failed', request.form['email'])
+        db.session.commit()
         flash('Invalid email or password.')
 
     return render_template('login.html')

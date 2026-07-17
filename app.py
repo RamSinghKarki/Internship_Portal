@@ -30,7 +30,18 @@ db.init_app(app)
 # folder where student documents are saved
 os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
 
-from routes import main, auth, student, company, supervisor, admin
+from routes import main, auth, student, company, supervisor, admin, api
+
+# make the unread notification count available to every template (bell icon)
+@app.context_processor
+def inject_unread_count():
+    from flask import session
+    from models import Notification
+    if session.get('user_id'):
+        count = Notification.query.filter_by(user_id=session['user_id'],
+                                             is_read=False).count()
+        return {'unread_count': count}
+    return {'unread_count': 0}
 
 # ---------- home + dashboard + internship list ----------
 app.add_url_rule('/',            view_func=main.home)
@@ -66,6 +77,18 @@ app.add_url_rule('/logs/<int:log_id>/feedback', view_func=supervisor.give_feedba
 # ---------- admin pages ----------
 app.add_url_rule('/users',                 view_func=admin.users)
 app.add_url_rule('/users/delete/<int:id>', view_func=admin.delete_user, methods=['POST'])
+app.add_url_rule('/users/export',          view_func=admin.users_export)
+app.add_url_rule('/audit',                 view_func=admin.audit_log)
+
+# ---------- notifications ----------
+app.add_url_rule('/notifications', view_func=main.notifications)
+
+# ---------- csv exports ----------
+app.add_url_rule('/applicants/<int:internship_id>/export', view_func=company.applicants_export)
+
+# ---------- REST API (JSON) ----------
+app.add_url_rule('/api/stats',       view_func=api.api_stats)
+app.add_url_rule('/api/internships', view_func=api.api_internships)
 
 if __name__ == '__main__':
     app.run(debug=True)

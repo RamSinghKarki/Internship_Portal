@@ -1,10 +1,12 @@
 # ============================================================
-# Main pages: landing page, dashboard, internship list
+# Main pages: landing page, dashboard (KPIs + charts),
+# internship list with search, notifications
 # ============================================================
 
+from datetime import datetime
 from flask import render_template, redirect, url_for, session, request
 from models import (db, User, Student, Company, Supervisor, Internship,
-                    Application, ProgressLog,
+                    Application, ProgressLog, Notification,
                     current_student, current_company, current_supervisor)
 
 
@@ -22,67 +24,107 @@ def home():
     return render_template('index.html', counts=counts)
 
 
-# ---------- DASHBOARD (each role sees only its own numbers) ----------
+# ---------- DASHBOARD (role-specific KPIs and charts) ----------
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    stats = []   # list of (label, number) shown as cards
+    now = datetime.now()
+    month_start = datetime(now.year, now.month, 1)
+    stats = []    # list of (label, number, small sub-text)
+    charts = {}   # chart name -> {title, type, labels, data}
 
     if session['role'] == 'student':
         me = current_student()
-        stats.append(('Open Internships', Internship.query.filter_by(status='open').count()))
-        stats.append(('Companies', Company.query.count()))
-        stats.append(('My Applications', Application.query.filter_by(student_id=me.id).count()))
-        stats.append(('Selected', Application.query.filter_by(student_id=me.id, status='selected').count()))
+        my_apps = Application.query.filter_by(student_id=me.id)
+        stats.append(('Open Internships', Internship.query.filter_by(status='open').count(), ''))
+        stats.append(('Companies', Company.query.count(), ''))
+        stats.append(('My Applications', my_apps.count(), ''))
+        stats.append(('Selected', my_apps.filter_by(status='selected').count(), ''))
+        charts['mystatus'] = {
+            'title': 'My applications by status', 'type': 'doughnut',
+            'labels': ['applied', 'selected', 'rejected'],
+            'data': [my_apps.filter_by(status=s).count()
+                     for s in ('applied', 'selected', 'rejected')]}
 
     elif session['role'] == 'company':
         me = current_company()
-        stats.append(('My Internships', Internship.query.filter_by(company_id=me.id).count()))
-        stats.append(('Applications Received',
-                      Application.query.join(Internship)
-                      .filter(Internship.company_id == me.id).count()))
-        stats.append(('Students Registered', Student.query.count()))
-        stats.append(('My Supervisors', Supervisor.query.filter_by(company_id=me.id).count()))
+        received = Application.query.join(Internship).filter(Internship.company_id == me.id)
+        stats.append(('My Internships', Internship.query.filter_by(company_id=me.id).count(), ''))
+        stats.append(('Applications Received', received.count(),
+                      f'+{received.filter(Application.applied_date >= month_start).count()} this month'))
+        stats.append(('Students Registered', Student.query.count(), ''))
+        stats.append(('My Supervisors', Supervisor.query.filter_by(company_id=me.id).count(), ''))
+        charts['status'] = {
+            'title': 'Applications by status', 'type': 'doughnut',
+            'labels': ['applied', 'selected', 'rejected'],
+            'data': [received.filter(Application.status == s).count()
+                     for s in ('applied', 'selected', 'rejected')]}
+        my_interns = Internship.query.filter_by(company_id=me.id).all()
+        charts['perpost'] = {
+            'title': 'Applicants per internship', 'type': 'bar',
+            'labels': [i.title[:18] for i in my_interns],
+            'data': [len(i.applications) for i in my_interns]}
 
     elif session['role'] == 'supervisor':
         me = current_supervisor()
+        selected = (Application.query.join(Internship)
+                    .filter(Internship.company_id == me.company_id,
+                            Application.status == 'selected'))
         my_logs = (ProgressLog.query.join(Application).join(Internship)
                    .filter(Internship.company_id == me.company_id))
-        stats.append(('My Students',
-                      Application.query.join(Internship)
-                      .filter(Internship.company_id == me.company_id,
-                              Application.status == 'selected').count()))
-        stats.append(('Logs Submitted', my_logs.count()))
-        stats.append(('Awaiting My Feedback', my_logs.filter(ProgressLog.feedback.is_(None)).count()))
+        stats.append(('My Students', selected.count(), ''))
+        stats.append(('Logs Submitted', my_logs.count(),
+                      f'+{my_logs.filter(ProgressLog.submitted_date >= month_start).count()} this month'))
+        stats.append(('Awaiting My Feedback', my_logs.filter(ProgressLog.feedback.is_(None)).count(), ''))
+        marked = my_logs.filter(ProgressLog.marks.isnot(None)).all()
+        weeks = sorted({log.week_number for log in marked if log.week_number})
+        if weeks:
+            avg = []
+            for wk in weeks:
+                vals = [log.marks for log in marked if log.week_number == wk]
+                avg.append(round(sum(vals) / len(vals), 1))
+            charts['marks'] = {'title': 'Average marks per week', 'type': 'bar',
+                               'labels': [f'Week {wk}' for wk in weeks], 'data': avg}
 
-    else:   # admin sees the whole system
-        stats.append(('Students', Student.query.count()))
-        stats.append(('Companies', Company.query.count()))
-        stats.append(('Supervisors', Supervisor.query.count()))
-        stats.append(('Internships', Internship.query.count()))
-        stats.append(('Applications', Application.query.count()))
+    else:   # admin - whole system
+        for label, model, datecol in (
+                ('Students', Student, None), ('Companies', Company, None),
+                ('Supervisors', Supervisor, None),
+                ('Internships', Internship, Internship.posted_date),
+                ('Applications', Application, Application.applied_date)):
+            sub = ''
+            if datecol is not None:
+                sub = f'+{model.query.filter(datecol >= month_start).count()} this month'
+            stats.append((label, model.query.count(), sub))
+        charts['roles'] = {
+            'title': 'Users by role', 'type': 'bar',
+            'labels': ['Students', 'Companies', 'Supervisors'],
+            'data': [Student.query.count(), Company.query.count(), Supervisor.query.count()]}
+        charts['status'] = {
+            'title': 'Applications by status', 'type': 'doughnut',
+            'labels': ['applied', 'selected', 'rejected'],
+            'data': [Application.query.filter_by(status=s).count()
+                     for s in ('applied', 'selected', 'rejected')]}
 
-    return render_template('dashboard.html', stats=stats)
+    return render_template('dashboard.html', stats=stats, charts=charts)
 
 
-# ---------- INTERNSHIP LIST (READ) ----------
-# students see open internships, a company sees its own posts
+# ---------- INTERNSHIP LIST (READ + search) ----------
 def internships():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
-    # optional search filters (?q=...&skill=...)
     q = request.args.get('q', '').strip()
     skill = request.args.get('skill', '').strip()
 
     query = Internship.query
-    if q:        # keyword in title, description or required skills
+    if q:
         like = f'%{q}%'
         query = query.filter(Internship.title.like(like) |
                              Internship.description.like(like) |
                              Internship.required_skills.like(like))
-    if skill:    # skill filter
+    if skill:
         query = query.filter(Internship.required_skills.like(f'%{skill}%'))
 
     applied_ids = []
@@ -96,8 +138,21 @@ def internships():
     elif session['role'] == 'supervisor':
         me = current_supervisor()
         query = query.filter_by(company_id=me.company_id)
-    # admin sees everything
 
     items = query.order_by(Internship.id.desc()).all()
     return render_template('internships.html', internships=items,
                            applied_ids=applied_ids, q=q, skill=skill)
+
+
+# ---------- NOTIFICATIONS (bell icon page) ----------
+def notifications():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    items = (Notification.query.filter_by(user_id=session['user_id'])
+             .order_by(Notification.id.desc()).limit(50).all())
+    # mark everything as read once the page is opened
+    (Notification.query.filter_by(user_id=session['user_id'], is_read=False)
+     .update({'is_read': True}))
+    db.session.commit()
+    return render_template('notifications.html', items=items)
