@@ -73,15 +73,26 @@ class ScanPipeline:
             self._clip = ClipEncoder(
                 config.clip_vision_model, config.clip_text_model, config.clip_tokenizer
             )
+        # ArcFace (when installed) is also an ONNX session: one shared
+        # instance. SFace stays per-thread (OpenCV DNN).
+        self._arcface = None
+        if config.active_recognition() == "arcface":
+            from ..ai.arcface import ArcFaceRecognizer
 
-    def _models(self) -> tuple[FaceDetector, FaceRecognizer]:
+            self._arcface = ArcFaceRecognizer(config.arcface_model)
+
+    def _models(self):
         if not hasattr(self._tls, "detector"):
             self._tls.detector = FaceDetector(
                 self.config.detector_model,
                 score_threshold=self.config.detection_score_threshold,
                 mode=self.config.detection_mode,
             )
-            self._tls.recognizer = FaceRecognizer(self.config.recognizer_model)
+            self._tls.recognizer = (
+                self._arcface
+                if self._arcface is not None
+                else FaceRecognizer(self.config.recognizer_model)
+            )
         return self._tls.detector, self._tls.recognizer
 
     def process_one(self, path: Path) -> ProcessedImage:

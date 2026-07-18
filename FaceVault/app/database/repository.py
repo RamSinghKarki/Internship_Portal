@@ -179,8 +179,9 @@ class Repository:
             )
         )
 
-    def person_centroids(self) -> dict[int, np.ndarray]:
-        """Normalized mean embedding per person."""
+    def person_centroids(self, dim: int | None = None) -> dict[int, np.ndarray]:
+        """Normalized mean embedding per person. `dim` filters out
+        embeddings from a different recognition model (128 vs 512)."""
         centroids: dict[int, np.ndarray] = {}
         buckets: dict[int, list[np.ndarray]] = defaultdict(list)
         rows = self.s.execute(
@@ -189,6 +190,8 @@ class Repository:
             )
         ).all()
         for pid, raw in rows:
+            if dim is not None and len(raw) != dim * 4:
+                continue
             buckets[pid].append(embedding_from_bytes(raw))
         for pid, vecs in buckets.items():
             m = np.mean(np.stack(vecs), axis=0)
@@ -225,11 +228,13 @@ class Repository:
             .limit(1)
         ).first()
 
-    def all_embeddings(self) -> tuple[list[int], np.ndarray | None]:
+    def all_embeddings(self, dim: int | None = None) -> tuple[list[int], np.ndarray | None]:
         """(face_ids, matrix) for building the vector index."""
         rows = self.s.execute(
             select(Face.id, Face.embedding).where(Face.embedding.is_not(None))
         ).all()
+        if dim is not None:
+            rows = [r for r in rows if len(r[1]) == dim * 4]
         if not rows:
             return [], None
         ids = [r[0] for r in rows]

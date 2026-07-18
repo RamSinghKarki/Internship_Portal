@@ -52,24 +52,33 @@ def cluster_faces(
     person_centroids: dict[int, np.ndarray],
     match_threshold: float,
     min_cluster_size: int = 2,
+    match_margin: float = 0.0,
 ) -> ClusterResult:
     """Assign new faces to existing persons, then cluster the remainder.
 
     `embeddings` must be L2-normalized, shape (n, dim), aligned with face_ids.
+    `match_margin` guards against look-alikes: a face is assigned only when
+    its best person beats the runner-up by at least this much; ambiguous
+    faces stay unassigned for human review rather than being guessed.
     """
     matched: dict[int, int] = {}
+    ambiguous_idx: list[int] = []
     remaining_idx: list[int] = []
 
     if person_centroids and len(face_ids):
         pids = list(person_centroids.keys())
         cmat = np.stack([person_centroids[p] for p in pids])  # (P, dim)
         sims = embeddings @ cmat.T  # (n, P)
-        best = sims.argmax(axis=1)
         for i in range(len(face_ids)):
-            if sims[i, best[i]] >= match_threshold:
-                matched[face_ids[i]] = pids[best[i]]
-            else:
+            order = np.argsort(-sims[i])
+            best_sim = sims[i, order[0]]
+            second_sim = sims[i, order[1]] if len(pids) > 1 else -1.0
+            if best_sim < match_threshold:
                 remaining_idx.append(i)
+            elif best_sim - second_sim < match_margin:
+                ambiguous_idx.append(i)  # two people match: don't guess
+            else:
+                matched[face_ids[i]] = pids[order[0]]
     else:
         remaining_idx = list(range(len(face_ids)))
 
@@ -96,6 +105,9 @@ def cluster_faces(
                 new_clusters.append(ids)
             else:
                 leftover.extend(ids)
+
+    # Ambiguous faces never form new persons — they wait for manual review.
+    leftover.extend(face_ids[i] for i in ambiguous_idx)
 
     return ClusterResult(matched=matched, new_clusters=new_clusters, leftover=leftover)
 

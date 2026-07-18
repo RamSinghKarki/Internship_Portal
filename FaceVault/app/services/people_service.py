@@ -20,7 +20,13 @@ class PeopleService:
         """Match unassigned quality faces to existing persons, then cluster
         the remainder into new persons. Called after every scan."""
         repo = Repository(session)
-        faces = repo.unassigned_faces(self.config.min_cluster_quality)
+        dim = self.config.embedding_dim
+        faces = [
+            f for f in repo.unassigned_faces(self.config.min_cluster_quality)
+            # Skip embeddings from a different recognition model (a model
+            # switch requires `scan --full` to re-embed the library).
+            if len(f.embedding) == dim * 4
+        ]
         if not faces:
             return {"faces_matched": 0, "new_people": 0, "unknown_faces": 0}
 
@@ -29,9 +35,10 @@ class PeopleService:
         result = cluster_faces(
             ids,
             embs,
-            repo.person_centroids(),
+            repo.person_centroids(dim=dim),
             match_threshold=self.config.match_threshold,
             min_cluster_size=self.config.min_cluster_size,
+            match_margin=self.config.match_margin,
         )
 
         by_id = {f.id: f for f in faces}
@@ -119,6 +126,60 @@ class PeopleService:
             self._refresh_cover(session, person)
             session.commit()
             return person.id
+
+    def split_person(self, person_id: int) -> dict:
+        """Fix a wrongly merged person (two look-alikes in one group):
+        re-cluster their faces at a stricter threshold. The largest
+        sub-group keeps the person (and name); other sub-groups become new
+        persons; stragglers return to Unknown."""
+        from ..ai.clustering import cluster_faces as _cluster
+
+        dim = self.config.embedding_dim
+        strict = min(0.95, self.config.match_threshold + 0.10)
+        with self.session_factory() as session:
+            person = session.get(Person, person_id)
+            if person is None:
+                raise ValueError(f"No person with id {person_id}")
+            faces = [
+                f for f in session.scalars(
+                    select(Face).where(Face.person_id == person_id,
+                                       Face.embedding.is_not(None))
+                )
+                if len(f.embedding) == dim * 4
+            ]
+            if len(faces) < 2:
+                return {"split": False, "new_people": 0, "unassigned": 0}
+
+            ids = [f.id for f in faces]
+            embs = np.stack([embedding_from_bytes(f.embedding) for f in faces])
+            result = _cluster(ids, embs, {}, match_threshold=strict,
+                              min_cluster_size=2)
+
+            clusters = sorted(result.new_clusters, key=len, reverse=True)
+            if len(clusters) <= 1 and not result.leftover:
+                return {"split": False, "new_people": 0, "unassigned": 0}
+
+            by_id = {f.id: f for f in faces}
+            keep = set(clusters[0]) if clusters else set()
+            new_people = 0
+            for members in clusters[1:]:
+                new_person = Person()
+                session.add(new_person)
+                session.flush()
+                for fid in members:
+                    by_id[fid].person_id = new_person.id
+                self._refresh_cover(session, new_person)
+                new_people += 1
+            for fid in result.leftover:
+                if fid not in keep:
+                    by_id[fid].person_id = None  # back to Unknown for review
+            self._refresh_cover(session, person)
+            session.commit()
+            return {
+                "split": new_people > 0 or bool(result.leftover),
+                "new_people": new_people,
+                "unassigned": len([f for f in result.leftover if f not in keep]),
+            }
 
     def delete_person(self, person_id: int) -> None:
         """Delete a person; its faces return to the unknown pool (SET NULL)."""

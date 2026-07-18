@@ -137,9 +137,10 @@ class SearchService:
 
     # ---- similarity ----------------------------------------------------
     def rebuild_index(self) -> int:
+        dim = self.config.embedding_dim
         with self.session_factory() as session:
-            ids, matrix = Repository(session).all_embeddings()
-        self._index = VectorIndex()
+            ids, matrix = Repository(session).all_embeddings(dim=dim)
+        self._index = VectorIndex(dim=dim)
         self._index.build(ids, matrix)
         return len(self._index)
 
@@ -163,7 +164,13 @@ class SearchService:
         if not detections:
             return []
         largest = max(detections, key=lambda d: d.box[2] * d.box[3])
-        emb = FaceRecognizer(self.config.recognizer_model).embed(img, largest)
+        if self.config.active_recognition() == "arcface":
+            from ..ai.arcface import ArcFaceRecognizer
+
+            recognizer = ArcFaceRecognizer(self.config.arcface_model)
+        else:
+            recognizer = FaceRecognizer(self.config.recognizer_model)
+        emb = recognizer.embed(img, largest)
         if emb is None:
             return []
 

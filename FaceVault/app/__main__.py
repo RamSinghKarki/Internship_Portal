@@ -103,6 +103,19 @@ def cmd_merge(args) -> int:
     return 0
 
 
+def cmd_split(args) -> int:
+    from .services.people_service import PeopleService
+
+    cfg, factory = _services(args)
+    result = PeopleService(cfg, factory).split_person(args.id)
+    if result["split"]:
+        print(f"Split: {result['new_people']} new person/people created, "
+              f"{result['unassigned']} face(s) moved to unknown for review.")
+    else:
+        print("These faces look consistent — nothing to split.")
+    return 0
+
+
 def cmd_duplicates(args) -> int:
     cfg, factory = _services(args)
     with factory() as session:
@@ -294,6 +307,11 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("source", type=int)
     p.add_argument("target", type=int)
     p.set_defaults(func=cmd_merge)
+
+    p = sub.add_parser("split", help="split a wrongly merged person "
+                                     "(look-alikes grouped together)")
+    p.add_argument("id", type=int)
+    p.set_defaults(func=cmd_split)
 
     p = sub.add_parser("duplicates", help="list duplicate photos")
     p.add_argument("--near", action="store_true", help="also find near-duplicates")

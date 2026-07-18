@@ -9,6 +9,9 @@ dist/
 # Local test portraits (never commit real people's photos)
 tests/fixtures/
 
+# Optional large models fetched by download_models.py (>100MB, exceeds GitHub limit)
+models/arcface_w600k_r50.onnx
+
 # Local library data if someone points FACEVAULT_DATA_DIR here
 data/
 *.db

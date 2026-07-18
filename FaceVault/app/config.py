@@ -35,6 +35,16 @@ class AppConfig:
     # same person. 0.363 is the OpenCV-published verification threshold; we
     # default slightly higher to favour precision when auto-grouping.
     match_threshold: float = 0.40
+    # A face is auto-assigned only when its best person match beats the
+    # runner-up by this cosine margin. Two look-alike people produce close
+    # scores — such faces go to Unknown for human review instead of being
+    # guessed, which is how different-but-similar people stop merging.
+    match_margin: float = 0.06
+    # "auto" uses ArcFace (512-d, much better look-alike separation) when
+    # models/arcface_w600k_r50.onnx exists, else SFace. Can be pinned to
+    # "sface" or "arcface". After switching models run `scan --full` so
+    # every face is re-embedded consistently.
+    recognition_model: str = "auto"
     # Faces below this composite quality score (0-100) are stored but not
     # used for clustering, so blurry/tiny faces don't pollute person groups.
     min_cluster_quality: float = 40.0
@@ -82,6 +92,32 @@ class AppConfig:
         return self.models_dir / "face_recognition_sface_2021dec.onnx"
 
     @property
+    def arcface_model(self) -> Path:
+        return self.models_dir / "arcface_w600k_r50.onnx"
+
+    def active_recognition(self) -> str:
+        """Which face-embedding model scans will use: 'arcface' or 'sface'."""
+        if self.recognition_model == "sface":
+            return "sface"
+        try:
+            from .ai.arcface import arcface_runtime_available
+        except ImportError:
+            return "sface"
+        arcface_ok = arcface_runtime_available() and self.arcface_model.is_file()
+        if self.recognition_model == "arcface":
+            if not arcface_ok:
+                raise FileNotFoundError(
+                    "recognition_model is pinned to 'arcface' but the model is "
+                    "missing — run: python models/download_models.py --arcface"
+                )
+            return "arcface"
+        return "arcface" if arcface_ok else "sface"  # auto
+
+    @property
+    def embedding_dim(self) -> int:
+        return 512 if self.active_recognition() == "arcface" else 128
+
+    @property
     def clip_vision_model(self) -> Path:
         return self.models_dir / "clip_vision.onnx"
 
@@ -122,6 +158,8 @@ class AppConfig:
     # share them across runs. Paths are intentionally not persisted.
     _PERSISTED = (
         "match_threshold",
+        "match_margin",
+        "recognition_model",
         "min_cluster_quality",
         "detection_score_threshold",
         "detection_mode",

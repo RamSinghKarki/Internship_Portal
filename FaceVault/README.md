@@ -52,6 +52,30 @@ rescan`) to pick up new photos in one click. Backup/sync and sharing are
 deliberately absent — they require a server, and FaceVault is 100%
 offline.
 
+## Look-alike people getting merged?
+
+Three tools, in order of impact:
+
+1. **Upgrade the recognition model to ArcFace** (512-d embeddings, far
+   better at separating similar faces than the built-in SFace 128-d):
+   ```bash
+   python models/download_models.py --arcface   # one-time, ~166 MB
+   python -m app scan ~/Pictures --full         # re-embed every face
+   ```
+   FaceVault switches to ArcFace automatically once the file exists
+   (Settings shows which model is active).
+2. **Look-alike margin** (Settings): a face is auto-assigned only when
+   its best person match clearly beats the runner-up. Raise it (e.g.
+   0.06 → 0.10) and ambiguous faces land in *Unknown faces* for you to
+   assign manually instead of being guessed.
+3. **Split person** — right-click a wrongly merged person → *Split
+   person* (or `python -m app split ID`): their faces are re-clustered
+   strictly; distinct sub-groups become separate people, uncertain
+   faces go to Unknown.
+
+Also raising the *Face match threshold* (0.40 → 0.45) makes all
+grouping stricter across the board.
+
 ## GPU acceleration (NVIDIA)
 
 Face detection/recognition are lightweight and run great on CPU. The

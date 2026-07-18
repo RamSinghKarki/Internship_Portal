@@ -39,6 +39,15 @@ class SettingsView(QWidget):
             "Higher = stricter grouping (fewer false merges, more split people)."
         )
 
+        self.match_margin = QDoubleSpinBox()
+        self.match_margin.setRange(0.0, 0.30)
+        self.match_margin.setSingleStep(0.01)
+        self.match_margin.setToolTip(
+            "Look-alike protection: a face is auto-assigned only when its best\n"
+            "match beats the runner-up person by this much. Raise it if similar-\n"
+            "looking people get merged; ambiguous faces go to Unknown instead."
+        )
+
         self.min_quality = QDoubleSpinBox()
         self.min_quality.setRange(0, 100)
         self.min_quality.setToolTip(
@@ -69,6 +78,7 @@ class SettingsView(QWidget):
         self.workers.setRange(1, 32)
 
         form.addRow("Face match threshold", self.match_threshold)
+        form.addRow("Look-alike margin", self.match_margin)
         form.addRow("Min quality for grouping", self.min_quality)
         form.addRow("Detection mode", self.det_mode)
         form.addRow("Detection confidence", self.det_threshold)
@@ -89,7 +99,14 @@ class SettingsView(QWidget):
         buttons.addStretch()
         layout.addLayout(buttons)
 
+        model = config.active_recognition()
+        model_note = (
+            "ArcFace 512-d (best look-alike separation)" if model == "arcface"
+            else "SFace 128-d — for better look-alike separation run\n"
+                 "python models/download_models.py --arcface, then scan --full"
+        )
         note = QLabel(
+            f"Face recognition model: {model_note}\n"
             "Changes apply to future scans and re-clustering. "
             f"Library location: {config.data_dir}"
         )
@@ -103,6 +120,7 @@ class SettingsView(QWidget):
     def _load(self) -> None:
         c = self.config
         self.match_threshold.setValue(c.match_threshold)
+        self.match_margin.setValue(c.match_margin)
         self.min_quality.setValue(c.min_cluster_quality)
         self.det_threshold.setValue(c.detection_score_threshold)
         self.det_mode.setCurrentIndex(max(0, self.det_mode.findData(c.detection_mode)))
@@ -114,6 +132,7 @@ class SettingsView(QWidget):
     def _save(self) -> None:
         c = self.config
         c.match_threshold = self.match_threshold.value()
+        c.match_margin = self.match_margin.value()
         c.min_cluster_quality = self.min_quality.value()
         c.detection_score_threshold = self.det_threshold.value()
         c.detection_mode = self.det_mode.currentData()

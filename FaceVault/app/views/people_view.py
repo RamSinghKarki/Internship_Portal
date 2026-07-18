@@ -142,6 +142,7 @@ class PeopleView(QWidget):
         act_rename = menu.addAction("Rename…")
         act_merge = menu.addAction("Merge into…")
         act_export = menu.addAction("Export photos to folder…")
+        act_split = menu.addAction("Split person (wrongly merged look-alikes)…")
         act_delete = menu.addAction("Delete person (faces become unknown)")
         chosen = menu.exec(self.grid.mapToGlobal(pos))
 
@@ -170,6 +171,27 @@ class PeopleView(QWidget):
                     pid, Path(dest)
                 )
                 QMessageBox.information(self, "Export", f"Copied {n} photo(s) to {dest}")
+        elif chosen is act_split:
+            confirm = QMessageBox.question(
+                self, "Split person",
+                "Re-cluster this person's faces at a stricter threshold?\n"
+                "Distinct sub-groups become separate people; uncertain faces "
+                "go to Unknown for review.",
+            )
+            if confirm == QMessageBox.Yes:
+                result = self.people_service.split_person(pid)
+                if result["split"]:
+                    QMessageBox.information(
+                        self, "Split person",
+                        f"Created {result['new_people']} new person/people; "
+                        f"{result['unassigned']} face(s) moved to Unknown.",
+                    )
+                else:
+                    QMessageBox.information(
+                        self, "Split person",
+                        "These faces look consistent — nothing to split.",
+                    )
+                self.data_changed.emit()
         elif chosen is act_delete:
             confirm = QMessageBox.question(
                 self, "Delete person",

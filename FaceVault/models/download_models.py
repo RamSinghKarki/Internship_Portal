@@ -68,9 +68,23 @@ def fetch_url(name: str, url: str) -> bool:
         return False
 
 
+# Optional recognition upgrade (~166 MB, better look-alike separation):
+# python models/download_models.py --arcface
+ARCFACE = {
+    "arcface_w600k_r50.onnx":
+        "https://huggingface.co/deepghs/insightface/resolve/main/buffalo_l/w600k_r50.onnx",
+}
+
+
 def main() -> int:
     ok = all(fetch(name, rel) for name, rel in MODELS.items())
     clip_ok = all(fetch_url(name, url) for name, url in CLIP_MODELS.items())
+    if "--arcface" in sys.argv:
+        if all(fetch_url(name, url) for name, url in ARCFACE.items()):
+            print("ArcFace ready — run `python -m app scan FOLDER --full` to "
+                  "re-embed your library with it.")
+        else:
+            print("ArcFace download failed.", file=sys.stderr)
     if not ok:
         print("Face models could not be downloaded.", file=sys.stderr)
         return 1
