@@ -11,7 +11,7 @@ from ..ai.detector import FaceDetector
 from ..ai.indexing import VectorIndex
 from ..ai.recognizer import FaceRecognizer
 from ..config import AppConfig
-from ..database.models import Face, Image, Person
+from ..database.models import DetectedObject, Face, Image, Person
 from ..database.repository import Repository, embedding_from_bytes
 
 
@@ -33,6 +33,7 @@ class SearchService:
         unknown_faces_only: bool = False,
         favorites_only: bool = False,
         text_contains: str | None = None,
+        tag: str | None = None,
         limit: int = 500,
     ) -> list[Image]:
         with self.session_factory() as session:
@@ -41,6 +42,10 @@ class SearchService:
                 q = q.where(Image.favorite.is_(True))
             if text_contains:
                 q = q.where(Image.ocr_text.ilike(f"%{text_contains}%"))
+            if tag:
+                q = q.join(DetectedObject, DetectedObject.image_id == Image.id).where(
+                    DetectedObject.label.ilike(f"%{tag}%")
+                )
             if person_name or min_quality is not None or unknown_faces_only:
                 q = q.join(Face, Face.image_id == Image.id)
             if person_name:

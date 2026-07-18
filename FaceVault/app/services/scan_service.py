@@ -10,10 +10,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
 from ..config import AppConfig
-from ..database.models import Face, Image, ScanHistory
+from ..database.models import DetectedObject, Face, Image, ScanHistory
 from ..database.repository import Repository
 from ..workers.pipeline import ProcessedImage, ScanPipeline, discover_images
 from .people_service import PeopleService
@@ -57,6 +58,15 @@ class ScanService:
             img.clip_embedding = res.clip_embedding
         if res.ocr_text is not None:
             img.ocr_text = res.ocr_text
+        if res.objects:
+            session.flush()  # ensure img.id for new images
+            for obj in session.scalars(
+                select(DetectedObject).where(DetectedObject.image_id == img.id)
+            ):
+                session.delete(obj)
+            for label, conf in res.objects:
+                session.add(DetectedObject(image_id=img.id, label=label,
+                                           confidence=round(conf, 3)))
         for f in res.faces:
             img.faces.append(
                 Face(

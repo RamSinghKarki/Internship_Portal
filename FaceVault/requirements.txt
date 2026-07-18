@@ -17,5 +17,9 @@ tokenizers>=0.15
 # OCR (optional — search photos by the text inside them)
 rapidocr-onnxruntime>=1.3
 
+# Local REST API (optional — `python -m app serve`)
+fastapi>=0.110
+uvicorn>=0.27
+
 # Development
 pytest>=7.0

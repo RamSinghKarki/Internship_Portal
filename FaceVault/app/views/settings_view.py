@@ -84,6 +84,12 @@ class SettingsView(QWidget):
             "Slows scanning; needs `pip install rapidocr-onnxruntime`."
         )
 
+        self.objects_enabled = QCheckBox("Auto-tag objects during scans")
+        self.objects_enabled.setToolTip(
+            "Detects objects (dog, car, laptop…) so photos are searchable\n"
+            "by what's in them. Needs the YOLO model in models/."
+        )
+
         form.addRow("Face match threshold", self.match_threshold)
         form.addRow("Look-alike margin", self.match_margin)
         form.addRow("Min quality for grouping", self.min_quality)
@@ -94,6 +100,7 @@ class SettingsView(QWidget):
         form.addRow("Near-duplicate distance", self.near_dup)
         form.addRow("Worker threads", self.workers)
         form.addRow("OCR", self.ocr_enabled)
+        form.addRow("Objects", self.objects_enabled)
         layout.addLayout(form)
 
         buttons = QHBoxLayout()
@@ -147,6 +154,7 @@ class SettingsView(QWidget):
         self.near_dup.setValue(c.near_duplicate_distance)
         self.workers.setValue(c.worker_threads)
         self.ocr_enabled.setChecked(c.ocr_enabled)
+        self.objects_enabled.setChecked(c.objects_enabled)
 
     def _save(self) -> None:
         c = self.config
@@ -160,5 +168,6 @@ class SettingsView(QWidget):
         c.near_duplicate_distance = self.near_dup.value()
         c.worker_threads = self.workers.value()
         c.ocr_enabled = self.ocr_enabled.isChecked()
+        c.objects_enabled = self.objects_enabled.isChecked()
         c.save()
         self._status.setText("Saved ✓")

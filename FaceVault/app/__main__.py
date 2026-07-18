@@ -199,6 +199,7 @@ def cmd_search(args) -> int:
         person_name=args.person,
         camera=args.camera,
         text_contains=args.text,
+        tag=args.tag,
         taken_after=parse(args.after),
         taken_before=parse(args.before),
         min_quality=args.min_quality,
@@ -299,6 +300,20 @@ def cmd_gpu(args) -> int:
     return 0
 
 
+def cmd_serve(args) -> int:
+    try:
+        import uvicorn
+
+        from .api.server import create_app
+    except ImportError:
+        print("The API needs: pip install fastapi uvicorn", file=sys.stderr)
+        return 1
+    cfg = AppConfig.load(data_dir=args.data_dir)
+    print(f"FaceVault API on http://127.0.0.1:{args.port}  (docs at /docs)")
+    uvicorn.run(create_app(cfg), host="127.0.0.1", port=args.port, log_level="info")
+    return 0
+
+
 def cmd_gui(args) -> int:
     try:
         from .views.main_window import run_gui
@@ -367,10 +382,16 @@ def build_parser() -> argparse.ArgumentParser:
                    help='semantic AI search, e.g. --describe "sunset at the beach"')
     p.add_argument("--text",
                    help='find photos containing this text (OCR), e.g. --text passport')
+    p.add_argument("--tag",
+                   help='find photos by detected object, e.g. --tag dog')
     p.set_defaults(func=cmd_search)
 
     p = sub.add_parser("gpu", help="show whether AI runs on GPU or CPU")
     p.set_defaults(func=cmd_gpu)
+
+    p = sub.add_parser("serve", help="run the local REST API (http://127.0.0.1:8090)")
+    p.add_argument("--port", type=int, default=8090)
+    p.set_defaults(func=cmd_serve)
 
     p = sub.add_parser("semantic-index",
                        help="compute semantic embeddings for photos scanned "

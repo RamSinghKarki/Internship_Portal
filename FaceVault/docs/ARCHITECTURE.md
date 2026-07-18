@@ -143,7 +143,13 @@ rescan-all-folders, semantic natural-language search (local quantized
 CLIP ViT-B/32 over ONNX Runtime, CUDA auto-detected, embeddings stored
 per image and computed during scans), and a non-destructive photo
 editor (rotate/flip/crop/adjust/auto-enhance, saved copies re-indexed
-through the same pipeline).
+through the same pipeline). Phase-2 AI additions: cancellable scans
+(Stop button / Ctrl+C, partial progress saved), unified GPU provider
+selection (CUDA → DirectML → CPU, `app gpu` diagnostic), OCR text
+extraction + search (RapidOCR), object auto-tagging + search
+(YOLOv8n over ONNX), ArcFace 512-d recognition upgrade, look-alike
+match margin + split-person tool, and a local FastAPI REST search API
+(`app serve`).
 
 **v2 (designed seams exist):** GPS map view (lat/lon already extracted),
 periodic HDBSCAN maintenance re-cluster, FAISS at scale, Alembic,

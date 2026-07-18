@@ -14,6 +14,8 @@ dependencies = [
 gui = ["PySide6>=6.6"]
 semantic = ["onnxruntime>=1.17", "tokenizers>=0.15"]
 semantic-gpu = ["onnxruntime-gpu>=1.17", "tokenizers>=0.15"]
+ocr = ["rapidocr-onnxruntime>=1.3"]
+api = ["fastapi>=0.110", "uvicorn>=0.27"]
 faiss = ["faiss-cpu>=1.7"]
 dev = ["pytest>=7.0"]
 
@@ -28,6 +30,7 @@ build-backend = "setuptools.build_meta"
 packages = [
     "app",
     "app.ai",
+    "app.api",
     "app.database",
     "app.services",
     "app.themes",

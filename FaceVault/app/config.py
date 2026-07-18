@@ -62,6 +62,8 @@ class AppConfig:
     # Extract text from photos during scans (searchable documents).
     # Auto-disabled when rapidocr-onnxruntime isn't installed.
     ocr_enabled: bool = True
+    # Auto-tag photos with detected objects (dog, car, laptop, …).
+    objects_enabled: bool = True
 
     # Processing
     worker_threads: int = max(2, (os.cpu_count() or 4) - 1)
@@ -98,6 +100,17 @@ class AppConfig:
     @property
     def arcface_model(self) -> Path:
         return self.models_dir / "arcface_w600k_r50.onnx"
+
+    @property
+    def objects_model(self) -> Path:
+        return self.models_dir / "yolo_objects.onnx"
+
+    def objects_available(self) -> bool:
+        try:
+            from .ai.objects import objects_runtime_available
+        except ImportError:
+            return False
+        return objects_runtime_available() and self.objects_model.is_file()
 
     def active_recognition(self) -> str:
         """Which face-embedding model scans will use: 'arcface' or 'sface'."""
@@ -172,6 +185,7 @@ class AppConfig:
         "near_duplicate_distance",
         "worker_threads",
         "ocr_enabled",
+        "objects_enabled",
     )
 
     def save(self) -> None:

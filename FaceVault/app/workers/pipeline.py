@@ -53,6 +53,7 @@ class ProcessedImage:
     faces: list[ProcessedFace] = field(default_factory=list)
     clip_embedding: bytes | None = None
     ocr_text: str | None = None
+    objects: list[tuple[str, float]] = field(default_factory=list)
     error: str | None = None
 
 
@@ -88,6 +89,11 @@ class ScanPipeline:
             from ..ai.ocr import OcrEngine
 
             self._ocr = OcrEngine()
+        self._objects = None
+        if config.objects_enabled and config.objects_available():
+            from ..ai.objects import ObjectDetector
+
+            self._objects = ObjectDetector(config.objects_model)
 
     def _models(self):
         if not hasattr(self._tls, "detector"):
@@ -125,6 +131,9 @@ class ScanPipeline:
 
             if self._ocr is not None:
                 result.ocr_text = self._ocr.extract_text(img)
+
+            if self._objects is not None:
+                result.objects = self._objects.detect(img)
 
             detector, recognizer = self._models()
             for det in detector.detect(img, min_face_size=self.config.min_face_size):

@@ -105,6 +105,19 @@ class Person(Base):
         return self.name or f"Person {self.id}"
 
 
+class DetectedObject(Base):
+    """Auto-tags from object detection: what's in the photo (dog, car…)."""
+
+    __tablename__ = "detected_objects"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    image_id: Mapped[int] = mapped_column(
+        ForeignKey("images.id", ondelete="CASCADE"), index=True
+    )
+    label: Mapped[str] = mapped_column(String(64), index=True)
+    confidence: Mapped[float] = mapped_column(Float)
+
+
 class Album(Base):
     __tablename__ = "albums"
 

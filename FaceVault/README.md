@@ -101,6 +101,42 @@ face *detection* and SFace run via OpenCV, which is CPU-only in pip
 builds — they're lightweight; the heavy models are the ones that move
 to GPU.
 
+## Search by what's in the photo (object tags)
+
+Every photo is auto-tagged with the objects it contains (dog, car,
+laptop, bottle, … — 80 COCO categories) using a local YOLOv8 model
+(bundled in `models/`, runs on ONNX Runtime, GPU-accelerated). Search
+with the "Object…" box in Photos or:
+
+```bash
+python -m app search --tag dog
+```
+
+Toggle in Settings ("Auto-tag objects during scans"). Existing photos
+get tags on the next `scan --full`.
+
+## Local REST API
+
+Other apps (or a future web UI) can query the same library over HTTP:
+
+```bash
+python -m app serve      # http://127.0.0.1:8090  — interactive docs at /docs
+```
+
+```bash
+curl -X POST http://127.0.0.1:8090/api/search \
+     -H "Content-Type: application/json" \
+     -d '{"query": "dog near river"}'          # semantic
+curl -X POST http://127.0.0.1:8090/api/search -d '{"tag": "car"}'
+curl -X POST http://127.0.0.1:8090/api/search -d '{"person": "Ram", "favorites": true}'
+```
+
+Endpoints: `POST /api/search` (semantic via `query`, or filters
+`person`/`camera`/`text`/`tag`/`favorites`), `GET /api/people`,
+`GET /api/stats`, `GET /api/photos/{id}/thumbnail`,
+`GET /api/photos/{id}/file`. Needs `pip install fastapi uvicorn`.
+Binds localhost only, no auth — don't expose it to a network as-is.
+
 ## OCR — find photos by the text in them
 
 Documents, receipts, screenshots and certificates become searchable:
