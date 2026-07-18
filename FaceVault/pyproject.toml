@@ -12,6 +12,8 @@ dependencies = [
 
 [project.optional-dependencies]
 gui = ["PySide6>=6.6"]
+semantic = ["onnxruntime>=1.17", "tokenizers>=0.15"]
+semantic-gpu = ["onnxruntime-gpu>=1.17", "tokenizers>=0.15"]
 faiss = ["faiss-cpu>=1.7"]
 dev = ["pytest>=7.0"]
 

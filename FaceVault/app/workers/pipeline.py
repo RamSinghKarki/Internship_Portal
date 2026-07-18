@@ -49,6 +49,7 @@ class ProcessedImage:
     height: int | None = None
     exif: dict = field(default_factory=dict)
     faces: list[ProcessedFace] = field(default_factory=list)
+    clip_embedding: bytes | None = None
     error: str | None = None
 
 
@@ -63,6 +64,15 @@ class ScanPipeline:
     def __init__(self, config: AppConfig):
         self.config = config
         self._tls = threading.local()
+        # One shared CLIP encoder — ONNX Runtime sessions are thread-safe
+        # (unlike OpenCV DNN models, which stay thread-local).
+        self._clip = None
+        if config.semantic_available():
+            from ..ai.semantic import ClipEncoder
+
+            self._clip = ClipEncoder(
+                config.clip_vision_model, config.clip_text_model, config.clip_tokenizer
+            )
 
     def _models(self) -> tuple[FaceDetector, FaceRecognizer]:
         if not hasattr(self._tls, "detector"):
@@ -89,6 +99,10 @@ class ScanPipeline:
             result.file_hash = sha256_file(path)
             result.phash = f"{dhash(img):016x}"
             result.exif = extract_exif(path)
+
+            if self._clip is not None:
+                emb = self._clip.embed_image(img)
+                result.clip_embedding = emb.tobytes() if emb is not None else None
 
             detector, recognizer = self._models()
             for det in detector.detect(img, min_face_size=self.config.min_face_size):

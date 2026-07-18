@@ -82,6 +82,32 @@ class AppConfig:
         return self.models_dir / "face_recognition_sface_2021dec.onnx"
 
     @property
+    def clip_vision_model(self) -> Path:
+        return self.models_dir / "clip_vision.onnx"
+
+    @property
+    def clip_text_model(self) -> Path:
+        return self.models_dir / "clip_text.onnx"
+
+    @property
+    def clip_tokenizer(self) -> Path:
+        return self.models_dir / "clip_tokenizer.json"
+
+    def semantic_available(self) -> bool:
+        """Semantic search is optional: needs the CLIP models on disk plus
+        the onnxruntime + tokenizers packages."""
+        try:
+            from .ai.semantic import runtime_available
+        except ImportError:
+            return False
+        return (
+            runtime_available()
+            and self.clip_vision_model.is_file()
+            and self.clip_text_model.is_file()
+            and self.clip_tokenizer.is_file()
+        )
+
+    @property
     def settings_file(self) -> Path:
         return self.data_dir / "settings.json"
 

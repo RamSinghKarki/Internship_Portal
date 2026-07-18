@@ -66,11 +66,43 @@ class PhotosView(QWidget):
         filters.addWidget(self._count)
         layout.addLayout(filters)
 
+        # Semantic (natural-language) search — enabled when CLIP models exist.
+        ai_row = QHBoxLayout()
+        self.describe = QLineEdit()
+        self.ai_btn = QPushButton("🔍 AI Search")
+        self.ai_btn.setObjectName("primary")
+        if config.semantic_available():
+            self.describe.setPlaceholderText(
+                'Describe what you\'re looking for… e.g. "sunset at the beach", '
+                '"person smiling", "red car"'
+            )
+            self.describe.returnPressed.connect(self._semantic_search)
+            self.ai_btn.clicked.connect(self._semantic_search)
+        else:
+            self.describe.setPlaceholderText(
+                "Semantic search not installed — run models/download_models.py "
+                "and pip install onnxruntime tokenizers"
+            )
+            self.describe.setEnabled(False)
+            self.ai_btn.setEnabled(False)
+        ai_row.addWidget(self.describe, stretch=1)
+        ai_row.addWidget(self.ai_btn)
+        layout.addLayout(ai_row)
+
         self.grid = PhotoGrid(ThumbnailService(config))
         self.grid.setContextMenuPolicy(Qt.CustomContextMenu)
         self.grid.customContextMenuRequested.connect(self._context_menu)
         self.grid.open_requested.connect(self._open_viewer)
         layout.addWidget(self.grid)
+
+    def _semantic_search(self) -> None:
+        query = self.describe.text().strip()
+        if not query:
+            self.refresh()
+            return
+        hits = self.search.semantic_search(query)
+        self.grid.set_images([(img.id, img.path) for img, _score in hits])
+        self._count.setText(f"{len(hits)} AI match(es) for “{query}”")
 
     def refresh(self) -> None:
         images = self.search.search_images(
@@ -90,7 +122,10 @@ class PhotosView(QWidget):
         self._count.setText(f"{len(images)} photo(s)")
 
     def _open_viewer(self, index: int) -> None:
-        PhotoViewerDialog(self.grid.images, index, self.session_factory, self).exec()
+        dlg = PhotoViewerDialog(self.grid.images, index, self.session_factory,
+                                config=self.config, parent=self)
+        dlg.exec()
+        self.refresh()  # an edit may have added a new library photo
 
     def _context_menu(self, pos) -> None:
         selected = self.grid.selected_image_ids()

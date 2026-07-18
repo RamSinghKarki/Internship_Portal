@@ -32,6 +32,18 @@ folder. From the CLI:
 python -m app export-people ~/Desktop/ByPerson --include-unknown
 ```
 
+**Semantic AI search:** type a description — `"sunset at the beach"`,
+`"person smiling"`, `"red car"` — into the AI search bar in Photos (or
+`python -m app search --describe "..."`). Runs a local CLIP model
+(quantized ViT-B/32 via ONNX Runtime), fully offline. Photos are indexed
+during scanning; for a library scanned before installing the models run
+`python -m app semantic-index` once.
+
+**Photo editor:** ✎ Edit in the viewer — rotate, flip, drag-to-crop,
+brightness/contrast/saturation, one-click auto-enhance. Saves as a copy
+next to the original (never overwrites) and the copy is indexed into the
+library immediately.
+
 Other Google-Photos-style features: favorites (★ in the viewer or
 right-click, filter in Photos), trash with restore, month-grouped
 timeline, "On this day" memories on the dashboard, slideshow in the
@@ -39,6 +51,20 @@ viewer, and `Tools → Rescan all scanned folders` (or `python -m app
 rescan`) to pick up new photos in one click. Backup/sync and sharing are
 deliberately absent — they require a server, and FaceVault is 100%
 offline.
+
+## GPU acceleration (NVIDIA)
+
+Face detection/recognition are lightweight and run great on CPU. The
+CLIP semantic indexer benefits from your GPU on large libraries: install
+the CUDA build and FaceVault picks it up automatically —
+
+```bash
+pip uninstall onnxruntime && pip install onnxruntime-gpu
+```
+
+(Needs recent NVIDIA drivers + CUDA runtime; RTX 20-series or newer. If
+CUDA isn't available it falls back to CPU silently — same results,
+just slower.)
 
 ![Photos view](docs/screenshot-photos.png)
 ![Photo viewer with face overlays](docs/screenshot-viewer.png)

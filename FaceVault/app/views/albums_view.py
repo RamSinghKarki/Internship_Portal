@@ -145,4 +145,5 @@ class AlbumsView(QWidget):
             self.refresh()
 
     def _open_viewer(self, index: int) -> None:
-        PhotoViewerDialog(self.grid.images, index, self.session_factory, self).exec()
+        PhotoViewerDialog(self.grid.images, index, self.session_factory,
+                          config=self.config, parent=self).exec()

@@ -3,6 +3,7 @@
 from datetime import datetime
 from pathlib import Path
 
+import numpy as np
 from sqlalchemy import select
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -57,6 +58,82 @@ class SearchService:
                 q = q.where(Image.gps_lat.is_not(None))
             q = q.order_by(Image.taken_at.desc().nullslast(), Image.id.desc()).limit(limit)
             return list(session.scalars(q))
+
+    # ---- semantic (natural language) -----------------------------------
+    def semantic_search(
+        self, query: str, k: int = 60, min_score: float = 0.20
+    ) -> list[tuple[Image, float]]:
+        """Rank photos against a text description using local CLIP.
+
+        min_score filters clearly-unrelated photos; CLIP cosine scores for
+        genuine matches typically land around 0.25-0.35.
+        """
+        if not self.config.semantic_available():
+            raise RuntimeError(
+                "Semantic search models not installed — run "
+                "models/download_models.py and pip install onnxruntime tokenizers"
+            )
+        from ..ai.semantic import ClipEncoder
+
+        encoder = ClipEncoder(
+            self.config.clip_vision_model,
+            self.config.clip_text_model,
+            self.config.clip_tokenizer,
+        )
+        text_vec = encoder.embed_text(query)
+
+        with self.session_factory() as session:
+            rows = session.execute(
+                select(Image.id, Image.clip_embedding).where(
+                    Image.clip_embedding.is_not(None), Image.trashed.is_(False)
+                )
+            ).all()
+            if not rows:
+                return []
+            ids = [r[0] for r in rows]
+            matrix = np.stack([np.frombuffer(r[1], dtype=np.float32) for r in rows])
+            scores = matrix @ text_vec
+            order = np.argsort(-scores)[:k]
+            out = []
+            for i in order:
+                if scores[i] < min_score:
+                    break
+                img = session.get(Image, ids[i])
+                if img is not None:
+                    out.append((img, float(scores[i])))
+            return out
+
+    def semantic_backfill(self, progress=None) -> int:
+        """Compute CLIP embeddings for images scanned before semantic
+        search was installed. Returns how many were indexed."""
+        if not self.config.semantic_available():
+            raise RuntimeError("Semantic search models not installed")
+        from ..ai.semantic import ClipEncoder
+        from ..utils.hashing import load_image_bgr
+
+        encoder = ClipEncoder(
+            self.config.clip_vision_model,
+            self.config.clip_text_model,
+            self.config.clip_tokenizer,
+        )
+        done = 0
+        with self.session_factory() as session:
+            todo = session.scalars(
+                select(Image).where(Image.clip_embedding.is_(None))
+            ).all()
+            for n, img in enumerate(todo, 1):
+                bgr = load_image_bgr(Path(img.path))
+                if bgr is not None:
+                    emb = encoder.embed_image(bgr)
+                    if emb is not None:
+                        img.clip_embedding = emb.tobytes()
+                        done += 1
+                if progress:
+                    progress(n, len(todo), img.path)
+                if n % 64 == 0:
+                    session.commit()
+            session.commit()
+        return done
 
     # ---- similarity ----------------------------------------------------
     def rebuild_index(self) -> int:

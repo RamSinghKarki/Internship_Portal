@@ -52,6 +52,9 @@ class Image(Base):
     taken_at: Mapped[datetime | None] = mapped_column(DateTime)
     scanned_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     favorite: Mapped[bool] = mapped_column(Boolean, default=False)
+    # CLIP ViT-B/32 image embedding (512 x float32) for semantic search;
+    # null until the image is semantically indexed.
+    clip_embedding: Mapped[bytes | None] = mapped_column(LargeBinary)
     # Soft delete: trashed photos disappear from every view except Trash
     # and can be restored; the file on disk is never touched.
     trashed: Mapped[bool] = mapped_column(Boolean, default=False)

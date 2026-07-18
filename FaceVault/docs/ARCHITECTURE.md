@@ -139,7 +139,11 @@ script for a standalone executable, and the Google-Photos feature set:
 export-people-to-folders (one folder per person), month-grouped
 timeline, favorites, trash with restore (soft delete + lightweight
 in-place schema migration), "On this day" memories, slideshow,
-rescan-all-folders.
+rescan-all-folders, semantic natural-language search (local quantized
+CLIP ViT-B/32 over ONNX Runtime, CUDA auto-detected, embeddings stored
+per image and computed during scans), and a non-destructive photo
+editor (rotate/flip/crop/adjust/auto-enhance, saved copies re-indexed
+through the same pipeline).
 
 **v2 (designed seams exist):** GPS map view (lat/lon already extracted),
 periodic HDBSCAN maintenance re-cluster, FAISS at scale, Alembic,

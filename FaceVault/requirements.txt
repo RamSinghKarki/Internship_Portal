@@ -7,5 +7,11 @@ SQLAlchemy>=2.0
 # Desktop GUI (optional — install to use `python -m app gui`)
 PySide6>=6.6
 
+# Semantic search (optional — natural-language photo search via local CLIP;
+# also run models/download_models.py once to fetch the CLIP models)
+onnxruntime>=1.17
+tokenizers>=0.15
+# NVIDIA GPU owners: replace onnxruntime with onnxruntime-gpu for CUDA speed.
+
 # Development
 pytest>=7.0

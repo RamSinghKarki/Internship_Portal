@@ -146,10 +146,27 @@ def cmd_stats(args) -> int:
     return 0
 
 
+def cmd_semantic_index(args) -> int:
+    from .services.search_service import SearchService
+
+    cfg, factory = _services(args)
+    def progress(done, total, path):
+        print(f"\r[{done}/{total}] {Path(path).name[:60]:<60}", end="", flush=True)
+    n = SearchService(cfg, factory).semantic_backfill(progress=progress)
+    print(f"\nSemantically indexed {n} photo(s).")
+    return 0
+
+
 def cmd_search(args) -> int:
     from .services.search_service import SearchService
 
     cfg, factory = _services(args)
+    if args.describe:
+        hits = SearchService(cfg, factory).semantic_search(args.describe)
+        print(f"{len(hits)} match(es) for {args.describe!r}")
+        for img, score in hits:
+            print(f"  {score:.3f}  {img.path}")
+        return 0
     parse = lambda s: datetime.strptime(s, "%Y-%m-%d") if s else None
     images = SearchService(cfg, factory).search_images(
         person_name=args.person,
@@ -293,7 +310,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--min-quality", type=float)
     p.add_argument("--gps", action="store_true", help="only geotagged photos")
     p.add_argument("--unknown", action="store_true", help="photos with unknown faces")
+    p.add_argument("--describe",
+                   help='semantic AI search, e.g. --describe "sunset at the beach"')
     p.set_defaults(func=cmd_search)
+
+    p = sub.add_parser("semantic-index",
+                       help="compute semantic embeddings for photos scanned "
+                            "before CLIP models were installed")
+    p.set_defaults(func=cmd_semantic_index)
 
     p = sub.add_parser("similar", help="find library faces similar to a query image")
     p.add_argument("image")

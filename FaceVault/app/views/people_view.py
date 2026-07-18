@@ -29,7 +29,7 @@ from ..widgets.photo_viewer import PhotoViewerDialog
 
 class PersonPhotosDialog(QDialog):
     def __init__(self, title: str, images: list[tuple[int, str]],
-                 thumbs: ThumbnailService, session_factory, parent=None):
+                 thumbs: ThumbnailService, session_factory, config=None, parent=None):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.resize(820, 600)
@@ -37,7 +37,8 @@ class PersonPhotosDialog(QDialog):
         grid = PhotoGrid(thumbs)
         grid.set_images(images)
         grid.open_requested.connect(
-            lambda index: PhotoViewerDialog(images, index, session_factory, self).exec()
+            lambda index: PhotoViewerDialog(images, index, session_factory,
+                                            config=config, parent=self).exec()
         )
         layout.addWidget(grid)
 
@@ -127,7 +128,8 @@ class PeopleView(QWidget):
             detail["images"],
             self.thumbs,
             self.session_factory,
-            self,
+            config=self.config,
+            parent=self,
         )
         dlg.exec()
 

@@ -46,3 +46,5 @@ def _migrate(engine) -> None:
             conn.exec_driver_sql(
                 "ALTER TABLE images ADD COLUMN trashed BOOLEAN NOT NULL DEFAULT 0"
             )
+        if "clip_embedding" not in cols:
+            conn.exec_driver_sql("ALTER TABLE images ADD COLUMN clip_embedding BLOB")

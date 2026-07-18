@@ -27,11 +27,12 @@ UNKNOWN = QColor("#e0a030")
 
 class PhotoViewerDialog(QDialog):
     def __init__(self, images: list[tuple[int, str]], start_index: int,
-                 session_factory, parent=None):
+                 session_factory, config=None, parent=None):
         super().__init__(parent)
         self.images = images
         self.index = max(0, min(start_index, len(images) - 1))
         self.session_factory = session_factory
+        self.config = config  # enables the Edit button when provided
 
         self.resize(1000, 720)
         layout = QVBoxLayout(self)
@@ -60,6 +61,10 @@ class PhotoViewerDialog(QDialog):
         nav.addWidget(next_btn)
         nav.addWidget(self._fav_btn)
         nav.addWidget(self._play_btn)
+        if self.config is not None:
+            edit_btn = QPushButton("✎ Edit")
+            edit_btn.clicked.connect(self._open_editor)
+            nav.addWidget(edit_btn)
         nav.addStretch()
         nav.addWidget(self._caption)
         layout.addLayout(nav)
@@ -90,6 +95,27 @@ class PhotoViewerDialog(QDialog):
                 img.favorite = not img.favorite
                 session.commit()
         self._update_fav_button()
+
+    def _open_editor(self) -> None:
+        from .photo_editor import PhotoEditorDialog
+
+        _id, path = self.images[self.index]
+        dlg = PhotoEditorDialog(path, self)
+        dlg.saved.connect(self._index_saved_edit)
+        dlg.exec()
+
+    def _index_saved_edit(self, saved_path: str) -> None:
+        """Add the edited copy to the library right away."""
+        from pathlib import Path
+
+        from ..services.scan_service import ScanService
+
+        try:
+            ScanService(self.config, self.session_factory).index_files(
+                [Path(saved_path)]
+            )
+        except FileNotFoundError:
+            pass  # AI models unavailable: the copy exists, a later scan indexes it
 
     def _update_fav_button(self) -> None:
         image_id, _ = self.images[self.index]

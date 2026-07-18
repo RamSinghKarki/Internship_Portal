@@ -2,6 +2,8 @@
 
 Incremental by default: files whose (mtime, size) match the DB are
 skipped, so re-scanning a folder only pays for what changed.
+`index_files` ingests specific files (e.g. a freshly saved edit) through
+the exact same pipeline.
 """
 
 from datetime import datetime, timezone
@@ -22,6 +24,70 @@ class ScanService:
         self.config = config
         self.session_factory = session_factory
 
+    def _require_models(self) -> None:
+        if not self.config.models_available():
+            raise FileNotFoundError(
+                f"AI models not found in {self.config.models_dir}. "
+                "Run models/download_models.py once (see models/README.md)."
+            )
+
+    def _write_processed(self, session: Session, repo: Repository,
+                         res: ProcessedImage) -> int | None:
+        """Upsert one pipeline result. Returns faces stored, None on error."""
+        if res.error:
+            return None
+        img = repo.image_by_path(res.path)
+        if img is None:
+            img = Image(path=res.path)
+            session.add(img)
+        else:
+            img.faces.clear()  # file changed: re-detect from scratch
+        img.mtime = res.mtime
+        img.size_bytes = res.size_bytes
+        img.file_hash = res.file_hash
+        img.phash = res.phash
+        img.width, img.height = res.width, res.height
+        img.camera = res.exif.get("camera")
+        img.lens = res.exif.get("lens")
+        img.taken_at = res.exif.get("taken_at")
+        img.gps_lat = res.exif.get("gps_lat")
+        img.gps_lon = res.exif.get("gps_lon")
+        img.scanned_at = datetime.now(timezone.utc)
+        if res.clip_embedding is not None:
+            img.clip_embedding = res.clip_embedding
+        for f in res.faces:
+            img.faces.append(
+                Face(
+                    x=f.x, y=f.y, w=f.w, h=f.h,
+                    det_score=f.det_score,
+                    blur_score=f.blur,
+                    quality=f.quality,
+                    embedding=f.embedding,
+                )
+            )
+        return len(res.faces)
+
+    def index_files(self, paths: list[Path]) -> dict:
+        """Process specific files (new or changed) and assign identities."""
+        self._require_models()
+        pipeline = ScanPipeline(self.config)
+        new_images = failed = faces_found = 0
+        with self.session_factory() as session:
+            repo = Repository(session)
+            for res in pipeline.run([Path(p) for p in paths]):
+                stored = self._write_processed(session, repo, res)
+                if stored is None:
+                    failed += 1
+                else:
+                    new_images += 1
+                    faces_found += stored
+            session.commit()
+            assignment = PeopleService(self.config, self.session_factory).assign_identities(session)
+        return {
+            "new_images": new_images, "failed": failed,
+            "faces_found": faces_found, **assignment,
+        }
+
     def scan(
         self,
         folder: Path,
@@ -31,11 +97,7 @@ class ScanService:
         folder = Path(folder).expanduser().resolve()
         if not folder.is_dir():
             raise NotADirectoryError(f"Not a folder: {folder}")
-        if not self.config.models_available():
-            raise FileNotFoundError(
-                f"AI models not found in {self.config.models_dir}. "
-                "Run models/download_models.py once (see models/README.md)."
-            )
+        self._require_models()
 
         with self.session_factory() as session:
             history = ScanHistory(folder=str(folder))
@@ -58,55 +120,23 @@ class ScanService:
 
             pipeline = ScanPipeline(self.config)
             new_images = failed = faces_found = 0
-            batch: list[ProcessedImage] = []
-
-            def flush() -> None:
-                nonlocal new_images, faces_found, failed
-                for res in batch:
-                    if res.error:
-                        failed += 1
-                        continue
-                    img = repo.image_by_path(res.path)
-                    if img is None:
-                        img = Image(path=res.path)
-                        session.add(img)
-                    else:
-                        img.faces.clear()  # file changed: re-detect from scratch
-                    img.mtime = res.mtime
-                    img.size_bytes = res.size_bytes
-                    img.file_hash = res.file_hash
-                    img.phash = res.phash
-                    img.width, img.height = res.width, res.height
-                    img.camera = res.exif.get("camera")
-                    img.lens = res.exif.get("lens")
-                    img.taken_at = res.exif.get("taken_at")
-                    img.gps_lat = res.exif.get("gps_lat")
-                    img.gps_lon = res.exif.get("gps_lon")
-                    img.scanned_at = datetime.now(timezone.utc)
-                    for f in res.faces:
-                        img.faces.append(
-                            Face(
-                                x=f.x, y=f.y, w=f.w, h=f.h,
-                                det_score=f.det_score,
-                                blur_score=f.blur,
-                                quality=f.quality,
-                                embedding=f.embedding,
-                            )
-                        )
-                        faces_found += 1
-                    new_images += 1
-                session.commit()
-                batch.clear()
+            pending = 0
 
             for res in pipeline.run(todo, progress=progress):
-                batch.append(res)
-                if len(batch) >= self.config.write_batch_size:
-                    flush()
-            flush()
+                stored = self._write_processed(session, repo, res)
+                if stored is None:
+                    failed += 1
+                else:
+                    new_images += 1
+                    faces_found += stored
+                pending += 1
+                if pending >= self.config.write_batch_size:
+                    session.commit()
+                    pending = 0
+            session.commit()
 
             # Identity assignment for everything new in this scan.
-            people = PeopleService(self.config, self.session_factory)
-            assignment = people.assign_identities(session)
+            assignment = PeopleService(self.config, self.session_factory).assign_identities(session)
 
             history.finished_at = datetime.now(timezone.utc)
             history.status = "done"
