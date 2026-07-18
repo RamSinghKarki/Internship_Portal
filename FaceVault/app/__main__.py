@@ -34,20 +34,34 @@ def _fmt_dt(dt) -> str:
 
 
 def cmd_scan(args) -> int:
+    import signal
+    import threading
+
     from .services.scan_service import ScanService
 
     cfg, factory = _services(args)
     if args.mode:
         cfg.detection_mode = args.mode
 
+    cancel = threading.Event()
+
+    def on_sigint(_sig, _frame):
+        print("\nStopping… progress so far will be saved.", flush=True)
+        cancel.set()
+
+    signal.signal(signal.SIGINT, on_sigint)
+
     def progress(done: int, total: int, path: str) -> None:
         name = Path(path).name
         print(f"\r[{done}/{total}] {name[:60]:<60}", end="", flush=True)
 
     summary = ScanService(cfg, factory).scan(
-        Path(args.folder), progress=progress, full_rescan=args.full
+        Path(args.folder), progress=progress, full_rescan=args.full,
+        cancel_event=cancel,
     )
     print()
+    if summary.get("cancelled"):
+        print("Scan stopped by user — partial results saved.")
     print(f"Scanned:        {summary['folder']}")
     print(f"Files found:    {summary['total_files']}")
     print(f"New/updated:    {summary['new_images']}  (skipped {summary['skipped']} unchanged, {summary['failed']} failed)")
@@ -184,6 +198,7 @@ def cmd_search(args) -> int:
     images = SearchService(cfg, factory).search_images(
         person_name=args.person,
         camera=args.camera,
+        text_contains=args.text,
         taken_after=parse(args.after),
         taken_before=parse(args.before),
         min_quality=args.min_quality,
@@ -264,6 +279,26 @@ def cmd_export_csv(args) -> int:
     return 0
 
 
+def cmd_gpu(args) -> int:
+    from .ai.runtime import gpu_summary
+
+    info = gpu_summary()
+    print(f"onnxruntime: {info['onnxruntime'] or 'not installed'}")
+    print(f"available providers: {', '.join(info['available']) or '-'}")
+    print(f"active provider: {info['active']}")
+    if info["gpu"]:
+        print("GPU acceleration: ACTIVE (ArcFace, CLIP semantic search, OCR)")
+    else:
+        print("GPU acceleration: OFF — everything runs on CPU.")
+        print("To use your GPU:")
+        print("  Windows (any GPU, easiest):  pip uninstall onnxruntime && pip install onnxruntime-directml")
+        print("  NVIDIA CUDA (Win/Linux):     pip uninstall onnxruntime && pip install onnxruntime-gpu")
+    print("Note: YuNet detection + SFace run via OpenCV (CPU-only pip build); "
+          "they are lightweight. The heavy models above are the ones that "
+          "move to GPU.")
+    return 0
+
+
 def cmd_gui(args) -> int:
     try:
         from .views.main_window import run_gui
@@ -330,7 +365,12 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--unknown", action="store_true", help="photos with unknown faces")
     p.add_argument("--describe",
                    help='semantic AI search, e.g. --describe "sunset at the beach"')
+    p.add_argument("--text",
+                   help='find photos containing this text (OCR), e.g. --text passport')
     p.set_defaults(func=cmd_search)
+
+    p = sub.add_parser("gpu", help="show whether AI runs on GPU or CPU")
+    p.set_defaults(func=cmd_gpu)
 
     p = sub.add_parser("semantic-index",
                        help="compute semantic embeddings for photos scanned "

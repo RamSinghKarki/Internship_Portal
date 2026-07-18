@@ -55,6 +55,8 @@ class Image(Base):
     # CLIP ViT-B/32 image embedding (512 x float32) for semantic search;
     # null until the image is semantically indexed.
     clip_embedding: Mapped[bytes | None] = mapped_column(LargeBinary)
+    # Text found in the photo by OCR (documents, receipts, screenshots).
+    ocr_text: Mapped[str | None] = mapped_column(Text)
     # Soft delete: trashed photos disappear from every view except Trash
     # and can be restored; the file on disk is never touched.
     trashed: Mapped[bool] = mapped_column(Boolean, default=False)

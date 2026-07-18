@@ -48,3 +48,5 @@ def _migrate(engine) -> None:
             )
         if "clip_embedding" not in cols:
             conn.exec_driver_sql("ALTER TABLE images ADD COLUMN clip_embedding BLOB")
+        if "ocr_text" not in cols:
+            conn.exec_driver_sql("ALTER TABLE images ADD COLUMN ocr_text TEXT")

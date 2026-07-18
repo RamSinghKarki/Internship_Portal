@@ -55,6 +55,8 @@ class ScanService:
         img.scanned_at = datetime.now(timezone.utc)
         if res.clip_embedding is not None:
             img.clip_embedding = res.clip_embedding
+        if res.ocr_text is not None:
+            img.ocr_text = res.ocr_text
         for f in res.faces:
             img.faces.append(
                 Face(
@@ -93,6 +95,7 @@ class ScanService:
         folder: Path,
         progress: Callable[[int, int, str], None] | None = None,
         full_rescan: bool = False,
+        cancel_event=None,
     ) -> dict:
         folder = Path(folder).expanduser().resolve()
         if not folder.is_dir():
@@ -122,7 +125,7 @@ class ScanService:
             new_images = failed = faces_found = 0
             pending = 0
 
-            for res in pipeline.run(todo, progress=progress):
+            for res in pipeline.run(todo, progress=progress, cancel=cancel_event):
                 stored = self._write_processed(session, repo, res)
                 if stored is None:
                     failed += 1
@@ -135,11 +138,13 @@ class ScanService:
                     pending = 0
             session.commit()
 
-            # Identity assignment for everything new in this scan.
+            cancelled = cancel_event is not None and cancel_event.is_set()
+
+            # Identity assignment for everything ingested (even partial scans).
             assignment = PeopleService(self.config, self.session_factory).assign_identities(session)
 
             history.finished_at = datetime.now(timezone.utc)
-            history.status = "done"
+            history.status = "cancelled" if cancelled else "done"
             history.total_files = len(all_paths)
             history.new_images = new_images
             history.skipped = skipped
@@ -154,5 +159,6 @@ class ScanService:
                 "skipped": skipped,
                 "failed": failed,
                 "faces_found": faces_found,
+                "cancelled": cancelled,
                 **assignment,
             }

@@ -59,6 +59,10 @@ class AppConfig:
     # flagged as near-duplicates.
     near_duplicate_distance: int = 5
 
+    # Extract text from photos during scans (searchable documents).
+    # Auto-disabled when rapidocr-onnxruntime isn't installed.
+    ocr_enabled: bool = True
+
     # Processing
     worker_threads: int = max(2, (os.cpu_count() or 4) - 1)
     write_batch_size: int = 32
@@ -167,6 +171,7 @@ class AppConfig:
         "min_cluster_size",
         "near_duplicate_distance",
         "worker_threads",
+        "ocr_enabled",
     )
 
     def save(self) -> None:

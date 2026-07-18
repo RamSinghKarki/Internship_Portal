@@ -18,6 +18,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Iterator
 
+from ..ai.ocr import ocr_available
+
 from ..ai.detector import FaceDetector
 from ..ai.quality import blur_score, quality_score
 from ..ai.recognizer import FaceRecognizer
@@ -50,6 +52,7 @@ class ProcessedImage:
     exif: dict = field(default_factory=dict)
     faces: list[ProcessedFace] = field(default_factory=list)
     clip_embedding: bytes | None = None
+    ocr_text: str | None = None
     error: str | None = None
 
 
@@ -80,6 +83,11 @@ class ScanPipeline:
             from ..ai.arcface import ArcFaceRecognizer
 
             self._arcface = ArcFaceRecognizer(config.arcface_model)
+        self._ocr = None
+        if config.ocr_enabled and ocr_available():
+            from ..ai.ocr import OcrEngine
+
+            self._ocr = OcrEngine()
 
     def _models(self):
         if not hasattr(self._tls, "detector"):
@@ -115,6 +123,9 @@ class ScanPipeline:
                 emb = self._clip.embed_image(img)
                 result.clip_embedding = emb.tobytes() if emb is not None else None
 
+            if self._ocr is not None:
+                result.ocr_text = self._ocr.extract_text(img)
+
             detector, recognizer = self._models()
             for det in detector.detect(img, min_face_size=self.config.min_face_size):
                 x, y, w, h = det.box
@@ -139,15 +150,23 @@ class ScanPipeline:
         self,
         paths: list[Path],
         progress: Callable[[int, int, str], None] | None = None,
+        cancel: threading.Event | None = None,
     ) -> Iterator[ProcessedImage]:
-        """Process paths across the worker pool, yielding results as they finish."""
+        """Process paths across the worker pool, yielding results as they
+        finish. Setting `cancel` stops promptly: queued work is dropped,
+        in-flight images finish and are yielded (so they aren't lost)."""
         total = len(paths)
         done = 0
-        with ThreadPoolExecutor(max_workers=self.config.worker_threads) as pool:
+        pool = ThreadPoolExecutor(max_workers=self.config.worker_threads)
+        try:
             futures = {pool.submit(self.process_one, p): p for p in paths}
             for fut in as_completed(futures):
+                if cancel is not None and cancel.is_set():
+                    break
                 done += 1
                 res = fut.result()
                 if progress:
                     progress(done, total, res.path)
                 yield res
+        finally:
+            pool.shutdown(wait=True, cancel_futures=True)

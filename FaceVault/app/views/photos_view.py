@@ -48,6 +48,10 @@ class PhotosView(QWidget):
         self.camera_filter = QLineEdit()
         self.camera_filter.setPlaceholderText("Camera…")
         self.camera_filter.setFixedWidth(160)
+        self.text_filter = QLineEdit()
+        self.text_filter.setPlaceholderText("Text in photo… (OCR)")
+        self.text_filter.setFixedWidth(180)
+        self.text_filter.returnPressed.connect(self.refresh)
         self.unknown_only = QCheckBox("Unknown faces only")
         self.favorites_only = QCheckBox("★ Favorites")
         self.favorites_only.stateChanged.connect(lambda *_: self.refresh())
@@ -59,6 +63,7 @@ class PhotosView(QWidget):
         self._count.setObjectName("subtle")
         filters.addWidget(self.person_filter)
         filters.addWidget(self.camera_filter)
+        filters.addWidget(self.text_filter)
         filters.addWidget(self.unknown_only)
         filters.addWidget(self.favorites_only)
         filters.addWidget(apply_btn)
@@ -110,6 +115,7 @@ class PhotosView(QWidget):
             camera=self.camera_filter.text().strip() or None,
             unknown_faces_only=self.unknown_only.isChecked(),
             favorites_only=self.favorites_only.isChecked(),
+            text_contains=self.text_filter.text().strip() or None,
         )
         # Timeline: group by month like Google Photos' main feed.
         sections: list[tuple[str, list[tuple[int, str]]]] = []

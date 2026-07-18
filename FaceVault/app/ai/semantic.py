@@ -32,9 +32,9 @@ def runtime_available() -> bool:
 
 
 def _providers() -> list[str]:
-    wanted = ["CUDAExecutionProvider", "CPUExecutionProvider"]
-    available = ort.get_available_providers()
-    return [p for p in wanted if p in available] or ["CPUExecutionProvider"]
+    from .runtime import ort_providers
+
+    return ort_providers()
 
 
 class ClipEncoder:

@@ -5,6 +5,7 @@ progress and a summary, and views refresh when it finishes.
 """
 
 import sys
+import threading
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QThread, Signal
@@ -49,12 +50,17 @@ class ScanThread(QThread):
         self.config = config
         self.session_factory = session_factory
         self.folder = folder
+        self._cancel = threading.Event()
+
+    def cancel(self) -> None:
+        self._cancel.set()
 
     def run(self) -> None:
         try:
             summary = ScanService(self.config, self.session_factory).scan(
                 self.folder,
                 progress=lambda d, t, p: self.progress.emit(d, t, p),
+                cancel_event=self._cancel,
             )
             self.finished_ok.emit(summary)
         except Exception as exc:
@@ -93,7 +99,11 @@ class MainWindow(QMainWindow):
         self.progress_bar = QProgressBar()
         self.progress_bar.setFixedWidth(260)
         self.progress_bar.hide()
+        self.stop_button = QPushButton("⏹ Stop")
+        self.stop_button.hide()
+        self.stop_button.clicked.connect(self._stop_scan)
         wrap_layout.addWidget(self.progress_bar)
+        wrap_layout.addWidget(self.stop_button)
         wrap_layout.addWidget(self.progress_label)
         wrap_layout.addStretch()
         toolbar.addWidget(progress_wrap)
@@ -301,6 +311,8 @@ class MainWindow(QMainWindow):
             return
         self.scan_button.setEnabled(False)
         self.progress_bar.show()
+        self.stop_button.show()
+        self.stop_button.setEnabled(True)
         self.progress_bar.setRange(0, 0)  # indeterminate until first tick
         self.progress_label.setText("Discovering images…")
 
@@ -315,13 +327,22 @@ class MainWindow(QMainWindow):
         self.progress_bar.setValue(done)
         self.progress_label.setText(Path(path).name)
 
+    def _stop_scan(self) -> None:
+        if self._scan_thread is not None:
+            self._rescan_queue = []  # also halt a rescan-all sequence
+            self.stop_button.setEnabled(False)
+            self.progress_label.setText("Stopping… finishing current photos")
+            self._scan_thread.cancel()
+
     def _on_scan_done(self, summary: dict) -> None:
         self._scan_finished()
         self.refresh_all()
+        title = "Scan stopped" if summary.get("cancelled") else "Scan complete"
         QMessageBox.information(
             self,
-            "Scan complete",
-            f"{summary['new_images']} new/updated images "
+            title,
+            ("Scan stopped — progress so far is saved.\n" if summary.get("cancelled") else "")
+            + f"{summary['new_images']} new/updated images "
             f"({summary['skipped']} unchanged skipped)\n"
             f"{summary['faces_found']} faces detected\n"
             f"{summary['faces_matched']} matched to existing people\n"
@@ -336,6 +357,7 @@ class MainWindow(QMainWindow):
     def _scan_finished(self) -> None:
         self.scan_button.setEnabled(True)
         self.progress_bar.hide()
+        self.stop_button.hide()
         self.progress_label.setText("")
         self._scan_thread = None
 

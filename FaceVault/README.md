@@ -76,19 +76,52 @@ Three tools, in order of impact:
 Also raising the *Face match threshold* (0.40 → 0.45) makes all
 grouping stricter across the board.
 
-## GPU acceleration (NVIDIA)
+## GPU acceleration
 
-Face detection/recognition are lightweight and run great on CPU. The
-CLIP semantic indexer benefits from your GPU on large libraries: install
-the CUDA build and FaceVault picks it up automatically —
+By default the ONNX models (ArcFace, CLIP semantic search, OCR) run on
+CPU. To run them on your GPU, replace the runtime — FaceVault then picks
+the best provider automatically (CUDA → DirectML → CPU):
 
 ```bash
+# Windows, ANY GPU (easiest — no CUDA install needed):
+pip uninstall onnxruntime && pip install onnxruntime-directml
+
+# NVIDIA CUDA (Windows/Linux, needs a current NVIDIA driver):
 pip uninstall onnxruntime && pip install onnxruntime-gpu
 ```
 
-(Needs recent NVIDIA drivers + CUDA runtime; RTX 20-series or newer. If
-CUDA isn't available it falls back to CPU silently — same results,
-just slower.)
+Verify what's active at any time:
+
+```bash
+python -m app gpu
+```
+
+(The Settings page also shows the active AI compute provider.) YuNet
+face *detection* and SFace run via OpenCV, which is CPU-only in pip
+builds — they're lightweight; the heavy models are the ones that move
+to GPU.
+
+## OCR — find photos by the text in them
+
+Documents, receipts, screenshots and certificates become searchable:
+the "Text in photo…" filter in Photos, or
+
+```bash
+python -m app search --text invoice
+```
+
+Text is extracted during scans when `rapidocr-onnxruntime` is installed
+(in requirements.txt; models ship inside the package — still offline).
+Toggle it in Settings ("Extract text during scans") — OCR is the slowest
+pipeline step, so switch it off for speed if you don't need it. Photos
+scanned before enabling OCR get their text on the next `scan --full`.
+
+## Stopping a scan
+
+Click **⏹ Stop** next to the progress bar (or Ctrl+C in the CLI).
+Photos processed so far are saved, the scan is marked *cancelled* in
+history, and re-running the scan later continues incrementally from
+where it stopped.
 
 ![Photos view](docs/screenshot-photos.png)
 ![Photo viewer with face overlays](docs/screenshot-viewer.png)

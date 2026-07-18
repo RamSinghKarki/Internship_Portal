@@ -56,11 +56,9 @@ class ArcFaceRecognizer:
     def __init__(self, model_path: Path):
         if not _HAS_ORT:
             raise RuntimeError("ArcFace needs: pip install onnxruntime")
-        wanted = ["CUDAExecutionProvider", "CPUExecutionProvider"]
-        providers = [p for p in wanted if p in ort.get_available_providers()] or [
-            "CPUExecutionProvider"
-        ]
-        self._session = ort.InferenceSession(str(model_path), providers=providers)
+        from .runtime import ort_providers
+
+        self._session = ort.InferenceSession(str(model_path), providers=ort_providers())
         self._input = self._session.get_inputs()[0].name
 
     @staticmethod

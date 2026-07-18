@@ -1,6 +1,7 @@
 """Settings: tune AI thresholds; persisted via AppConfig.save()."""
 
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFormLayout,
@@ -77,6 +78,12 @@ class SettingsView(QWidget):
         self.workers = QSpinBox()
         self.workers.setRange(1, 32)
 
+        self.ocr_enabled = QCheckBox("Extract text from photos during scans")
+        self.ocr_enabled.setToolTip(
+            "Makes documents/receipts/screenshots searchable by their text.\n"
+            "Slows scanning; needs `pip install rapidocr-onnxruntime`."
+        )
+
         form.addRow("Face match threshold", self.match_threshold)
         form.addRow("Look-alike margin", self.match_margin)
         form.addRow("Min quality for grouping", self.min_quality)
@@ -86,6 +93,7 @@ class SettingsView(QWidget):
         form.addRow("Min faces per new person", self.min_cluster)
         form.addRow("Near-duplicate distance", self.near_dup)
         form.addRow("Worker threads", self.workers)
+        form.addRow("OCR", self.ocr_enabled)
         layout.addLayout(form)
 
         buttons = QHBoxLayout()
@@ -99,6 +107,15 @@ class SettingsView(QWidget):
         buttons.addStretch()
         layout.addLayout(buttons)
 
+        from ..ai.runtime import gpu_summary
+
+        gpu = gpu_summary()
+        gpu_note = (
+            f"AI compute: {gpu['active']}"
+            + ("" if gpu["gpu"] else
+               "  (CPU — for your GPU: pip install onnxruntime-directml on "
+               "Windows, or onnxruntime-gpu for NVIDIA CUDA)")
+        )
         model = config.active_recognition()
         model_note = (
             "ArcFace 512-d (best look-alike separation)" if model == "arcface"
@@ -107,6 +124,7 @@ class SettingsView(QWidget):
         )
         note = QLabel(
             f"Face recognition model: {model_note}\n"
+            f"{gpu_note}\n"
             "Changes apply to future scans and re-clustering. "
             f"Library location: {config.data_dir}"
         )
@@ -128,6 +146,7 @@ class SettingsView(QWidget):
         self.min_cluster.setValue(c.min_cluster_size)
         self.near_dup.setValue(c.near_duplicate_distance)
         self.workers.setValue(c.worker_threads)
+        self.ocr_enabled.setChecked(c.ocr_enabled)
 
     def _save(self) -> None:
         c = self.config
@@ -140,5 +159,6 @@ class SettingsView(QWidget):
         c.min_cluster_size = self.min_cluster.value()
         c.near_duplicate_distance = self.near_dup.value()
         c.worker_threads = self.workers.value()
+        c.ocr_enabled = self.ocr_enabled.isChecked()
         c.save()
         self._status.setText("Saved ✓")
