@@ -22,8 +22,11 @@ app = Flask(__name__)
 app.secret_key = 'my-secret-key'   # needed for sessions and flash messages
 
 # ---------- database connection (SQLAlchemy + PyMySQL) ----------
-app.config['SQLALCHEMY_DATABASE_URI'] = \
-    'mysql+pymysql://root:password@localhost/internship_db'   # <-- change 'password' to your MySQL password
+# The tests point this at a separate test database through the DATABASE_URL
+# environment variable; normally the line below is used.
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get(
+    'DATABASE_URL',
+    'mysql+pymysql://root:password@localhost/internship_db')   # <-- change 'password' to your MySQL password
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 

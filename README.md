@@ -68,6 +68,20 @@ Internship_Portal/
 - **REST API** — `GET /api/stats` (system statistics) and `GET /api/internships`
   (open internships) return JSON for reports or a future mobile app.
 
+## Running the Test Cases
+
+All test cases from the project report are automated in the `tests/` folder
+and run against a **separate** database (`internship_db_test`), so the real
+data is never affected.
+
+```
+pip install pytest
+python -m pytest tests/ -v
+```
+
+On Windows you can also double-click `run_tests.bat`. See `tests/README.md`
+for the mapping between test files and the numbered test cases of the report.
+
 ## How to Run
 
 1. Install dependencies:
