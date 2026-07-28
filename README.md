@@ -68,6 +68,27 @@ Internship_Portal/
 - **REST API** — `GET /api/stats` (system statistics) and `GET /api/internships`
   (open internships) return JSON for reports or a future mobile app.
 
+## Demo Data
+
+To fill the database with realistic sample data for a demonstration
+(18 students, 5 companies, 6 supervisors, 12 internships, applications in
+every status, weekly logs with feedback, notifications and audit entries):
+
+```
+python seed_demo.py
+```
+
+All demo accounts use the password `pass123`:
+
+| Role | Example login |
+|------|---------------|
+| Student | `student1@portal.com` |
+| Company | `company1@portal.com` |
+| Supervisor | `supervisor1@portal.com` |
+| Admin | `admin@portal.com` (password `admin123`) |
+
+Note: the script clears existing data before inserting the demo records.
+
 ## Running the Test Cases
 
 All test cases from the project report are automated in the `tests/` folder
