@@ -312,6 +312,11 @@ Functional Requirements and Non-Functional Requirements.
 - **FR-15:** The system shall show each role a dashboard with statistics relevant to that role, and a public landing page with overall counts.
 - **FR-16:** A student shall be required to upload an identity document (pdf or image) during registration; the document shall be visible to companies.
 - **FR-17:** The system shall allow internships to be searched by keyword (title, description, skills) and filtered by skill.
+- **FR-18:** The system shall notify users of events relevant to their role and show the number of unread notifications.
+- **FR-19:** The system shall record an audit entry for important actions and let the administrator review them.
+- **FR-20:** The system shall present each role a dashboard with key performance indicators and charts.
+- **FR-21:** The administrator shall be able to search, page through, and export the user list; a company shall be able to export applicants as CSV.
+- **FR-22:** The system shall expose a JSON REST API for system statistics and open internships.
 
 ### Non-Functional Requirements
 
@@ -680,7 +685,7 @@ works end to end with role-based access control and hashed passwords.
 
 - Resume uploads and weekly log attachments are not yet supported (identity documents are uploaded at registration).
 - Search supports keywords and skills; filters by duration and stipend are not yet available.
-- No email notifications when an applicant is selected.
+- Notifications are in-app only; email and SMS delivery are not implemented.
 - The system runs on a local development server, not a live deployment.
 
 ## 7.3 Future Scope
