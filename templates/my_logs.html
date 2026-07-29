@@ -6,6 +6,7 @@
 <div class="card shadow-sm mb-4" style="max-width: 560px;">
   <div class="card-body">
     <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-3"><label class="form-label">Week Number</label>
             <input type="number" name="week_number" class="form-control" min="1" required></div>
         <div class="mb-3"><label class="form-label">Work Done This Week</label>

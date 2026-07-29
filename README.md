@@ -72,6 +72,8 @@ Internship_Portal/
   user table is searchable and paginated.
 - **CSV exports** — the admin can export all users; a company can export the
   applicants of an internship.
+- **CSRF protection** — Flask-WTF puts a token in every form; a POST without
+  a valid token is rejected.
 - **REST API** — `GET /api/stats` (system statistics) and `GET /api/internships`
   (open internships) return JSON for reports or a future mobile app.
 

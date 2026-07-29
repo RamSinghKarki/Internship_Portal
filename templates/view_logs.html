@@ -23,6 +23,7 @@
     {% endif %}
 
     <form method="POST" action="{{ url_for('give_feedback', log_id=log.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="mb-2"><label class="form-label">Feedback</label>
             <textarea name="feedback" class="form-control" rows="2" required>{{ log.feedback or '' }}</textarea></div>
         <div class="mb-2" style="max-width: 200px;"><label class="form-label">Marks (out of 10)</label>

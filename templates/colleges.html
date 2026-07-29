@@ -9,6 +9,7 @@
       <div class="card-body">
         <h5 class="card-title mb-3">Add a College</h5>
         <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3"><label class="form-label">College Name</label>
                 <input type="text" name="name" class="form-control" required></div>
             <div class="mb-3"><label class="form-label">Affiliation</label>
@@ -36,6 +37,7 @@
             <td><span class="badge bg-primary">{{ counts[c.id] }}</span></td>
             <td>
                 <form method="POST" action="{{ url_for('delete_college', id=c.id) }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm"
                             onclick="return confirm('Remove this college? Students keep their accounts.')">Remove</button>
                 </form>

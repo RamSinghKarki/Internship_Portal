@@ -33,6 +33,7 @@
                 <a href="{{ url_for('my_logs', application_id=a.id) }}" class="btn btn-outline-primary btn-sm">Weekly Logs</a>
             {% else %}
                 <form method="POST" action="{{ url_for('withdraw', id=a.id) }}" class="d-inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Withdraw this application?')">Withdraw</button>
                 </form>
             {% endif %}

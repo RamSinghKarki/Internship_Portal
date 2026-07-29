@@ -34,6 +34,7 @@
     {% endif %}
 
     <form method="POST" action="{{ url_for('update_status', id=a.id) }}" class="row g-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-auto">
             <select name="status" class="form-select form-select-sm">
                 <option value="applied"  {% if a.status == 'applied'  %}selected{% endif %}>applied</option>
