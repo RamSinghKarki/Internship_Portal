@@ -23,6 +23,10 @@ CREATE TABLE users (
     name       VARCHAR(100) NOT NULL,
     email      VARCHAR(100) NOT NULL UNIQUE,
     password   VARCHAR(255) NOT NULL,       -- stored as a hash, never plain text
+    -- the admin checks every new account before it can be used
+    verification_status  VARCHAR(20) DEFAULT 'pending',   -- pending / verified / rejected
+    verification_remarks VARCHAR(255),                    -- reason given when rejected
+    verified_at TIMESTAMP NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
@@ -147,6 +151,7 @@ INSERT INTO colleges (name, affiliation, address) VALUES
 ('Everest Engineering College', 'Pokhara University', 'Sanepa, Lalitpur');
 
 -- Default admin account  (email: admin@portal.com  password: admin123)
-INSERT INTO users (role_id, name, email, password) VALUES
+INSERT INTO users (role_id, name, email, password, verification_status, verified_at) VALUES
 (1, 'Admin', 'admin@portal.com',
- 'pbkdf2:sha256:1000000$q9kKTkMrQZLUSLQp$50cdcb29c2a20385dc20c63bc2735817ce17372aa4c138e4fbd44c8e6d79d698');
+ 'pbkdf2:sha256:1000000$q9kKTkMrQZLUSLQp$50cdcb29c2a20385dc20c63bc2735817ce17372aa4c138e4fbd44c8e6d79d698',
+ 'verified', CURRENT_TIMESTAMP);

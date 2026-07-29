@@ -2,12 +2,13 @@
 # TEST CASES 6, 7, 17 : Internship management and search
 # ============================================================
 
-from conftest import register_company, login, post_internship
+from conftest import register_company, login, post_internship, approve_all
 
 
 def test_tc06_company_can_post_internship(client):
     """TC-06: A company can post an internship and it appears in the list."""
     register_company(client)
+    approve_all()                      # the admin approves the account
     login(client, 'company@test.com')
 
     response = post_internship(client, title='Python Backend Intern')
@@ -24,6 +25,7 @@ def test_tc06_company_can_post_internship(client):
 def test_tc07_company_can_edit_and_close_internship(client):
     """TC-07: Editing saves the changes; a closed internship is hidden from students."""
     register_company(client)
+    approve_all()                      # the admin approves the account
     login(client, 'company@test.com')
     post_internship(client)
 
@@ -44,6 +46,7 @@ def test_tc07_company_can_edit_and_close_internship(client):
     from conftest import register_student, logout
     logout(client)
     register_student(client)
+    approve_all()
     login(client, 'student@test.com')
     response = client.get('/internships')
     assert b'Updated Title' not in response.data
@@ -52,6 +55,7 @@ def test_tc07_company_can_edit_and_close_internship(client):
 def test_tc17_search_internships_by_keyword_and_skill(client):
     """TC-17: Search returns only the internships that match."""
     register_company(client)
+    approve_all()                      # the admin approves the account
     login(client, 'company@test.com')
     post_internship(client, title='Python Backend Intern', skills='Python, Flask')
     post_internship(client, title='Graphic Designer Intern', skills='Photoshop')
@@ -60,6 +64,7 @@ def test_tc17_search_internships_by_keyword_and_skill(client):
     from conftest import register_student, logout
     logout(client)
     register_student(client)
+    approve_all()
     login(client, 'student@test.com')
 
     # keyword search matches the two internships mentioning Python

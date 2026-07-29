@@ -21,7 +21,7 @@ and sets the direction of the questions that follow.
 >
 > It is built with Python Flask, MySQL and the SQLAlchemy ORM, with a
 > Bootstrap interface. The database has eleven tables, and we have written
-> thirty-five automated tests covering every test case in our report."
+> forty automated tests covering every test case in our report."
 
 ---
 
@@ -34,6 +34,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 |---|------|----------------------------|
 | 1 | Landing page | "These numbers and the company and college cards come live from the database." |
 | 2 | Register a student | "Notice the college dropdown and the compulsory document upload." |
+| 2b | Login as admin, open Verifications | "Every new account waits here. I can see the uploaded document before approving." Approve the new student. |
 | 3 | Login as `company1@portal.com` | "The navigation bar changes according to the role." |
 | 4 | Post an internship | "This is a CREATE operation." |
 | 5 | View applicants | "The company sees the student's college, skills, cover letter and document." |
@@ -45,7 +46,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 | 11 | Login as `admin@portal.com` | "The admin dashboard has KPIs and charts." |
 | 12 | Show Users → search, export CSV | "Searchable, paginated, exportable." |
 | 13 | Show Audit Log | "Every important action is recorded, including failed logins." |
-| 14 | Run `python -m pytest tests/ -v` | "All thirty-five tests pass." |
+| 14 | Run `python -m pytest tests/ -v` | "All forty tests pass." |
 
 **Keep a second browser (or incognito window) open** so you can be logged in
 as two roles at once and avoid repeated logging in and out.
@@ -212,6 +213,16 @@ All database access goes through SQLAlchemy, which sends values as bound
 parameters rather than pasting them into the SQL string. So input like
 `' OR 1=1--` is treated as text, not as SQL.
 
+**Q: How does account verification work?**
+Every new student, company and supervisor account is created with the status
+*pending*. Until the administrator approves it, the account can log in and
+look around, but its main action is blocked: a student cannot apply, a
+company cannot post an internship, and a supervisor cannot give feedback. The
+administrator sees a verification queue showing each applicant's details and,
+for students, the uploaded document, and approves or rejects with a reason.
+The user is notified of the decision, and the whole action is written to the
+audit log.
+
 **Q: How does role-based access control work?**
 Every route checks `session.get('role')` before doing anything and redirects
 if it is wrong. We also check ownership: a company can only edit its own
@@ -266,7 +277,7 @@ screen. You can narrow the browser window to see it.
 Three levels. Unit testing of individual routes with valid and invalid inputs,
 integration testing of the complete workflow across roles, and beta testing
 where classmates used the system without instructions. All of it is automated
-in the `tests/` folder — thirty-five tests, one file per area.
+in the `tests/` folder — forty tests, one file per area.
 
 **Q: Show me a test running.**
 `python -m pytest tests/ -v` — each test is named after the test case number in
@@ -367,8 +378,8 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 | URL rules | 32 (`app.py`) |
 | Route files | 7 (`routes/`) |
 | Templates | 20 (all extend `base.html`) |
-| Automated tests | 35, all passing |
-| Test cases in report | 27 |
+| Automated tests | 40, all passing |
+| Test cases in report | 28 |
 | Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
 | Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Chart.js, Flask-WTF |

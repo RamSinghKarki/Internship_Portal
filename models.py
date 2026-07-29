@@ -32,6 +32,10 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)   # stored as a hash
+    # the admin checks every new account before it can be used
+    verification_status = db.Column(db.String(20), default='pending')
+    verification_remarks = db.Column(db.String(255))
+    verified_at = db.Column(db.DateTime)
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     # one user has at most one of these profiles (depends on the role);
@@ -42,6 +46,10 @@ class User(db.Model):
                               cascade='all, delete-orphan', passive_deletes=True)
     supervisor = db.relationship('Supervisor', backref='user', uselist=False,
                                  cascade='all, delete-orphan', passive_deletes=True)
+
+    @property
+    def is_verified(self):
+        return self.verification_status == 'verified'
 
     def set_password(self, pw):
         self.password = generate_password_hash(pw)
@@ -173,6 +181,22 @@ class AuditLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.now)
 
     user = db.relationship('User')
+
+
+# ---------- account verification ----------
+def verified_only(action='use this feature'):
+    """Return an error message if the logged-in user is not verified yet,
+    otherwise None. Used by the routes that change data."""
+    from flask import session
+    user = db.session.get(User, session.get('user_id'))
+    if user is None:
+        return 'Please login again.'
+    if user.verification_status == 'verified':
+        return None
+    if user.verification_status == 'rejected':
+        return (f'Your account was not approved, so you cannot {action}. '
+                f'Reason: {user.verification_remarks or "no reason given"}.')
+    return f'Your account is waiting for admin approval, so you cannot {action} yet.'
 
 
 # ---------- notifications and audit trail ----------

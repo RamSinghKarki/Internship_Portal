@@ -102,6 +102,16 @@ def register_supervisor(client, email='supervisor@test.com', name='Test Supervis
         'department': 'IT'}, follow_redirects=True)
 
 
+def approve_all(client=None):
+    """Approve every account, as the admin would, so the workflow can run."""
+    from models import db, User
+    from datetime import datetime
+    for user in User.query.all():
+        user.verification_status = 'verified'
+        user.verified_at = datetime.now()
+    db.session.commit()
+
+
 def login(client, email, password='pass123'):
     return client.post('/login', data={'email': email, 'password': password},
                        follow_redirects=True)
@@ -126,6 +136,7 @@ def setup_all_roles(client):
     register_company(client)
     register_supervisor(client)
     register_student(client)
+    approve_all()               # the admin approves the new accounts
     login(client, 'company@test.com')
     post_internship(client)
     logout(client)

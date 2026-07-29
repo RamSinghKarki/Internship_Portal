@@ -4,7 +4,7 @@
 
 from flask import render_template, request, redirect, url_for, session, flash
 from models import (db, Internship, Application, ProgressLog,
-                    current_supervisor, notify, audit)
+                    current_supervisor, notify, audit, verified_only)
 
 
 # ---------- MY STUDENTS (READ) ----------
@@ -42,6 +42,12 @@ def view_logs(application_id):
 def give_feedback(log_id):
     if session.get('role') != 'supervisor':
         return redirect(url_for('login'))
+
+    # an account must be approved by the admin before evaluating students
+    problem = verified_only('give feedback')
+    if problem:
+        flash(problem)
+        return redirect(url_for('students'))
 
     me = current_supervisor()
     log = db.session.get(ProgressLog, log_id)

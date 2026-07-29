@@ -37,6 +37,8 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('students') }}"><i class="bi bi-people me-1"></i>My Students</a></li>
           {% endif %}
           {% if session.role == 'admin' %}
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('verifications') }}"><i class="bi bi-patch-check me-1"></i>Verifications
+                {% if pending_count %}<span class="badge bg-danger ms-1">{{ pending_count }}</span>{% endif %}</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('users') }}"><i class="bi bi-person-gear me-1"></i>Users</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('colleges') }}"><i class="bi bi-building me-1"></i>Colleges</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('audit_log') }}"><i class="bi bi-clock-history me-1"></i>Audit Log</a></li>
@@ -65,6 +67,20 @@
 </nav>
 
 <div class="container py-4">
+    {% if my_status == 'pending' %}
+        <div class="alert alert-warning d-flex align-items-center">
+            <i class="bi bi-hourglass-split me-2 fs-5"></i>
+            <div>Your account is waiting for admin approval. You can look around,
+                 but some actions stay locked until it is approved.</div>
+        </div>
+    {% elif my_status == 'rejected' %}
+        <div class="alert alert-danger d-flex align-items-center">
+            <i class="bi bi-x-octagon me-2 fs-5"></i>
+            <div>Your account was not approved.
+                 {% if my_remarks %}<b>Reason:</b> {{ my_remarks }}{% endif %}</div>
+        </div>
+    {% endif %}
+
     {% for message in get_flashed_messages() %}
         <div class="alert alert-warning">{{ message }}</div>
     {% endfor %}

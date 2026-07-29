@@ -7,13 +7,20 @@ from flask import render_template, request, redirect, url_for, session, flash
 import csv
 import io
 from flask import Response
-from models import db, Internship, Application, current_company, notify, audit
+from models import (db, Internship, Application, current_company,
+                    notify, audit, verified_only)
 
 
 # ---------- ADD INTERNSHIP (CREATE) ----------
 def add_internship():
     if session.get('role') != 'company':
         return redirect(url_for('login'))
+
+    # an account must be approved by the admin before posting
+    problem = verified_only('post internships')
+    if problem:
+        flash(problem)
+        return redirect(url_for('dashboard'))
 
     if request.method == 'POST':
         me = current_company()

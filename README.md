@@ -53,6 +53,12 @@ Internship_Portal/
 
 ## Enterprise Features
 
+- **Admin verification of accounts** — every new student, company and
+  supervisor starts as *pending*. The admin sees them in a verification queue
+  (with the student's uploaded document) and approves or rejects each one,
+  giving a reason. Until approved, a student cannot apply, a company cannot
+  post internships, and a supervisor cannot give feedback.
+
 - **Partner directory on the landing page** — cards showing the companies
   working with the portal (with their open internship count) and the
   participating colleges (with their student count).

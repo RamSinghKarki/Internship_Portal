@@ -319,6 +319,8 @@ Functional Requirements and Non-Functional Requirements.
 - **FR-22:** The system shall expose a JSON REST API for system statistics and open internships.
 - **FR-23:** A student shall select their college at registration, and the administrator shall be able to add or remove colleges.
 - **FR-24:** The public landing page shall list the participating companies and colleges.
+- **FR-25:** New accounts shall start pending and be unable to perform their main actions until the administrator approves them.
+- **FR-26:** The administrator shall approve or reject accounts with a reason, and the user shall be notified.
 
 ### Non-Functional Requirements
 

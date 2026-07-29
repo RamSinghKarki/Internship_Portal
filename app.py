@@ -50,6 +50,25 @@ def inject_logo():
     return {'has_logo': os.path.exists(logo)}
 
 
+# make the verification state of the logged-in user, and the number of
+# accounts waiting for approval, available to every template
+@app.context_processor
+def inject_verification():
+    from flask import session
+    from models import User
+    data = {'my_status': None, 'my_remarks': None, 'pending_count': 0}
+    if session.get('user_id'):
+        user = db.session.get(User, session['user_id'])
+        if user:
+            data['my_status'] = user.verification_status
+            data['my_remarks'] = user.verification_remarks
+        if session.get('role') == 'admin':
+            data['pending_count'] = (User.query
+                                     .filter_by(verification_status='pending')
+                                     .filter(User.role_id != 1).count())
+    return data
+
+
 # make the unread notification count available to every template (bell icon)
 @app.context_processor
 def inject_unread_count():
@@ -97,6 +116,9 @@ app.add_url_rule('/users',                 view_func=admin.users)
 app.add_url_rule('/users/delete/<int:id>', view_func=admin.delete_user, methods=['POST'])
 app.add_url_rule('/users/export',          view_func=admin.users_export)
 app.add_url_rule('/audit',                 view_func=admin.audit_log)
+app.add_url_rule('/verifications',         view_func=admin.verifications)
+app.add_url_rule('/verify/<int:id>',       view_func=admin.verify_user, methods=['POST'])
+app.add_url_rule('/reject/<int:id>',       view_func=admin.reject_user, methods=['POST'])
 app.add_url_rule('/colleges',              view_func=admin.colleges, methods=['GET', 'POST'])
 app.add_url_rule('/colleges/delete/<int:id>', view_func=admin.delete_college, methods=['POST'])
 

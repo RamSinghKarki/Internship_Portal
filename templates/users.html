@@ -17,7 +17,7 @@
 <div class="table-responsive">
 <table class="table table-bordered table-striped align-middle bg-white shadow-sm">
     <thead class="table-dark">
-    <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Action</th></tr>
+    <tr><th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Action</th></tr>
     </thead>
     <tbody>
     {% for u in users %}
@@ -26,6 +26,11 @@
         <td>{{ u.name }}</td>
         <td>{{ u.email }}</td>
         <td><span class="badge bg-secondary">{{ u.role.role_name }}</span></td>
+        <td>
+            {% if u.verification_status == 'verified' %}<span class="badge bg-success">approved</span>
+            {% elif u.verification_status == 'rejected' %}<span class="badge bg-danger">rejected</span>
+            {% else %}<span class="badge bg-warning text-dark">pending</span>{% endif %}
+        </td>
         <td>{{ u.created_at.strftime('%Y-%m-%d') }}</td>
         <td>
             {% if u.id != session.user_id %}

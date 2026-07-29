@@ -6,7 +6,8 @@
 import csv
 import io
 from flask import render_template, redirect, url_for, session, flash, request, Response
-from models import db, User, College, Student, AuditLog, audit
+from datetime import datetime
+from models import db, User, College, Student, AuditLog, audit, notify
 
 
 # ---------- ALL USERS (READ - with search and pagination) ----------
@@ -106,3 +107,59 @@ def delete_college(id):
         db.session.commit()
         flash('College removed.')
     return redirect(url_for('colleges'))
+
+
+# ---------- VERIFICATION QUEUE (READ) - admin only ----------
+def verifications():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    status = request.args.get('status', 'pending')
+    query = User.query.filter(User.email != session.get('email', ''))
+    if status in ('pending', 'verified', 'rejected'):
+        query = query.filter_by(verification_status=status)
+    users = query.filter(User.role_id != 1).order_by(User.id.desc()).all()
+
+    counts = {s: User.query.filter_by(verification_status=s)
+              .filter(User.role_id != 1).count()
+              for s in ('pending', 'verified', 'rejected')}
+    return render_template('verifications.html', users=users,
+                           status=status, counts=counts)
+
+
+# ---------- APPROVE AN ACCOUNT (UPDATE) ----------
+def verify_user(id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    user = db.session.get(User, id)
+    if user and user.role.role_name != 'admin':
+        user.verification_status = 'verified'
+        user.verification_remarks = None
+        user.verified_at = datetime.now()
+        notify(user.id, 'Your account has been approved. You can now use the portal.',
+               url_for('dashboard'))
+        audit(session['user_id'], 'verify_user', f'{user.name} <{user.email}>')
+        db.session.commit()
+        flash(f'{user.name} has been approved.')
+    return redirect(url_for('verifications'))
+
+
+# ---------- REJECT AN ACCOUNT (UPDATE) ----------
+def reject_user(id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    user = db.session.get(User, id)
+    if user and user.role.role_name != 'admin':
+        reason = request.form.get('remarks', '').strip()
+        user.verification_status = 'rejected'
+        user.verification_remarks = reason or None
+        notify(user.id,
+               f'Your account was not approved. Reason: {reason or "no reason given"}',
+               url_for('dashboard'))
+        audit(session['user_id'], 'reject_user',
+              f'{user.name} <{user.email}>: {reason or "no reason"}')
+        db.session.commit()
+        flash(f'{user.name} has been rejected.')
+    return redirect(url_for('verifications'))

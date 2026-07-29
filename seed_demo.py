@@ -107,9 +107,11 @@ STATUS_CYCLE = ['applied', 'selected', 'applied', 'rejected',
                 'selected', 'applied']
 
 
-def make_user(role_name, name, email, created_at):
+def make_user(role_name, name, email, created_at, status='verified'):
     role = Role.query.filter_by(role_name=role_name).first()
-    user = User(role_id=role.id, name=name, email=email, created_at=created_at)
+    user = User(role_id=role.id, name=name, email=email, created_at=created_at,
+                verification_status=status,
+                verified_at=created_at if status == 'verified' else None)
     user.set_password('pass123')
     return user
 
@@ -129,7 +131,8 @@ def seed():
     company_rows = []
     for i, (name, industry, location, desc) in enumerate(COMPANIES):
         created = NOW - timedelta(days=120 - i * 7)
-        user = make_user('company', name, f'company{i + 1}@portal.com', created)
+        user = make_user('company', name, f'company{i + 1}@portal.com', created,
+                         'pending' if i == len(COMPANIES) - 1 else 'verified')
         company = Company(user=user, industry=industry, location=location,
                           description=desc)
         db.session.add(company)
@@ -152,7 +155,13 @@ def seed():
     for i, (name, roll, dept, sem, skills) in enumerate(STUDENTS):
         # spread joining dates over the last three months, several this month
         created = NOW - timedelta(days=random.randint(1, 90))
-        user = make_user('student', name, f'student{i + 1}@portal.com', created)
+        # the last three students show the three verification states
+        status = 'verified'
+        if i == len(STUDENTS) - 1:
+            status = 'rejected'
+        elif i >= len(STUDENTS) - 3:
+            status = 'pending'
+        user = make_user('student', name, f'student{i + 1}@portal.com', created, status)
         student = Student(user=user,
                           college_id=colleges[i % len(colleges)].id if colleges else None,
                           roll_number=roll, department=dept,
@@ -160,6 +169,12 @@ def seed():
                           document_url='uploads/sample_document.pdf')
         db.session.add(student)
         student_rows.append(student)
+    db.session.commit()
+
+    # give the rejected student a reason, as the admin would
+    rejected = User.query.filter_by(verification_status='rejected').first()
+    if rejected:
+        rejected.verification_remarks = 'The uploaded document was not readable.'
     db.session.commit()
 
     # ---------------- internships ----------------
@@ -288,6 +303,9 @@ def seed():
     # ---------------- summary ----------------
     print('\nDemo data created:')
     print(f'  Colleges      : {College.query.count()}')
+    print(f'  Verification  : {User.query.filter_by(verification_status="verified").count()} approved, '
+          f'{User.query.filter_by(verification_status="pending").count()} pending, '
+          f'{User.query.filter_by(verification_status="rejected").count()} rejected')
     print(f'  Students      : {Student.query.count()}')
     print(f'  Companies     : {Company.query.count()}')
     print(f'  Supervisors   : {Supervisor.query.count()}')

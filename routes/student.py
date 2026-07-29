@@ -4,13 +4,19 @@
 
 from flask import render_template, request, redirect, url_for, session, flash
 from models import (db, Application, ProgressLog, Internship,
-                    current_student, notify, audit)
+                    current_student, notify, audit, verified_only)
 
 
 # ---------- APPLY (CREATE - with cover letter) ----------
 def apply(internship_id):
     if session.get('role') != 'student':
         return redirect(url_for('login'))
+
+    # an account must be approved by the admin before applying
+    problem = verified_only('apply for internships')
+    if problem:
+        flash(problem)
+        return redirect(url_for('internships'))
 
     me = current_student()
 
