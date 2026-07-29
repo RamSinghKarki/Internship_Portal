@@ -41,7 +41,7 @@ db.init_app(app)
 # folder where student documents are saved
 os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
 
-from routes import main, auth, student, company, supervisor, admin, api
+from routes import main, auth, student, company, supervisor, admin
 
 # make the logo available to every template if the file has been added
 @app.context_processor
@@ -127,13 +127,5 @@ app.add_url_rule('/notifications', view_func=main.notifications)
 
 # ---------- csv exports ----------
 app.add_url_rule('/applicants/<int:internship_id>/export', view_func=company.applicants_export)
-
-# ---------- REST API (JSON) ----------
-csrf.exempt(api.api_stats)          # read-only JSON endpoints need no token
-csrf.exempt(api.api_internships)
-
-app.add_url_rule('/api/stats',       view_func=api.api_stats)
-app.add_url_rule('/api/internships', view_func=api.api_internships)
-
 if __name__ == '__main__':
     app.run(debug=True)

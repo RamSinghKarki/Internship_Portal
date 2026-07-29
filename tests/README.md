@@ -53,8 +53,10 @@ export TEST_DB_PASS=your_password     (Linux / macOS)
 | `test_05_access_control.py` | TC-14 | Role based access control and record ownership |
 | `test_06_notifications.py` | TC-18 … TC-20 | Notifications for applications, decisions, logs and feedback |
 | `test_07_admin.py` | TC-15, TC-21 … TC-23 | Cascade deletion, audit log, user search and pagination, CSV exports |
-| `test_08_api.py` | TC-24 | JSON REST API endpoints |
 | `test_09_dashboard.py` | extra | Landing page counts and role specific dashboards |
+| `test_10_colleges.py` | TC-24, TC-25 | Student college link, admin college management |
+| `test_11_csrf.py` | TC-26 | CSRF protection on forms |
+| `test_12_verification.py` | TC-27 | Admin verification of new accounts |
 
 ## Structure
 

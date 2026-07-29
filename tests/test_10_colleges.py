@@ -1,12 +1,12 @@
 # ============================================================
-# TEST CASES 25, 26 : College management
+# TEST CASES 24, 25 : College management
 # ============================================================
 
 from conftest import register_student, login, logout
 
 
-def test_tc25_student_is_linked_to_a_college(client):
-    """TC-25: A student chooses a college at registration and it is stored."""
+def test_tc24_student_is_linked_to_a_college(client):
+    """TC-24: A student chooses a college at registration and it is stored."""
     response = register_student(client)
     assert b'Registration successful' in response.data
 
@@ -21,8 +21,8 @@ def test_tc25_student_is_linked_to_a_college(client):
     assert student.college.name.encode() in response.data
 
 
-def test_tc26_admin_can_add_and_remove_colleges(client):
-    """TC-26: The administrator manages the list of colleges."""
+def test_tc25_admin_can_add_and_remove_colleges(client):
+    """TC-25: The administrator manages the list of colleges."""
     login(client, 'admin@portal.com', 'admin123')
 
     from models import College
@@ -47,8 +47,8 @@ def test_tc26_admin_can_add_and_remove_colleges(client):
     assert College.query.count() == before
 
 
-def test_tc26b_removing_a_college_keeps_its_students(client):
-    """TC-26 (safety): removing a college must not delete student accounts."""
+def test_tc25b_removing_a_college_keeps_its_students(client):
+    """TC-25 (safety): removing a college must not delete student accounts."""
     register_student(client)
     from models import Student, College
 

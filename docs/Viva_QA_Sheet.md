@@ -21,7 +21,7 @@ and sets the direction of the questions that follow.
 >
 > It is built with Python Flask, MySQL and the SQLAlchemy ORM, with a
 > Bootstrap interface. The database has eleven tables, and we have written
-> forty automated tests covering every test case in our report."
+> thirty-eight automated tests covering every test case in our report."
 
 ---
 
@@ -46,7 +46,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 | 11 | Login as `admin@portal.com` | "The admin dashboard shows system wide figures." |
 | 12 | Show Users → search, export CSV | "Searchable, paginated, exportable." |
 | 13 | Show Audit Log | "Every important action is recorded, including failed logins." |
-| 14 | Run `python -m pytest tests/ -v` | "All forty tests pass." |
+| 14 | Run `python -m pytest tests/ -v` | "All thirty-eight tests pass." |
 
 **Keep a second browser (or incognito window) open** so you can be logged in
 as two roles at once and avoid repeated logging in and out.
@@ -272,7 +272,7 @@ screen. You can narrow the browser window to see it.
 Three levels. Unit testing of individual routes with valid and invalid inputs,
 integration testing of the complete workflow across roles, and beta testing
 where classmates used the system without instructions. All of it is automated
-in the `tests/` folder — forty tests, one file per area.
+in the `tests/` folder — thirty-eight tests, one file per area.
 
 **Q: Show me a test running.**
 `python -m pytest tests/ -v` — each test is named after the test case number in
@@ -373,8 +373,8 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 | URL rules | 32 (`app.py`) |
 | Route files | 7 (`routes/`) |
 | Templates | 20 (all extend `base.html`) |
-| Automated tests | 40, all passing |
-| Test cases in report | 28 |
+| Automated tests | 38, all passing |
+| Test cases in report | 27 |
 | Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
 | Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons, Flask-WTF |

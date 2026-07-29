@@ -317,7 +317,6 @@ Functional Requirements and Non-Functional Requirements.
 - **FR-19:** The system shall record an audit entry for important actions and let the administrator review them.
 - **FR-20:** The system shall present each role a dashboard with the figures relevant to that role.
 - **FR-21:** The administrator shall be able to search, page through, and export the user list; a company shall be able to export applicants as CSV.
-- **FR-22:** The system shall expose a JSON REST API for system statistics and open internships.
 - **FR-23:** A student shall select their college at registration, and the administrator shall be able to add or remove colleges.
 - **FR-24:** The public landing page shall list the participating companies and colleges.
 - **FR-25:** New accounts shall start pending and be unable to perform their main actions until the administrator approves them.

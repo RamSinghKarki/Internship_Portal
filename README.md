@@ -40,7 +40,7 @@ Internship_Portal/
 │   ├── student.py      <- apply, my applications, weekly logs
 │   ├── company.py      <- post/edit/delete internships, applicants
 │   ├── supervisor.py   <- my students, view logs, give feedback
-│   └── admin.py        <- manage users
+│   └── admin.py        <- manage users, audit log, CSV export
 ├── database.sql        <- creates the database, 8 tables and admin account
 ├── requirements.txt
 ├── static/
@@ -79,8 +79,6 @@ Internship_Portal/
   applicants of an internship.
 - **CSRF protection** — Flask-WTF puts a token in every form; a POST without
   a valid token is rejected.
-- **REST API** — `GET /api/stats` (system statistics) and `GET /api/internships`
-  (open internships) return JSON for reports or a future mobile app.
 
 ## Demo Data
 
