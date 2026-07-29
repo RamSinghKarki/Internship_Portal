@@ -11,7 +11,7 @@
             <input type="number" name="week_number" class="form-control" min="1" required></div>
         <div class="mb-3"><label class="form-label">Work Done This Week</label>
             <textarea name="description" class="form-control" rows="3" required></textarea></div>
-        <button type="submit" class="btn btn-primary">Submit Log</button>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-send me-1"></i>Submit Log</button>
     </form>
   </div>
 </div>
@@ -39,6 +39,6 @@
 </div>
 {% endif %}
 
-<a href="{{ url_for('my_applications') }}" class="btn btn-link px-0">Back to my applications</a>
+<a href="{{ url_for('my_applications') }}" class="btn btn-link px-0"><i class="bi bi-arrow-left me-1"></i>Back to my applications</a>
 
 {% endblock %}

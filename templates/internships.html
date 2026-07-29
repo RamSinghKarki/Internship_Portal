@@ -10,9 +10,9 @@
     <div class="col-md-3">
         <input type="text" name="skill" value="{{ skill }}" class="form-control" placeholder="Skill (e.g. Python)">
     </div>
-    <div class="col-auto"><button type="submit" class="btn btn-primary">Search</button></div>
+    <div class="col-auto"><button type="submit" class="btn btn-primary"><i class="bi bi-search me-1"></i>Search</button></div>
     {% if q or skill %}
-        <div class="col-auto"><a href="{{ url_for('internships') }}" class="btn btn-outline-secondary">Clear</a></div>
+        <div class="col-auto"><a href="{{ url_for('internships') }}" class="btn btn-outline-secondary"><i class="bi bi-x-circle me-1"></i>Clear</a></div>
     {% endif %}
 </form>
 
@@ -50,17 +50,17 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label class="form-label">Cover Letter</label>
                 <textarea name="cover_letter" class="form-control mb-2" rows="3" placeholder="Why are you a good fit?"></textarea>
-                <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Apply</button>
             </form>
         {% endif %}
     {% endif %}
 
     {% if session.role == 'company' %}
-        <a href="{{ url_for('applicants', internship_id=i.id) }}" class="btn btn-outline-primary btn-sm">View applicants</a>
-        <a href="{{ url_for('edit_internship', id=i.id) }}" class="btn btn-outline-secondary btn-sm">Edit</a>
+        <a href="{{ url_for('applicants', internship_id=i.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>View applicants</a>
+        <a href="{{ url_for('edit_internship', id=i.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil-square me-1"></i>Edit</a>
         <form method="POST" action="{{ url_for('delete_internship', id=i.id) }}" class="d-inline">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this internship?')">Delete</button>
+            <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this internship?')"><i class="bi bi-trash me-1"></i>Delete</button>
         </form>
     {% endif %}
   </div>

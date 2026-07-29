@@ -16,7 +16,7 @@
                 <input type="text" name="affiliation" class="form-control" placeholder="e.g. Pokhara University"></div>
             <div class="mb-3"><label class="form-label">Address</label>
                 <input type="text" name="address" class="form-control" placeholder="e.g. Dhangadhi, Kailali"></div>
-            <button type="submit" class="btn btn-primary">Add College</button>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i>Add College</button>
         </form>
       </div>
     </div>
@@ -39,7 +39,7 @@
                 <form method="POST" action="{{ url_for('delete_college', id=c.id) }}">
                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn btn-outline-danger btn-sm"
-                            onclick="return confirm('Remove this college? Students keep their accounts.')">Remove</button>
+                            onclick="return confirm('Remove this college? Students keep their accounts.')"><i class="bi bi-trash me-1"></i>Remove</button>
                 </form>
             </td>
         </tr>

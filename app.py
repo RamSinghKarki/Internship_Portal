@@ -43,6 +43,13 @@ os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
 
 from routes import main, auth, student, company, supervisor, admin, api
 
+# make the logo available to every template if the file has been added
+@app.context_processor
+def inject_logo():
+    logo = os.path.join(app.root_path, 'static', 'logo.png')
+    return {'has_logo': os.path.exists(logo)}
+
+
 # make the unread notification count available to every template (bell icon)
 @app.context_processor
 def inject_unread_count():

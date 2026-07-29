@@ -2,11 +2,14 @@
 {% block content %}
 
 <div class="text-center py-5">
+    {% if has_logo %}
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="Internship Portal" class="hero-logo mb-4">
+    {% endif %}
     <h1 class="display-5 fw-bold">Find Your Internship.<br>Grow Your Career.</h1>
     <p class="lead text-muted mx-auto" style="max-width: 560px;">Internship Portal connects students
        with companies and keeps supervisors involved every week — all in one place.</p>
-    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2">Get Started</a>
-    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg">Login</a>
+    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg me-2"><i class="bi bi-rocket-takeoff me-1"></i>Get Started</a>
+    <a href="{{ url_for('login') }}" class="btn btn-outline-primary btn-lg"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
 </div>
 
 <div class="row g-3 mb-5">

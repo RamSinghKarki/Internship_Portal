@@ -3,7 +3,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2 class="mb-0">Applicants for: {{ internship.title }}</h2>
-    <a href="{{ url_for('applicants_export', internship_id=internship.id) }}" class="btn btn-outline-success">Export CSV</a>
+    <a href="{{ url_for('applicants_export', internship_id=internship.id) }}" class="btn btn-outline-success"><i class="bi bi-file-earmark-arrow-down me-1"></i>Export CSV</a>
 </div>
 
 {% if applications|length == 0 %}
@@ -42,12 +42,12 @@
                 <option value="rejected" {% if a.status == 'rejected' %}selected{% endif %}>rejected</option>
             </select>
         </div>
-        <div class="col-auto"><button type="submit" class="btn btn-primary btn-sm">Update Status</button></div>
+        <div class="col-auto"><button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-arrow-repeat me-1"></i>Update Status</button></div>
     </form>
   </div>
 </div>
 {% endfor %}
 
-<a href="{{ url_for('internships') }}" class="btn btn-link px-0">Back to internships</a>
+<a href="{{ url_for('internships') }}" class="btn btn-link px-0"><i class="bi bi-arrow-left me-1"></i>Back to internships</a>
 
 {% endblock %}

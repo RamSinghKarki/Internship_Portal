@@ -26,3 +26,18 @@
 .college-logo {
     background: #198754;
 }
+
+
+/* ---------- project logo ---------- */
+.brand-logo {
+    height: 34px;
+    width: auto;
+    background: #fff;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.hero-logo {
+    max-width: 220px;
+    height: auto;
+}
