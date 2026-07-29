@@ -29,15 +29,14 @@
 
 
 /* ---------- project logo ---------- */
+/* the navigation bar uses the icon only, so it stays legible when small */
 .brand-logo {
-    height: 34px;
+    height: 32px;
     width: auto;
-    background: #fff;
-    border-radius: 6px;
-    padding: 2px;
 }
 
+/* the landing page uses the full logo with the wordmark */
 .hero-logo {
-    max-width: 220px;
+    max-width: 300px;
     height: auto;
 }

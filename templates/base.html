@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Internship Portal</title>
-    {% if has_logo %}<link rel="icon" href="{{ url_for('static', filename='logo.png') }}">{% endif %}
+    {% if has_logo %}<link rel="icon" href="{{ url_for('static', filename='logo_mark.png') }}">{% endif %}
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-icons.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -15,7 +15,7 @@
   <div class="container">
     <a class="navbar-brand fw-bold d-flex align-items-center" href="{{ url_for('home') }}">
         {% if has_logo %}
-            <img src="{{ url_for('static', filename='logo.png') }}" alt="Internship Portal" class="brand-logo me-2">
+            <img src="{{ url_for('static', filename='logo_mark.png') }}" alt="Internship Portal" class="brand-logo me-2">
         {% endif %}
         Internship Portal
     </a>
