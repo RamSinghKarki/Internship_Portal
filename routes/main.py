@@ -1,5 +1,5 @@
 # ============================================================
-# Main pages: landing page, dashboard (KPIs + charts),
+# Main pages: landing page, dashboard (key figures),
 # internship list with search, notifications
 # ============================================================
 
@@ -47,7 +47,7 @@ def home():
                            campuses=campuses)
 
 
-# ---------- DASHBOARD (role-specific KPIs and charts) ----------
+# ---------- DASHBOARD (role-specific key figures) ----------
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
@@ -55,7 +55,6 @@ def dashboard():
     now = datetime.now()
     month_start = datetime(now.year, now.month, 1)
     stats = []    # list of (label, number, small sub-text)
-    charts = {}   # chart name -> {title, type, labels, data}
 
     if session['role'] == 'student':
         me = current_student()
@@ -64,11 +63,6 @@ def dashboard():
         stats.append(('Companies', Company.query.count(), ''))
         stats.append(('My Applications', my_apps.count(), ''))
         stats.append(('Selected', my_apps.filter_by(status='selected').count(), ''))
-        charts['mystatus'] = {
-            'title': 'My applications by status', 'type': 'doughnut',
-            'labels': ['applied', 'selected', 'rejected'],
-            'data': [my_apps.filter_by(status=s).count()
-                     for s in ('applied', 'selected', 'rejected')]}
 
     elif session['role'] == 'company':
         me = current_company()
@@ -76,18 +70,8 @@ def dashboard():
         stats.append(('My Internships', Internship.query.filter_by(company_id=me.id).count(), ''))
         stats.append(('Applications Received', received.count(),
                       f'+{received.filter(Application.applied_date >= month_start).count()} this month'))
-        stats.append(('Students Registered', Student.query.count(), ''))
+        stats.append(('Selected', received.filter(Application.status == 'selected').count(), ''))
         stats.append(('My Supervisors', Supervisor.query.filter_by(company_id=me.id).count(), ''))
-        charts['status'] = {
-            'title': 'Applications by status', 'type': 'doughnut',
-            'labels': ['applied', 'selected', 'rejected'],
-            'data': [received.filter(Application.status == s).count()
-                     for s in ('applied', 'selected', 'rejected')]}
-        my_interns = Internship.query.filter_by(company_id=me.id).all()
-        charts['perpost'] = {
-            'title': 'Applicants per internship', 'type': 'bar',
-            'labels': [i.title[:18] for i in my_interns],
-            'data': [len(i.applications) for i in my_interns]}
 
     elif session['role'] == 'supervisor':
         me = current_supervisor()
@@ -100,15 +84,6 @@ def dashboard():
         stats.append(('Logs Submitted', my_logs.count(),
                       f'+{my_logs.filter(ProgressLog.submitted_date >= month_start).count()} this month'))
         stats.append(('Awaiting My Feedback', my_logs.filter(ProgressLog.feedback.is_(None)).count(), ''))
-        marked = my_logs.filter(ProgressLog.marks.isnot(None)).all()
-        weeks = sorted({log.week_number for log in marked if log.week_number})
-        if weeks:
-            avg = []
-            for wk in weeks:
-                vals = [log.marks for log in marked if log.week_number == wk]
-                avg.append(round(sum(vals) / len(vals), 1))
-            charts['marks'] = {'title': 'Average marks per week', 'type': 'bar',
-                               'labels': [f'Week {wk}' for wk in weeks], 'data': avg}
 
     else:   # admin - whole system
         for label, model, datecol in (
@@ -120,17 +95,8 @@ def dashboard():
             if datecol is not None:
                 sub = f'+{model.query.filter(datecol >= month_start).count()} this month'
             stats.append((label, model.query.count(), sub))
-        charts['roles'] = {
-            'title': 'Users by role', 'type': 'bar',
-            'labels': ['Students', 'Companies', 'Supervisors'],
-            'data': [Student.query.count(), Company.query.count(), Supervisor.query.count()]}
-        charts['status'] = {
-            'title': 'Applications by status', 'type': 'doughnut',
-            'labels': ['applied', 'selected', 'rejected'],
-            'data': [Application.query.filter_by(status=s).count()
-                     for s in ('applied', 'selected', 'rejected')]}
 
-    return render_template('dashboard.html', stats=stats, charts=charts)
+    return render_template('dashboard.html', stats=stats)
 
 
 # ---------- INTERNSHIP LIST (READ + search) ----------

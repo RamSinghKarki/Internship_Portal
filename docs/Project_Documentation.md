@@ -270,6 +270,7 @@ and marks.
 - **PyMySQL** — the driver through which SQLAlchemy connects to MySQL.
 - **HTML + Jinja Templates** — page structure, with one shared base layout.
 - **Bootstrap 5** — CSS framework used for the navigation bar, cards, tables, badges, forms and responsive grid; served locally from the static folder so the system works without internet.
+- **Bootstrap Icons** — icons on buttons and navigation, also served locally.
 - **CSS** — a small custom stylesheet for additions such as preserving line breaks in long text.
 - **Git / GitHub** — version control.
 
@@ -314,7 +315,7 @@ Functional Requirements and Non-Functional Requirements.
 - **FR-17:** The system shall allow internships to be searched by keyword (title, description, skills) and filtered by skill.
 - **FR-18:** The system shall notify users of events relevant to their role and show the number of unread notifications.
 - **FR-19:** The system shall record an audit entry for important actions and let the administrator review them.
-- **FR-20:** The system shall present each role a dashboard with key performance indicators and charts.
+- **FR-20:** The system shall present each role a dashboard with the figures relevant to that role.
 - **FR-21:** The administrator shall be able to search, page through, and export the user list; a company shall be able to export applicants as CSV.
 - **FR-22:** The system shall expose a JSON REST API for system statistics and open internships.
 - **FR-23:** A student shall select their college at registration, and the administrator shall be able to add or remove colleges.

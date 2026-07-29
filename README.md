@@ -66,9 +66,8 @@ Internship_Portal/
   choose their college at registration, and the admin can add or remove
   colleges.
 
-- **Dashboard analytics** — KPI cards with monthly growth and Chart.js charts
-  (users by role, applications by status, applicants per internship, average
-  marks per week), rendered from live database data.
+- **Role-specific dashboards** — each role sees key figures relevant to it,
+  with monthly growth, read live from the database.
 - **In-app notifications** — bell icon with unread count; users are notified
   when an application arrives, a decision is made, a log is submitted, or
   feedback is given.

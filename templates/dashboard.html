@@ -15,36 +15,6 @@
     {% endfor %}
 </div>
 
-{% if charts %}
-<div class="row g-3 mb-4">
-    {% for key, c in charts.items() %}
-    <div class="col-md-6">
-        <div class="card shadow-sm"><div class="card-body">
-            <h6 class="text-muted mb-3">{{ c.title }}</h6>
-            <div style="max-height: 260px;"><canvas id="chart_{{ key }}"></canvas></div>
-        </div></div>
-    </div>
-    {% endfor %}
-</div>
-<script src="{{ url_for('static', filename='chart.umd.js') }}"></script>
-<script>
-const CHARTS = {{ charts|tojson }};
-const COLORS = ['#0d6efd', '#198754', '#dc3545', '#ffc107', '#6f42c1', '#20c997'];
-for (const [key, c] of Object.entries(CHARTS)) {
-    new Chart(document.getElementById('chart_' + key), {
-        type: c.type,
-        data: {
-            labels: c.labels,
-            datasets: [{ label: c.title, data: c.data, backgroundColor: COLORS }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: { legend: { display: c.type !== 'bar' } }
-        }
-    });
-}
-</script>
-{% endif %}
 
 {% if session.role == 'student' %}
     <p><a href="{{ url_for('internships') }}">Browse internships</a> and apply with a cover letter.

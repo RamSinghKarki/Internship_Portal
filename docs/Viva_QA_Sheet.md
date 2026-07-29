@@ -43,7 +43,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 | 8 | Open Weekly Logs, submit a log | "Only a selected student can open the log book." |
 | 9 | Login as `supervisor1@portal.com` | "The supervisor sees only their own company's students." |
 | 10 | Give feedback and marks | "The student can now see this immediately." |
-| 11 | Login as `admin@portal.com` | "The admin dashboard has KPIs and charts." |
+| 11 | Login as `admin@portal.com` | "The admin dashboard shows system wide figures." |
 | 12 | Show Users → search, export CSV | "Searchable, paginated, exportable." |
 | 13 | Show Audit Log | "Every important action is recorded, including failed logins." |
 | 14 | Run `python -m pytest tests/ -v` | "All forty tests pass." |
@@ -262,11 +262,6 @@ the navigation bar, cards, tables, badges and forms all come from it. We serve
 it from our own `static/` folder rather than a CDN, so the system works
 without an internet connection.
 
-**Q: How are the charts made?**
-With Chart.js, also served locally. The Flask route calculates the numbers
-from the database, passes them to the template, and a small script draws the
-chart. The charts are not hard-coded — they change with the data.
-
 **Q: Is it responsive?**
 Yes — Bootstrap's grid and the collapsible navbar mean it works on a phone
 screen. You can narrow the browser window to see it.
@@ -382,7 +377,7 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 | Test cases in report | 28 |
 | Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
-| Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Chart.js, Flask-WTF |
+| Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons, Flask-WTF |
 | Admin login | `admin@portal.com` / `admin123` |
 | Demo logins | `student1@portal.com`, `company1@portal.com`, `supervisor1@portal.com` — password `pass123` |
 

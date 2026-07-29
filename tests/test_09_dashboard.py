@@ -45,4 +45,3 @@ def test_each_role_sees_only_its_own_dashboard_figures(client):
     for label in (b'Students', b'Companies', b'Supervisors',
                   b'Internships', b'Applications'):
         assert label in response.data
-    assert b'chart_' in response.data                   # charts are rendered
