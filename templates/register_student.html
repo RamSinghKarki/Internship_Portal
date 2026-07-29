@@ -12,6 +12,13 @@
             <input type="email" name="email" class="form-control" required></div>
         <div class="mb-3"><label class="form-label">Password</label>
             <input type="password" name="password" class="form-control" required></div>
+        <div class="mb-3"><label class="form-label">College</label>
+            <select name="college_id" class="form-select" required>
+                <option value="">-- select your college --</option>
+                {% for c in colleges %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+            </select></div>
         <div class="mb-3"><label class="form-label">Roll Number</label>
             <input type="text" name="roll_number" class="form-control"></div>
         <div class="mb-3"><label class="form-label">Department</label>

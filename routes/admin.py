@@ -6,7 +6,7 @@
 import csv
 import io
 from flask import render_template, redirect, url_for, session, flash, request, Response
-from models import db, User, AuditLog, audit
+from models import db, User, College, Student, AuditLog, audit
 
 
 # ---------- ALL USERS (READ - with search and pagination) ----------
@@ -69,3 +69,40 @@ def delete_user(id):
         db.session.commit()
         flash('User deleted.')
     return redirect(url_for('users'))
+
+
+# ---------- COLLEGES (READ + CREATE) - admin only ----------
+def colleges():
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        name = request.form['name'].strip()
+        if College.query.filter_by(name=name).first():
+            flash('That college is already registered.')
+        else:
+            db.session.add(College(name=name,
+                                   affiliation=request.form['affiliation'],
+                                   address=request.form['address']))
+            audit(session['user_id'], 'add_college', name)
+            db.session.commit()
+            flash('College added.')
+        return redirect(url_for('colleges'))
+
+    items = College.query.order_by(College.name).all()
+    counts = {c.id: Student.query.filter_by(college_id=c.id).count() for c in items}
+    return render_template('colleges.html', colleges=items, counts=counts)
+
+
+# ---------- DELETE COLLEGE ----------
+def delete_college(id):
+    if session.get('role') != 'admin':
+        return redirect(url_for('login'))
+
+    college = db.session.get(College, id)
+    if college:
+        audit(session['user_id'], 'delete_college', college.name)
+        db.session.delete(college)      # students keep their record (college set to NULL)
+        db.session.commit()
+        flash('College removed.')
+    return redirect(url_for('colleges'))

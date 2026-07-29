@@ -50,11 +50,23 @@ class User(db.Model):
         return check_password_hash(self.password, pw)
 
 
+class College(db.Model):
+    __tablename__ = 'colleges'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(150), unique=True, nullable=False)
+    affiliation = db.Column(db.String(100))
+    address = db.Column(db.String(150))
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+    students = db.relationship('Student', backref='college')
+
+
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
                         unique=True, nullable=False)
+    college_id = db.Column(db.Integer, db.ForeignKey('colleges.id', ondelete='SET NULL'))
     roll_number = db.Column(db.String(50))
     department = db.Column(db.String(100))
     semester = db.Column(db.Integer)

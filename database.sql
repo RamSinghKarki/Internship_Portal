@@ -27,19 +27,30 @@ CREATE TABLE users (
     FOREIGN KEY (role_id) REFERENCES roles(id)
 );
 
--- 3. Students (extra details of a student user)
+-- 3. Colleges (institutions whose students use the portal)
+CREATE TABLE colleges (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    name        VARCHAR(150) NOT NULL UNIQUE,
+    affiliation VARCHAR(100),                  -- e.g. Pokhara University
+    address     VARCHAR(150),
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Students (extra details of a student user)
 CREATE TABLE students (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT NOT NULL UNIQUE,
+    college_id  INT,                           -- which college the student belongs to
     roll_number VARCHAR(50),
     department  VARCHAR(100),
     semester    INT,
     skills      VARCHAR(255),
     document_url VARCHAR(255),               -- uploaded document (ID card / citizenship)
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL
 );
 
--- 4. Companies (extra details of a company user)
+-- 5. Companies (extra details of a company user)
 CREATE TABLE companies (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT NOT NULL UNIQUE,
@@ -49,7 +60,7 @@ CREATE TABLE companies (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 5. Supervisors (works for a company, guides students)
+-- 6. Supervisors (works for a company, guides students)
 CREATE TABLE supervisors (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT NOT NULL UNIQUE,
@@ -60,7 +71,7 @@ CREATE TABLE supervisors (
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
--- 6. Internships (posted by companies)
+-- 7. Internships (posted by companies)
 CREATE TABLE internships (
     id              INT AUTO_INCREMENT PRIMARY KEY,
     company_id      INT NOT NULL,
@@ -75,7 +86,7 @@ CREATE TABLE internships (
     FOREIGN KEY (company_id) REFERENCES companies(id) ON DELETE CASCADE
 );
 
--- 7. Applications (a student applies to an internship)
+-- 8. Applications (a student applies to an internship)
 CREATE TABLE applications (
     id            INT AUTO_INCREMENT PRIMARY KEY,
     student_id    INT NOT NULL,
@@ -88,7 +99,7 @@ CREATE TABLE applications (
     FOREIGN KEY (internship_id) REFERENCES internships(id) ON DELETE CASCADE
 );
 
--- 8. Progress logs (weekly work reports of a selected student,
+-- 9. Progress logs (weekly work reports of a selected student,
 --    checked by a supervisor who adds feedback and marks)
 CREATE TABLE progress_logs (
     id             INT AUTO_INCREMENT PRIMARY KEY,
@@ -103,7 +114,7 @@ CREATE TABLE progress_logs (
     FOREIGN KEY (supervisor_id)  REFERENCES supervisors(id)  ON DELETE SET NULL
 );
 
--- 9. Notifications (in-app messages for a user, shown at the bell icon)
+-- 10. Notifications (in-app messages for a user, shown at the bell icon)
 CREATE TABLE notifications (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT NOT NULL,
@@ -114,7 +125,7 @@ CREATE TABLE notifications (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
--- 10. Audit logs (who did what and when - for the admin)
+-- 11. Audit logs (who did what and when - for the admin)
 CREATE TABLE audit_logs (
     id         INT AUTO_INCREMENT PRIMARY KEY,
     user_id    INT,                            -- NULL for failed logins
@@ -126,6 +137,14 @@ CREATE TABLE audit_logs (
 
 -- ---------- starting data ----------
 INSERT INTO roles (role_name) VALUES ('admin'), ('student'), ('company'), ('supervisor');
+
+-- colleges that take part in the internship programme
+INSERT INTO colleges (name, affiliation, address) VALUES
+('National Academy of Science and Technology', 'Pokhara University', 'Dhangadhi, Kailali'),
+('Nepal Engineering College', 'Pokhara University', 'Changunarayan, Bhaktapur'),
+('Kathmandu Engineering College', 'Tribhuvan University', 'Kalimati, Kathmandu'),
+('Pokhara Engineering College', 'Pokhara University', 'Phirke, Pokhara'),
+('Everest Engineering College', 'Pokhara University', 'Sanepa, Lalitpur');
 
 -- Default admin account  (email: admin@portal.com  password: admin123)
 INSERT INTO users (role_id, name, email, password) VALUES

@@ -53,6 +53,13 @@ Internship_Portal/
 
 ## Enterprise Features
 
+- **Partner directory on the landing page** — cards showing the companies
+  working with the portal (with their open internship count) and the
+  participating colleges (with their student count).
+- **College management** — colleges are stored in their own table, students
+  choose their college at registration, and the admin can add or remove
+  colleges.
+
 - **Dashboard analytics** — KPI cards with monthly growth and Chart.js charts
   (users by role, applications by status, applicants per internship, average
   marks per week), rendered from live database data.

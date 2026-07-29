@@ -82,6 +82,8 @@ app.add_url_rule('/users',                 view_func=admin.users)
 app.add_url_rule('/users/delete/<int:id>', view_func=admin.delete_user, methods=['POST'])
 app.add_url_rule('/users/export',          view_func=admin.users_export)
 app.add_url_rule('/audit',                 view_func=admin.audit_log)
+app.add_url_rule('/colleges',              view_func=admin.colleges, methods=['GET', 'POST'])
+app.add_url_rule('/colleges/delete/<int:id>', view_func=admin.delete_college, methods=['POST'])
 
 # ---------- notifications ----------
 app.add_url_rule('/notifications', view_func=main.notifications)

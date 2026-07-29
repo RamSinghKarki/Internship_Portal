@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from app import app
 from models import (db, Role, User, Student, Company, Supervisor, Internship,
-                    Application, ProgressLog, Notification, AuditLog)
+                    Application, ProgressLog, Notification, AuditLog, College)
 
 random.seed(7)          # same data every time the script is run
 
@@ -147,12 +147,15 @@ def seed():
 
     # ---------------- students ----------------
     print('Creating students...')
+    colleges = College.query.order_by(College.id).all()
     student_rows = []
     for i, (name, roll, dept, sem, skills) in enumerate(STUDENTS):
         # spread joining dates over the last three months, several this month
         created = NOW - timedelta(days=random.randint(1, 90))
         user = make_user('student', name, f'student{i + 1}@portal.com', created)
-        student = Student(user=user, roll_number=roll, department=dept,
+        student = Student(user=user,
+                          college_id=colleges[i % len(colleges)].id if colleges else None,
+                          roll_number=roll, department=dept,
                           semester=sem, skills=skills,
                           document_url='uploads/sample_document.pdf')
         db.session.add(student)
@@ -284,6 +287,7 @@ def seed():
 
     # ---------------- summary ----------------
     print('\nDemo data created:')
+    print(f'  Colleges      : {College.query.count()}')
     print(f'  Students      : {Student.query.count()}')
     print(f'  Companies     : {Company.query.count()}')
     print(f'  Supervisors   : {Supervisor.query.count()}')

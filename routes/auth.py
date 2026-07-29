@@ -6,7 +6,7 @@ import os
 import time
 from flask import render_template, request, redirect, url_for, session, flash, current_app
 from werkzeug.utils import secure_filename
-from models import db, Role, User, Student, Company, Supervisor, audit
+from models import db, Role, User, Student, Company, Supervisor, College, audit
 
 ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
 
@@ -35,6 +35,7 @@ def register():
 
 # ---------- REGISTER STUDENT (CREATE - users + students rows) ----------
 def register_student():
+    colleges = College.query.order_by(College.name).all()
     if request.method == 'POST':
         if _email_taken(request.form['email']):
             flash('Email is already registered.')
@@ -52,6 +53,7 @@ def register_student():
 
         # student profile linked to the new user through the relationship
         student = Student(user=user,
+                          college_id=request.form.get('college_id') or None,
                           roll_number=request.form['roll_number'],
                           department=request.form['department'],
                           semester=request.form['semester'] or None,
@@ -64,7 +66,7 @@ def register_student():
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
 
-    return render_template('register_student.html')
+    return render_template('register_student.html', colleges=colleges)
 
 
 # ---------- REGISTER COMPANY (CREATE - users + companies rows) ----------

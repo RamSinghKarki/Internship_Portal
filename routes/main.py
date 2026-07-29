@@ -5,7 +5,7 @@
 
 from datetime import datetime
 from flask import render_template, redirect, url_for, session, request
-from models import (db, User, Student, Company, Supervisor, Internship,
+from models import (db, User, Student, Company, Supervisor, Internship, College,
                     Application, ProgressLog, Notification,
                     current_student, current_company, current_supervisor)
 
@@ -21,7 +21,30 @@ def home():
         'supervisors': Supervisor.query.count(),
         'internships': Internship.query.count(),
     }
-    return render_template('index.html', counts=counts)
+
+    # companies working with the portal, newest first, with their number
+    # of open internships (shown as cards on the landing page)
+    partners = []
+    for company in Company.query.order_by(Company.id.desc()).limit(12).all():
+        open_count = Internship.query.filter_by(company_id=company.id,
+                                                status='open').count()
+        partners.append({'name': company.user.name,
+                         'industry': company.industry,
+                         'location': company.location,
+                         'initials': ''.join(w[0] for w in company.user.name.split()[:2]).upper(),
+                         'open_internships': open_count})
+
+    # colleges taking part, with how many of their students have joined
+    campuses = []
+    for college in College.query.order_by(College.name).limit(12).all():
+        campuses.append({'name': college.name,
+                         'affiliation': college.affiliation,
+                         'address': college.address,
+                         'initials': ''.join(w[0] for w in college.name.split()[:3]).upper(),
+                         'students': Student.query.filter_by(college_id=college.id).count()})
+
+    return render_template('index.html', counts=counts, partners=partners,
+                           campuses=campuses)
 
 
 # ---------- DASHBOARD (role-specific KPIs and charts) ----------

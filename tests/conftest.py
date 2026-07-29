@@ -75,7 +75,8 @@ def a_document(name='id_card.pdf'):
 def register_student(client, email='student@test.com', name='Test Student',
                      skills='Python, MySQL', document=True):
     data = {'name': name, 'email': email, 'password': 'pass123',
-            'roll_number': 'CS-101', 'department': 'Computer Engineering',
+            'college_id': '1', 'roll_number': 'CS-101',
+            'department': 'Computer Engineering',
             'semester': '6', 'skills': skills}
     if document:
         data['document'] = a_document()
