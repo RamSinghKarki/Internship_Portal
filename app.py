@@ -20,7 +20,7 @@ from models import db
 
 app = Flask(__name__)
 
-# Secret key: signs the session cookie and the CSRF tokens.
+# Secret key: signs the session cookie.
 # In a real deployment this comes from the environment, never from the source.
 app.secret_key = os.environ.get('SECRET_KEY', 'my-secret-key')
 
