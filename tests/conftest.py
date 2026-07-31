@@ -57,9 +57,6 @@ def client():
     """A fresh application and empty database for every test case."""
     _build_test_database()
     flask_app.config['TESTING'] = True
-    # the test client posts forms directly, so the CSRF token is switched off
-    # here; test_11_csrf.py switches it back on to prove the protection works
-    flask_app.config['WTF_CSRF_ENABLED'] = False
     with flask_app.app_context():
         db.session.remove()
         db.engine.dispose()

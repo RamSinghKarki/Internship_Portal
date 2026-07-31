@@ -21,7 +21,7 @@ and sets the direction of the questions that follow.
 >
 > It is built with Python Flask, MySQL and the SQLAlchemy ORM, with a
 > Bootstrap interface. The database has eleven tables, and we have written
-> thirty-eight automated tests covering every test case in our report."
+> thirty-five automated tests covering every test case in our report."
 
 ---
 
@@ -46,7 +46,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 | 11 | Login as `admin@portal.com` | "The admin dashboard shows system wide figures." |
 | 12 | Show Users → search, export CSV | "Searchable, paginated, exportable." |
 | 13 | Show Audit Log | "Every important action is recorded, including failed logins." |
-| 14 | Run `python -m pytest tests/ -v` | "All thirty-eight tests pass." |
+| 14 | Run `python -m pytest tests/ -v` | "All thirty-five tests pass." |
 
 **Keep a second browser (or incognito window) open** so you can be logged in
 as two roles at once and avoid repeated logging in and out.
@@ -240,19 +240,12 @@ Every important action writes an entry to `audit_logs` with the user, the
 action, details and a timestamp — including failed login attempts, which are
 stored with no user id. The admin can review them on the Audit Log page.
 
-**Q: Do you have CSRF protection?**
-Yes. We use Flask-WTF's `CSRFProtect`. The server puts a hidden token in every
-one of our fifteen forms, and a POST arriving without the matching token is
-rejected with HTTP 400. That stops another website from submitting a form on
-behalf of a logged-in user. The read-only JSON API is exempt because it only
-answers GET requests.
-
-**Q: Can you prove the CSRF protection works?**
-Yes — `python -m pytest tests/test_11_csrf.py -v`. One test posts to `/login`
-without a token and asserts it is refused and that nobody is logged in;
-another reads the token from the page and shows a normal login still works.
-You can also try it live with curl: posting to `/login` from outside the
-browser returns 400.
+**Q: (Honest answer) Do you have CSRF protection?**
+No, and we know it. A malicious page could in principle submit a form on
+behalf of a user who is already logged in. The standard fix in Flask is
+Flask-WTF's `CSRFProtect`, which puts a hidden token in every form and
+rejects any POST that arrives without it. We would add that before putting
+the system on a public server.
 
 ## F. Frontend
 
@@ -272,7 +265,7 @@ screen. You can narrow the browser window to see it.
 Three levels. Unit testing of individual routes with valid and invalid inputs,
 integration testing of the complete workflow across roles, and beta testing
 where classmates used the system without instructions. All of it is automated
-in the `tests/` folder — thirty-eight tests, one file per area.
+in the `tests/` folder — thirty-five tests, one file per area.
 
 **Q: Show me a test running.**
 `python -m pytest tests/ -v` — each test is named after the test case number in
@@ -354,7 +347,8 @@ Examiners respect a straight answer far more than a bluff. If asked:
   application only, because we had no mail server to demonstrate with.
 - **Deployment** — runs on the Flask development server; a production
   deployment needs Gunicorn or similar behind a web server, with HTTPS.
-- **The secret key** — it now reads from the `SECRET_KEY` environment variable
+- **CSRF protection** — not implemented; the fix is Flask-WTF `CSRFProtect`.
+- **The secret key** — it reads from the `SECRET_KEY` environment variable
   when one is set, but the fallback value is still in the source for
   convenience during development.
 - **Resume upload** — only the identity document is uploaded at registration.
@@ -373,11 +367,11 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 | URL rules | 32 (`app.py`) |
 | Route files | 7 (`routes/`) |
 | Templates | 20 (all extend `base.html`) |
-| Automated tests | 38, all passing |
-| Test cases in report | 27 |
+| Automated tests | 35, all passing |
+| Test cases in report | 26 |
 | Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
-| Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons, Flask-WTF |
+| Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons |
 | Admin login | `admin@portal.com` / `admin123` |
 | Demo logins | `student1@portal.com`, `company1@portal.com`, `supervisor1@portal.com` — password `pass123` |
 

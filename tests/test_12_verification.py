@@ -1,13 +1,13 @@
 # ============================================================
-# TEST CASE 27 : Admin verification of new accounts
+# TEST CASE 26 : Admin verification of new accounts
 # ============================================================
 
 from conftest import (register_student, register_company, register_supervisor,
                       login, logout, post_internship, approve_all)
 
 
-def test_tc27_new_accounts_start_as_pending(client):
-    """TC-27: Every new account waits for admin approval; the admin is approved."""
+def test_tc26_new_accounts_start_as_pending(client):
+    """TC-26: Every new account waits for admin approval; the admin is approved."""
     register_student(client)
     register_company(client)
 
@@ -21,8 +21,8 @@ def test_tc27_new_accounts_start_as_pending(client):
     assert admin.verification_status == 'verified'      # seeded as approved
 
 
-def test_tc27b_unverified_users_cannot_act(client):
-    """TC-27: A pending company cannot post, and a pending student cannot apply."""
+def test_tc26b_unverified_users_cannot_act(client):
+    """TC-26: A pending company cannot post, and a pending student cannot apply."""
     register_company(client)
     register_student(client)
 
@@ -43,8 +43,8 @@ def test_tc27b_unverified_users_cannot_act(client):
     assert Internship.query.count() == 1
 
 
-def test_tc27c_admin_can_approve_an_account(client):
-    """TC-27: The admin approves an account and the user is notified."""
+def test_tc26c_admin_can_approve_an_account(client):
+    """TC-26: The admin approves an account and the user is notified."""
     register_student(client)
     from models import User, Notification
     student = User.query.filter_by(email='student@test.com').first()
@@ -64,8 +64,8 @@ def test_tc27c_admin_can_approve_an_account(client):
     assert note is not None and 'approved' in note.message
 
 
-def test_tc27d_admin_can_reject_with_a_reason(client):
-    """TC-27: A rejected account is told why, and still cannot act."""
+def test_tc26d_admin_can_reject_with_a_reason(client):
+    """TC-26: A rejected account is told why, and still cannot act."""
     register_student(client)
     from models import User
     student = User.query.filter_by(email='student@test.com').first()
@@ -87,8 +87,8 @@ def test_tc27d_admin_can_reject_with_a_reason(client):
     assert b'The document was not readable' in response.data
 
 
-def test_tc27e_only_the_admin_can_verify(client):
-    """TC-27: Other roles cannot reach the verification pages."""
+def test_tc26e_only_the_admin_can_verify(client):
+    """TC-26: Other roles cannot reach the verification pages."""
     register_student(client)
     register_company(client)
     approve_all()

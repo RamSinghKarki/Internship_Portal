@@ -78,7 +78,6 @@
 
     {% if u.verification_status != 'verified' %}
     <form method="POST" action="{{ url_for('verify_user', id=u.id) }}" class="d-inline mt-3">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-success btn-sm">
             <i class="bi bi-check-circle me-1"></i>Approve</button>
     </form>
@@ -86,7 +85,6 @@
 
     {% if u.verification_status != 'rejected' %}
     <form method="POST" action="{{ url_for('reject_user', id=u.id) }}" class="row g-2 mt-1">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-md-6">
             <input type="text" name="remarks" class="form-control form-control-sm"
                    placeholder="Reason for rejection (shown to the user)">

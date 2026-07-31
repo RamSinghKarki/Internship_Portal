@@ -47,7 +47,6 @@
             <span class="badge bg-info text-dark">Already applied</span>
         {% else %}
             <form method="POST" action="{{ url_for('apply', internship_id=i.id) }}">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label class="form-label">Cover Letter</label>
                 <textarea name="cover_letter" class="form-control mb-2" rows="3" placeholder="Why are you a good fit?"></textarea>
                 <button type="submit" class="btn btn-primary btn-sm"><i class="bi bi-send me-1"></i>Apply</button>
@@ -59,7 +58,6 @@
         <a href="{{ url_for('applicants', internship_id=i.id) }}" class="btn btn-outline-primary btn-sm"><i class="bi bi-people me-1"></i>View applicants</a>
         <a href="{{ url_for('edit_internship', id=i.id) }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-pencil-square me-1"></i>Edit</a>
         <form method="POST" action="{{ url_for('delete_internship', id=i.id) }}" class="d-inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Delete this internship?')"><i class="bi bi-trash me-1"></i>Delete</button>
         </form>
     {% endif %}

@@ -326,7 +326,6 @@ Functional Requirements and Non-Functional Requirements.
 
 - **NFR-1 (Security):** Passwords shall never be stored in plain text; they are hashed using Werkzeug's password hashing functions.
 - **NFR-2 (Security):** All database access goes through the SQLAlchemy ORM, which sends every value as a bound parameter, preventing SQL injection.
-- **NFR-10 (Security):** Every form shall carry a CSRF token so that a request forged by another site is rejected.
 - **NFR-3 (Access control):** Every page shall verify the session role, and users shall act only on their own data.
 - **NFR-4 (Data integrity):** The database shall enforce integrity through primary keys, foreign keys, a unique email, and a unique (student, internship) pair.
 - **NFR-5 (Usability):** The interface shall be simple and usable without training, with clear feedback messages after every action.
