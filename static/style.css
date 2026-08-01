@@ -23,7 +23,17 @@
 }
 
 /* colleges use a different colour circle from companies */
-.college-logo {
+.college-logo { width: 46px;
+    height: 46px;
+    flex: 0 0 46px;
+    border-radius: 50%;
+   
+    color: #fff;
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: #198754;
 }
 

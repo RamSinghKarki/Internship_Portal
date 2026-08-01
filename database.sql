@@ -1,3 +1,4 @@
+-- Active: 1783498630599@@127.0.0.1@3306@bridge_portal
 -- ============================================================
 -- Internship Portal - Database Setup (matches the ER diagram)
 -- Run once in MySQL:  mysql -u root -p < database.sql
@@ -155,3 +156,10 @@ INSERT INTO users (role_id, name, email, password, verification_status, verified
 (1, 'Admin', 'admin@portal.com',
  'pbkdf2:sha256:1000000$q9kKTkMrQZLUSLQp$50cdcb29c2a20385dc20c63bc2735817ce17372aa4c138e4fbd44c8e6d79d698',
  'verified', CURRENT_TIMESTAMP);
+
+ALTER TABLE users
+ADD COLUMN verification_status VARCHAR(20) DEFAULT 'pending',
+ADD COLUMN verification_remarks TEXT NULL,
+ADD COLUMN verified_at DATETIME NULL;
+
+DESCRIBE users;

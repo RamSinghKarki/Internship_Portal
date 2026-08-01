@@ -1,14 +1,3 @@
-# ============================================================
-# Database models (SQLAlchemy ORM)
-#
-# Each class below is one table of the database. SQLAlchemy
-# maps the class to the table, so rows become Python objects:
-#   CREATE -> db.session.add(object) + commit
-#   READ   -> Model.query.filter_by(...) / .all() / .first()
-#   UPDATE -> change object attributes + commit
-#   DELETE -> db.session.delete(object) + commit
-# ============================================================
-
 from flask import session
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
