@@ -33,11 +33,11 @@ Have the app already running at `http://127.0.0.1:5000`.
 | # | Step | What to say while clicking |
 |---|------|----------------------------|
 | 1 | Landing page | "These numbers and the company and college cards come live from the database." |
-| 2 | Register a student | "Notice the college dropdown and the compulsory document upload." |
+| 2 | Register a student | "Notice the college dropdown and the compulsory PDF upload — citizenship / NID, resume and other documents in one file." |
 | 2b | Login as admin, open Verifications | "Every new account waits here. I can see the uploaded document before approving." Approve the new student. |
 | 3 | Login as `company1@portal.com` | "The navigation bar changes according to the role." |
 | 4 | Post an internship | "This is a CREATE operation." |
-| 5 | View applicants | "The company sees the student's college, skills, cover letter and document." |
+| 5 | View applicants | "The company sees the student's college, skills, cover letter and the uploaded PDF with the NID and resume." |
 | 6 | Mark one applicant **selected** | "This is an UPDATE, and it notifies the student." |
 | 7 | Login as that student | "The bell icon shows the notification." |
 | 8 | Open Weekly Logs, submit a log | "Only a selected student can open the log book." |
@@ -78,10 +78,13 @@ non-functional requirements in Chapter 3.
 **Q: What is the scope of the project? What is not included?**
 Included: registration and login for all roles, internship posting and
 search, applications with cover letters, selection, weekly logs with
-supervisor feedback and marks, notifications, audit log, analytics
-dashboards, CSV exports, a REST API, and college and user administration.
+supervisor feedback and marks, notifications, audit log, CSV exports,
+and college and user administration. Each student uploads one PDF holding
+the citizenship / NID, resume and other documents, which the admin checks
+before approving and the company reads when the student applies.
 Not included: email or SMS delivery, interview scheduling, direct messaging
-between users, and resume uploads — these are listed as future scope.
+between users, and separate file attachments on the weekly logs — these are
+listed as future scope.
 
 ## B. Database
 
@@ -351,7 +354,8 @@ Examiners respect a straight answer far more than a bluff. If asked:
 - **The secret key** — it reads from the `SECRET_KEY` environment variable
   when one is set, but the fallback value is still in the source for
   convenience during development.
-- **Resume upload** — only the identity document is uploaded at registration.
+- **Separate file fields** — the NID, resume and other papers arrive as one
+  combined PDF, not as separate uploads that the system can read individually.
 
 If you do not know an answer: *"I am not certain about that — what I do know
 is …"* and then say the nearest thing you do know. Never invent a detail.
@@ -367,8 +371,8 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 | URL rules | 32 (`app.py`) |
 | Route files | 7 (`routes/`) |
 | Templates | 20 (all extend `base.html`) |
-| Automated tests | 35, all passing |
-| Test cases in report | 26 |
+| Automated tests | 36, all passing |
+| Test cases in report | 27 |
 | Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
 | Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons |

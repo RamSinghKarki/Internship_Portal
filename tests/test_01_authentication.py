@@ -75,3 +75,14 @@ def test_tc16_registration_without_document_is_rejected(client):
 
     from models import User
     assert User.query.filter_by(email='nodoc@test.com').first() is None
+
+
+def test_tc27_document_must_be_a_pdf(client):
+    """TC-27: The NID, resume and other papers must come as one PDF file,
+    so a file of any other type is refused."""
+    response = register_student(client, email='notpdf@test.com',
+                                document_name='citizenship.jpg')
+    assert b'Please upload a valid document' in response.data
+
+    from models import User
+    assert User.query.filter_by(email='notpdf@test.com').first() is None

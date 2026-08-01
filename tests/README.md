@@ -46,7 +46,7 @@ export TEST_DB_PASS=your_password     (Linux / macOS)
 
 | File | Test cases | Covers |
 |------|-----------|--------|
-| `test_01_authentication.py` | TC-01 … TC-05, TC-16 | Student / company / supervisor registration, duplicate email, wrong password, registration without a document |
+| `test_01_authentication.py` | TC-01 … TC-05, TC-16, TC-27 | Student / company / supervisor registration, duplicate email, wrong password, registration without a document, document that is not a PDF |
 | `test_02_internship.py` | TC-06, TC-07, TC-17 | Posting an internship, editing and closing it, search by keyword and skill |
 | `test_03_application.py` | TC-08 … TC-11 | Applying with a cover letter, duplicate application, withdrawal, selection and rejection |
 | `test_04_progress_log.py` | TC-12, TC-13 | Weekly log submission, supervisor feedback and marks |

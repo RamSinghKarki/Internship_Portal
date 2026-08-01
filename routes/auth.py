@@ -8,7 +8,9 @@ from flask import render_template, request, redirect, url_for, session, flash, c
 from werkzeug.utils import secure_filename
 from models import db, Role, User, Student, Company, Supervisor, College, audit
 
-ALLOWED_EXTENSIONS = {'pdf', 'png', 'jpg', 'jpeg', 'doc', 'docx'}
+# the student uploads one PDF that holds the citizenship / NID, the resume
+# and any other certificates, so only PDF files are accepted
+ALLOWED_EXTENSIONS = {'pdf'}
 
 
 def save_document(file):
@@ -44,7 +46,8 @@ def register_student():
         # a valid document upload is required to create a student account
         document = save_document(request.files.get('document'))
         if not document:
-            flash('Please upload a valid document (pdf, png, jpg, doc or docx).')
+            flash('Please upload a valid document: one PDF file containing your '
+                  'citizenship / NID, resume and other documents.')
             return redirect(url_for('register_student'))
 
         role = Role.query.filter_by(role_name='student').first()

@@ -67,19 +67,21 @@ def client():
 # ------------------------------------------------------------
 # helpers used by the test cases
 # ------------------------------------------------------------
-def a_document(name='id_card.pdf'):
-    """A small file to use for the student document upload."""
+def a_document(name='nid_resume.pdf'):
+    """A small file to use for the student document upload.
+    In the portal this is one PDF holding the NID, resume and other papers."""
     return (io.BytesIO(b'test document content'), name)
 
 
 def register_student(client, email='student@test.com', name='Test Student',
-                     skills='Python, MySQL', document=True):
+                     skills='Python, MySQL', document=True,
+                     document_name='nid_resume.pdf'):
     data = {'name': name, 'email': email, 'password': 'pass123',
             'college_id': '1', 'roll_number': 'CS-101',
             'department': 'Computer Engineering',
             'semester': '6', 'skills': skills}
     if document:
-        data['document'] = a_document()
+        data['document'] = a_document(document_name)
     return client.post('/register/student', data=data,
                        content_type='multipart/form-data', follow_redirects=True)
 

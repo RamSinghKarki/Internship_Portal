@@ -49,7 +49,7 @@ CREATE TABLE students (
     department  VARCHAR(100),
     semester    INT,
     skills      VARCHAR(255),
-    document_url VARCHAR(255),               -- uploaded document (ID card / citizenship)
+    document_url VARCHAR(255),               -- one PDF: citizenship/NID + resume + other documents
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL
 );

@@ -29,8 +29,8 @@
     {% if a.cover_letter %}<p class="card-text preserve mb-1"><b>Cover letter:</b>
 {{ a.cover_letter }}</p>{% endif %}
     {% if a.student.document_url %}
-        <p class="card-text mb-2"><b>Document:</b>
-           <a href="{{ url_for('static', filename=a.student.document_url) }}" target="_blank">View document</a></p>
+        <p class="card-text mb-2"><b>Documents (NID, resume and others):</b>
+           <a href="{{ url_for('static', filename=a.student.document_url) }}" target="_blank">View PDF</a></p>
     {% endif %}
 
     <form method="POST" action="{{ url_for('update_status', id=a.id) }}" class="row g-2">
