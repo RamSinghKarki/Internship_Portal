@@ -9,9 +9,9 @@ A Flask + MySQL web app that connects **Students**, **Companies**, **Supervisors
 | **Student** | Register with details (roll no, department, semester, skills), browse open internships, apply with a cover letter, withdraw, and keep a **weekly log book** after being selected |
 | **Company** | Register, post / edit / delete internships (skills, duration, stipend, vacancies), view applicants with their details, mark them selected / rejected |
 | **Supervisor** | Register under a company, see the selected students of that company, read their weekly logs and give **feedback + marks** |
-| **Admin** | View all users, delete users (related data is removed automatically by `ON DELETE CASCADE`) |
+| **Admin** | Verify or reject every new account, manage colleges, view and search all users, delete users (related data is removed automatically by `ON DELETE CASCADE`), review the audit log |
 
-## Database (8 tables — matches the ER diagram)
+## Database (11 tables — matches the ER diagram)
 
 ```
 roles ──< users ──< students ──────< applications >────── internships >── companies
@@ -27,6 +27,9 @@ roles ──< users ──< students ──────< applications >───
 - `internships` — posted by a company (title, skills, duration, stipend, vacancies, status)
 - `applications` — student applies to internship (cover letter, status: applied/selected/rejected)
 - `progress_logs` — weekly work of a selected student + supervisor feedback and marks
+- `colleges` — participating institutions; a student is linked to one
+- `notifications` — in-app messages with an unread flag (the bell badge)
+- `audit_logs` — who did what and when, including failed logins
 
 ## Project Structure
 
@@ -41,7 +44,7 @@ Internship_Portal/
 │   ├── company.py      <- post/edit/delete internships, applicants
 │   ├── supervisor.py   <- my students, view logs, give feedback
 │   └── admin.py        <- manage users, audit log, CSV export
-├── database.sql        <- creates the database, 8 tables and admin account
+├── database.sql        <- creates the database, 11 tables and admin account
 ├── requirements.txt
 ├── static/
 │   ├── bootstrap.min.css   <- Bootstrap 5 (served locally, works offline)
