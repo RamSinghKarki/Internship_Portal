@@ -100,7 +100,7 @@ A project of this size is never finished alone, and I owe a good deal of it to t
 
 My first thanks go to my project supervisor, whose questions were usually harder than the code. Asking me to justify a foreign key or explain why a page needed a role check did more for the design than any amount of extra features would have. Several decisions in Chapter 4 — particularly the cascade rules — came directly out of those discussions.
 
-I am grateful to the Department of Computer Engineering for arranging the mid-term defence, which turned out to be the most useful checkpoint of the whole project. The feedback I received there is the reason the second half of the work went into verification, notifications and testing rather than into more screens.
+I am grateful to the Department of Computer Engineering for arranging the mid-term defence, which turned out to be the most useful checkpoint of the whole project. The feedback I received there is the reason the second half of the work went into verification, testing and documentation rather than into more screens.
 
 I thank the faculty members who taught the courses this project draws on. The Database Management Systems course gave me normalization and the discipline of thinking in relations before thinking in pages; the Web Technology course gave me the request–response model that the whole application rests on; and Software Engineering gave me the habit of writing down requirements before writing code.
 
@@ -116,11 +116,11 @@ Finally, I thank my family for their patience through the late nights near submi
 
 Internships are a compulsory component of most technical degrees in Nepal, yet the process that surrounds them is still largely manual. Openings reach students through notice boards, messaging groups and word of mouth; applications are handed over as printed files or e-mail attachments; selection results are communicated informally; and the work a student actually does during the internship is rarely recorded anywhere the college can see. Information ends up scattered across people rather than stored in one place, and nobody holds a complete picture.
 
-This project presents **Internship Portal**, a web application that brings the whole internship life cycle onto a single platform backed by a relational database. The system serves four kinds of users. Students register with their academic details and a supporting document, search and filter published openings, apply with a written cover letter, and — once selected — maintain a weekly log book of the work they complete. Companies publish internship openings with the skills, duration, stipend and number of vacancies, review the applicants of each opening together with their profiles and cover letters, and record a selection decision. Supervisors, who belong to a company, read the weekly logs of the students placed there and return written feedback along with marks. An administrator verifies every new account before it becomes usable, manages the master list of participating colleges, and monitors the system through a dashboard and an audit trail.
+This project presents **Internship Portal**, a web application that brings the whole internship life cycle onto a single platform backed by a relational database. The system serves four kinds of users. Students register with their academic details and a supporting document, search and filter published openings, apply with a written cover letter, and — once selected — maintain a weekly log book of the work they complete. Companies publish internship openings with the skills, duration, stipend and number of vacancies, review the applicants of each opening together with their profiles and cover letters, and record a selection decision. Supervisors, who belong to a company, read the weekly logs of the students placed there and return written feedback along with marks. An administrator verifies every new account before it becomes usable, manages the user accounts, and monitors the system through a dashboard of live figures.
 
-The application is built with Python and the Flask micro-framework, following a three-tier structure. Page logic lives in six route modules, database access goes through SQLAlchemy's object relational mapper, and the data itself is held in a MySQL database of eleven normalized tables in third normal form. Referential integrity is enforced in the schema through `ON DELETE CASCADE` and `ON DELETE SET NULL` rules rather than in application code, so related records cannot be orphaned. Passwords are never stored in readable form; they are salted and hashed with Werkzeug's password utilities. Access control is applied on every route by checking both the session role and record ownership, so a company can only reach its own postings and a supervisor only the students of its own organisation. The interface is rendered server-side with Jinja2 templates that all extend one base layout and are styled with Bootstrap 5 served from the application itself, so the system runs without an internet connection.
+The application is built with Python and the Flask micro-framework, following a three-tier structure. Page logic lives in six route modules, database access goes through SQLAlchemy's object relational mapper, and the data itself is held in a MySQL database of eight normalized tables in third normal form. Referential integrity is enforced in the schema through `ON DELETE CASCADE` and `ON DELETE SET NULL` rules rather than in application code, so related records cannot be orphaned. Passwords are never stored in readable form; they are salted and hashed with Werkzeug's password utilities. Access control is applied on every route by checking both the session role and record ownership, so a company can only reach its own postings and a supervisor only the students of its own organisation. The interface is rendered server-side with Jinja2 templates that all extend one base layout and are styled with Bootstrap 5 served from the application itself, so the system runs without an internet connection.
 
-Correctness was verified with an automated suite of thirty-six tests written using pytest, covering registration and login, internship management, the application workflow, weekly logs, role-based access control, notifications, administrative actions, cascade deletion and account verification. Every test executes against a separate database created fresh from the schema file, so the working data is never touched. All thirty-six tests pass. A round of beta testing with eight classmates produced a further set of usability corrections that were folded back into the interface.
+Correctness was verified with an automated suite of twenty-nine tests written using pytest, covering registration and login, internship management, the application workflow, weekly logs, role-based access control, administrative actions, cascade deletion and account verification. Every test executes against a separate database created fresh from the schema file, so the working data is never touched. All twenty-nine tests pass. A round of beta testing with eight classmates produced a further set of usability corrections that were folded back into the interface.
 
 The completed system demonstrates that a small, well-normalized relational design combined with disciplined access control is enough to replace an informal manual process end to end. Its main limitations are the absence of outbound e-mail, the use of a single combined document per student instead of individually parsed records, and deployment on a development server; each is addressed in the recommendations.
 
@@ -185,19 +185,17 @@ The completed system demonstrates that a small, well-normalized relational desig
 | Figure 4.11 | Internship search by skill | |
 | Figure 4.12 | My applications | |
 | Figure 4.13 | Weekly log book | |
-| Figure 4.14 | Notifications | |
-| Figure 4.15 | Company dashboard | |
-| Figure 4.16 | Company internship list | |
-| Figure 4.17 | Post internship form | |
-| Figure 4.18 | Applicants of an internship | |
-| Figure 4.19 | Edit internship form | |
-| Figure 4.20 | Supervisor dashboard | |
-| Figure 4.21 | My students | |
-| Figure 4.22 | Supervisor log review | |
-| Figure 4.23 | Administrator dashboard | |
-| Figure 4.24 | User management | |
-| Figure 4.25 | College management | |
-| Figure 4.26 | Audit log | |
+| Figure 4.14 | Company dashboard | |
+| Figure 4.15 | Company internship list | |
+| Figure 4.16 | Post internship form | |
+| Figure 4.17 | Applicants of an internship | |
+| Figure 4.18 | Edit internship form | |
+| Figure 4.19 | Supervisor dashboard | |
+| Figure 4.20 | My students | |
+| Figure 4.21 | Supervisor log review | |
+| Figure 4.22 | Administrator dashboard | |
+| Figure 4.23 | User management | |
+| Figure 4.24 | Verification queue | |
 
 <div style="page-break-after: always;"></div>
 
@@ -215,17 +213,14 @@ The completed system demonstrates that a small, well-normalized relational desig
 | Table 4.1 | Route table of the application | |
 | Table 4.2 | Database tables and their purpose | |
 | Table 4.3 | Schema of `roles` | |
-| Table 4.4 | Schema of `colleges` | |
-| Table 4.5 | Schema of `users` | |
-| Table 4.6 | Schema of `students` | |
-| Table 4.7 | Schema of `companies` | |
-| Table 4.8 | Schema of `supervisors` | |
-| Table 4.9 | Schema of `internships` | |
-| Table 4.10 | Schema of `applications` | |
-| Table 4.11 | Schema of `progress_logs` | |
-| Table 4.12 | Schema of `notifications` | |
-| Table 4.13 | Schema of `audit_logs` | |
-| Table 4.14 | Relationships and how they are enforced | |
+| Table 4.4 | Schema of `users` | |
+| Table 4.5 | Schema of `students` | |
+| Table 4.6 | Schema of `companies` | |
+| Table 4.7 | Schema of `supervisors` | |
+| Table 4.8 | Schema of `internships` | |
+| Table 4.9 | Schema of `applications` | |
+| Table 4.10 | Schema of `progress_logs` | |
+| Table 4.11 | Relationships and how they are enforced | |
 | Table 5.1 | Mapping of test files to test cases | |
 | Table 5.2 | Test cases and results | |
 | Table 6.1 | Summary of test execution | |
@@ -319,7 +314,7 @@ The objectives set at the start of the project were these.
 
 5. **To record the internship itself**, through a weekly log book kept by the selected student and evaluated by a supervisor with written feedback and marks.
 
-6. **To require institutional oversight** by making every new account pass through an administrator's verification queue before it can be used, and by recording important actions in an audit trail.
+6. **To require institutional oversight** by making every new account pass through an administrator's verification queue before it can be used, so that no unchecked account can post an opening or apply for one.
 
 7. **To demonstrate practical use of Flask, SQLAlchemy and MySQL** together, including object relational mapping, session management, template inheritance and server-side form handling.
 
@@ -337,7 +332,7 @@ For a company, the purpose is order. All applicants for a given opening appear t
 
 For a supervisor, the purpose is a working channel. The supervisor sees the students placed at the same organisation, reads what each of them did in a given week, and responds with feedback and a mark that the student sees immediately.
 
-For an administrator — in practice the college or the platform operator — the purpose is control and accountability. No account becomes usable until it has been checked, the list of participating colleges is maintained centrally, and every meaningful action is written to an audit log with the actor and the time.
+For an administrator — in practice the college or the platform operator — the purpose is control. No account becomes usable until it has been checked against the document its owner uploaded, and every account on the platform can be searched, exported or removed from one page.
 
 ### 1.3.2 Scope
 
@@ -354,14 +349,13 @@ Within scope:
 - Review of applicants by the company and recording of a selection decision.
 - A weekly log book available to a student only after selection, with a week number and a description of work done.
 - Supervisor feedback and marks against each weekly log, visible to the student.
-- In-application notifications with an unread counter for applications, decisions, log submissions and feedback.
 - Role-specific dashboards showing live figures drawn from the database.
-- A public landing page listing participating companies and colleges with live counts.
-- Administrative management of users and colleges, cascade deletion of related records, CSV export of users and of applicants, and a paginated audit log.
+- A public landing page listing the participating companies with live counts.
+- Administrative management of users, cascade deletion of related records, and CSV export of users and of applicants.
 
 Outside scope:
 
-- Outbound e-mail or SMS. Notifications are delivered inside the application only.
+- Outbound e-mail or SMS, and in-application messaging of any kind. A decision is visible when the user next opens the relevant page.
 - Interview scheduling and direct messaging between users.
 - Payment, stipend disbursement or any financial transaction.
 - Automatic generation of completion certificates.
@@ -370,7 +364,7 @@ Outside scope:
 
 ### 1.3.3 Applicability
 
-The system is written for a single institution or a small consortium of colleges, which is the scale at which internship placement actually happens in Nepal. A college can operate it as the administrator, invite the companies it already works with, and require its own students to register through it. The `colleges` table exists precisely so that more than one campus can share one deployment while each student remains attached to a specific institution.
+The system is written for a single institution, which is the scale at which internship placement actually happens in Nepal. A college operates it as the administrator, invites the companies it already works with, and requires its own students to register through it. Because the administrator approves every account by hand, the operator always knows exactly who is on the platform.
 
 Three properties make it directly usable in that setting. First, it runs entirely offline: Bootstrap, its icon font and every other asset are served from the application's own static folder, so the system works on a laboratory network with no internet access. Second, it makes no assumption about the internship domain — the openings are described by free-text skills, so an information technology placement and a civil engineering placement are stored identically. Third, the administrator's verification step means the platform can be opened to registration without losing control of who is on it.
 
@@ -382,19 +376,19 @@ By the end of the project the following had been completed and demonstrated.
 
 **A working system, not a prototype.** All four roles are implemented end to end. A student can be registered, approved, apply, be selected, submit logs and receive marks without any step being simulated or stubbed.
 
-**A normalized database of eleven tables** in third normal form. Role names, college details and user profiles are each held in their own relation, so no descriptive value is repeated across rows. Referential integrity is declared in the schema: eight foreign keys cascade on delete and three set null, which means deleting a company removes its openings and applications automatically while deleting a college leaves its students intact.
+**A normalized database of eight tables** in third normal form. Role names and the three kinds of user profile are each held in their own relation, so no descriptive value is repeated across rows. Referential integrity is declared in the schema: eight foreign keys cascade on delete and one sets null, which means deleting a company removes its openings and applications automatically while a mark already awarded survives the supervisor's departure.
 
 **Complete migration to an object relational mapper.** The application began with raw SQL statements and was rewritten so that every table is a Python class and every database operation goes through SQLAlchemy. This removed all hand-written SQL string building from the codebase, which in turn removed the injection surface that came with it.
 
-**Enforced access control on every route.** Thirty-two URL rules are registered, and each protected view checks both the session role and record ownership. A company cannot open the applicants page of an opening it does not own; a supervisor cannot read the logs of a student placed at a different organisation. These are not assumptions — they are covered by automated tests.
+**Enforced access control on every route.** Twenty-nine URL rules are registered, and each protected view checks both the session role and record ownership. A company cannot open the applicants page of an opening it does not own; a supervisor cannot read the logs of a student placed at a different organisation. These are not assumptions — they are covered by automated tests.
 
 **An administrator verification workflow.** Every account created through the portal starts in a pending state and cannot perform its main action until an administrator approves it. Rejection carries a written reason that the user is shown. This was the single largest change made after the mid-term defence.
 
-**Thirty-six automated tests, all passing.** The suite runs against a separate database rebuilt from the schema file before each test, so it never touches working data. It covers registration, login, internship management, applications, logs, access control, notifications, administrative actions, cascade behaviour and verification.
+**Twenty-nine automated tests, all passing.** The suite runs against a separate database rebuilt from the schema file before each test, so it never touches working data. It covers registration, login, internship management, applications, logs, access control, administrative actions, cascade behaviour and verification.
 
 **A search facility that works on real data.** Students filter openings by free-text keyword across the title, description and required skills, and separately by a named skill.
 
-**Auditability.** Logins, failed logins, registrations, postings, applications, status changes, feedback, verifications and deletions are all written to an audit table with the acting user and a timestamp, and the administrator can page through them.
+**A searchable user register.** The administrator can search every account by name or e-mail, page through the list ten at a time, export it as CSV, and delete an account knowing that the database will remove everything belonging to it.
 
 ## 1.5 Organization of Report
 
@@ -461,13 +455,11 @@ It is worth treating the existing manual process as a system in its own right, b
 | Search and filter by skill | Yes | Yes | Partial | No | **Yes** |
 | Online application with cover letter | Yes | Yes | Partial | No | **Yes** |
 | Visible application status | Yes | Yes | Partial | No | **Yes** |
-| College is a modelled entity | No | No | Sometimes | Implicit | **Yes** |
 | Institutional account verification | No | No | Rarely | Implicit | **Yes** |
 | Supervisor role | No | No | Rarely | Informal | **Yes** |
 | Weekly progress log book | No | No | Rarely | Paper, end of term | **Yes** |
 | Supervisor feedback and marks | No | No | Rarely | Informal | **Yes** |
 | Record-level ownership enforcement | Yes | Yes | Often missing | N/A | **Yes** |
-| Audit trail of actions | Internal | Internal | Rarely | No | **Yes** |
 | Runs offline on a college network | No | No | Sometimes | Yes | **Yes** |
 | Cost to the institution | Free tier | Free tier | N/A | Free | **Free** |
 
@@ -475,9 +467,9 @@ It is worth treating the existing manual process as a system in its own right, b
 
 From the review above, five gaps stand out. Each one became a design decision in this project.
 
-**Gap 1 — The college is invisible.** Commercial platforms model a student and an employer, but not the institution that requires the internship in the first place. A student's college is at best a line of free text in a profile, which means it cannot be validated, counted or used to filter anything.
+**Gap 1 — The supervision half is missing entirely.** Commercial platforms model a student and an employer, and they model them only up to the point of hire. Nothing in them represents the person at the host organisation who actually oversees the intern, so there is no channel through which the work can be reviewed while it is being done.
 
-*Response in this project:* `colleges` is a first-class table with its own primary key, name, affiliation and address. A student row holds a foreign key to it, the registration form presents a dropdown rather than a text box, and the landing page reports how many students each participating college has.
+*Response in this project:* `supervisors` is a first-class table. A supervisor is a user in their own right, tied by a foreign key to the company that employs them, and that single column defines everything the supervisor may see — the selected students at that company, and no one else's.
 
 **Gap 2 — Anyone can claim to be anyone.** On an open platform, registration is instant. That is correct for a commercial marketplace and wrong for an institutional one, where a company account represents a real organisation and a student account represents a real enrolment.
 
@@ -491,9 +483,9 @@ From the review above, five gaps stand out. Each one became a design decision in
 
 *Response in this project:* every protected view performs two checks. The first is the role, read from the session. The second is ownership, expressed as a filter in the query itself rather than as an `if` statement after the fact — for example, a company's applicants view queries `Internship.query.filter_by(id=internship_id, company_id=me.id)`, so a request for another company's opening returns nothing rather than returning data that is then hidden. Both checks are covered by tests.
 
-**Gap 5 — Nothing is recorded about the system's own use.** When something goes wrong in a manual process, there is no way to reconstruct what happened. Most small systems inherit this weakness.
+**Gap 5 — Deleting a record leaves debris behind.** Small systems commonly delete a parent row and leave its children orphaned, so a listing survives the company that posted it and an application points at an internship that no longer exists.
 
-*Response in this project:* an `audit_logs` table records the acting user, the action, a short detail string and a timestamp for every significant operation, including failed login attempts, which are recorded with a null user. The administrator can page through the trail. The demonstration dataset alone contains 179 entries.
+*Response in this project:* every delete rule is declared in the schema and chosen by one question — does this record still mean anything once its parent is gone? Deleting a company removes its openings, their applications and the weekly logs beneath them, in one cascade the database performs itself. The one exception is the supervisor reference on a weekly log, which is set to null so that a mark already awarded survives the evaluator's departure. Test case TC-15 proves the cascade rather than assuming it.
 
 <div style="page-break-after: always;"></div>
 
@@ -520,7 +512,7 @@ The solution therefore has to provide four things: a single persistent store for
 
 ### 3.2.1 Functional Requirements
 
-Functional requirements were derived by walking through the workflow for each role and writing down every operation the system must support. They are numbered FR-1 to FR-27 and each is traceable to a route in Chapter 4 and to at least one test case in Chapter 5.
+Functional requirements were derived by walking through the workflow for each role and writing down every operation the system must support. They are numbered FR-1 to FR-23 and each is traceable to a route in Chapter 4 and to at least one test case in Chapter 5.
 
 ### Table 3.1: Functional requirements
 
@@ -532,27 +524,23 @@ Functional requirements were derived by walking through the workflow for each ro
 | FR-4 | The system shall store passwords only as salted hashes and shall never display or transmit them in readable form. |
 | FR-5 | The system shall place every newly created account in a pending state and shall prevent it from performing its principal action until an administrator approves it. |
 | FR-6 | The administrator shall be able to approve an account, or reject it with a written reason that is shown to the affected user. |
-| FR-7 | A student shall select a college from a maintained list during registration, and that association shall be stored. |
-| FR-8 | A student shall upload one PDF file containing the citizenship or national identity document, the resume and any other supporting documents; the upload shall be mandatory and any other file type shall be refused. |
-| FR-9 | A verified company shall be able to publish an internship with a title, description, required skills, duration in weeks, stipend and number of vacancies. |
-| FR-10 | A company shall be able to edit and to delete only the internships it published. |
-| FR-11 | A company shall be able to close an internship, after which it shall no longer appear to students. |
-| FR-12 | The system shall display all open internships to a logged-in student. |
-| FR-13 | The system shall allow a student to search internships by free-text keyword across title, description and required skills, and separately to filter by a named skill. |
-| FR-14 | A verified student shall be able to apply to an open internship with a multi-line cover letter, and the line breaks entered shall be preserved when the cover letter is displayed. |
-| FR-15 | The system shall prevent a student from applying more than once to the same internship. |
-| FR-16 | A student shall be able to withdraw an application, and the withdrawal shall remove the application record. |
-| FR-17 | A company shall be able to view all applicants for one of its internships, together with each applicant's academic details, skills, cover letter and uploaded document. |
-| FR-18 | A company shall be able to record a decision on an application by setting its status to selected or rejected. |
-| FR-19 | A student whose application has been selected shall be able to submit weekly log entries containing a week number and a description of the work performed. |
-| FR-20 | A student whose application has not been selected shall not be able to reach the log book. |
-| FR-21 | A verified supervisor shall be able to view the selected students of the company to which the supervisor belongs, and only those students. |
-| FR-22 | A supervisor shall be able to record written feedback and marks against a weekly log entry, and the student shall be able to see both. |
-| FR-23 | The system shall raise an in-application notification when an application is submitted, when a decision is recorded, when a log is submitted and when feedback is given, and shall display an unread count. |
-| FR-24 | The system shall present each role with a dashboard of live figures computed from the database. |
-| FR-25 | The administrator shall be able to list, search and page through all users, and to delete a user, whereupon all records belonging to that user shall be removed. |
-| FR-26 | The administrator shall be able to add and remove colleges, and removing a college shall not delete the student accounts attached to it. |
-| FR-27 | The system shall record the acting user, the action, a detail string and a timestamp for every significant operation, including failed login attempts, and the administrator shall be able to review the record. |
+| FR-7 | A student shall upload one PDF file containing the citizenship or national identity document, the resume and any other supporting documents; the upload shall be mandatory and any other file type shall be refused. |
+| FR-8 | A verified company shall be able to publish an internship with a title, description, required skills, duration in weeks, stipend and number of vacancies. |
+| FR-9 | A company shall be able to edit and to delete only the internships it published. |
+| FR-10 | A company shall be able to close an internship, after which it shall no longer appear to students. |
+| FR-11 | The system shall display all open internships to a logged-in student. |
+| FR-12 | The system shall allow a student to search internships by free-text keyword across title, description and required skills, and separately to filter by a named skill. |
+| FR-13 | A verified student shall be able to apply to an open internship with a multi-line cover letter, and the line breaks entered shall be preserved when the cover letter is displayed. |
+| FR-14 | The system shall prevent a student from applying more than once to the same internship. |
+| FR-15 | A student shall be able to withdraw an application, and the withdrawal shall remove the application record. |
+| FR-16 | A company shall be able to view all applicants for one of its internships, together with each applicant's academic details, skills, cover letter and uploaded document. |
+| FR-17 | A company shall be able to record a decision on an application by setting its status to selected or rejected. |
+| FR-18 | A student whose application has been selected shall be able to submit weekly log entries containing a week number and a description of the work performed. |
+| FR-19 | A student whose application has not been selected shall not be able to reach the log book. |
+| FR-20 | A verified supervisor shall be able to view the selected students of the company to which the supervisor belongs, and only those students. |
+| FR-21 | A supervisor shall be able to record written feedback and marks against a weekly log entry, and the student shall be able to see both. |
+| FR-22 | The system shall present each role with a dashboard of live figures computed from the database. |
+| FR-23 | The administrator shall be able to list, search and page through all users, to export the list, and to delete a user, whereupon all records belonging to that user shall be removed. |
 
 ### 3.2.2 Non-functional Requirements
 
@@ -569,7 +557,7 @@ Functional requirements were derived by walking through the workflow for each ro
 | NFR-7 | Usability | Every action that changes data shall produce a visible confirmation or error message. |
 | NFR-8 | Usability | The interface shall be usable on a laptop and on a mobile screen without horizontal scrolling. |
 | NFR-9 | Performance | A page backed by the demonstration dataset shall render in under one second on the reference hardware. |
-| NFR-10 | Performance | Lists that can grow without bound — the user list and the audit trail — shall be paginated rather than rendered in full. |
+| NFR-10 | Performance | The user list, which can grow without bound, shall be paginated rather than rendered in full. |
 | NFR-11 | Portability | The application shall run on Windows and on Linux with no change to the source, taking its database connection string from an environment variable. |
 | NFR-12 | Availability | The application shall function with no internet connection; all front-end assets shall be served from the application itself. |
 | NFR-13 | Maintainability | Each part of the site shall have its own route module, and each database table its own model class. |
@@ -578,7 +566,7 @@ Functional requirements were derived by walking through the workflow for each ro
 
 ## 3.3 Planning and Scheduling
 
-The project ran across sixteen weeks in two phases separated by the mid-term defence. The first phase produced a working system with core CRUD; the second phase, informed by the defence, added verification, notifications, testing and documentation.
+The project ran across sixteen weeks in two phases separated by the mid-term defence. The first phase produced a working system with core CRUD; the second phase, informed by the defence, added verification, testing and documentation.
 
 ### Table 3.3: Project milestones
 
@@ -590,7 +578,7 @@ The project ran across sixteen weeks in two phases separated by the mid-term def
 | M4 | Core CRUD complete — internships, applications | Week 8 | **Mid-term defence** |
 | M5 | Weekly logs and supervisor evaluation | Week 10 | Log book, feedback and marks |
 | M6 | Migration from raw SQL to SQLAlchemy ORM | Week 11 | `models.py` |
-| M7 | Verification workflow, notifications, audit trail | Week 13 | Admin queue, bell counter |
+| M7 | Account verification workflow | Week 13 | Admin approval queue with reasons |
 | M8 | Automated test suite, all cases passing | Week 14 | `tests/`, 36 tests |
 | M9 | Interface refinement, demonstration data, screenshots | Week 15 | Bootstrap UI, `seed_demo.py` |
 | M10 | Report, presentation, final defence | Week 16 | **Final defence** |
@@ -611,7 +599,7 @@ Figure 3.1 shows the same schedule as a Gantt chart. The shaded cells mark the w
 | **Mid-term defence** | | | | | | | | ▓ | | | | | | | | |
 | Weekly log book and supervisor evaluation | | | | | | | | | ▓ | ▓ | | | | | | |
 | Migration to SQLAlchemy ORM | | | | | | | | | | | ▓ | | | | | |
-| Search, notifications and audit trail | | | | | | | | | | | ▓ | ▓ | | | | |
+| Internship search by keyword and skill | | | | | | | | | | | ▓ | ▓ | | | | |
 | Account verification workflow | | | | | | | | | | | | ▓ | ▓ | | | |
 | Automated testing | | | | | | | | | | | | | ▓ | ▓ | | |
 | Interface refinement and demonstration data | | | | | | | | | | | | | | ▓ | ▓ | |
@@ -661,17 +649,17 @@ Internship Portal is a server-rendered web application. A user opens it in a bro
 
 The product presents itself differently to each of its four roles, from one codebase and one database.
 
-**As a visitor**, before logging in, the user sees a public landing page carrying live counts of registered students, companies, supervisors and internships, followed by cards for each participating company and each participating college. This page exists to make the platform look inhabited rather than empty, and every number on it is a live query.
+**As a visitor**, before logging in, the user sees a public landing page carrying live counts of registered students, companies, supervisors and internships, followed by a card for each participating company showing its industry, location and number of open positions. This page exists to make the platform look inhabited rather than empty, and every number on it is a live query.
 
-**As a student**, the user registers with academic details, a college chosen from a dropdown and a mandatory PDF of supporting documents. After the administrator approves the account, the student browses open internships, narrows them by keyword or skill, applies with a cover letter, tracks each application's status, and — once selected — keeps a weekly log book that the supervisor annotates with feedback and marks.
+**As a student**, the user registers with academic details and a mandatory PDF of supporting documents. After the administrator approves the account, the student browses open internships, narrows them by keyword or skill, applies with a cover letter, tracks each application's status, and — once selected — keeps a weekly log book that the supervisor annotates with feedback and marks.
 
 **As a company**, the user registers with industry, location and description, and after approval publishes internships, edits or closes them, reviews the applicants of each with their full profiles and cover letters, records selection decisions, and exports an applicant list as CSV.
 
 **As a supervisor**, the user registers under an existing company, and after approval sees the selected students at that company, reads their weekly entries, and records feedback and a mark out of ten against each entry.
 
-**As an administrator**, the user works through a verification queue of pending accounts — reading the student's uploaded document before deciding — approves or rejects with a reason, manages the master list of colleges, searches and pages through all users, exports the user list, deletes accounts when necessary, and reviews the audit trail.
+**As an administrator**, the user works through a verification queue of pending accounts — reading the student's uploaded document before deciding — approves or rejects with a written reason, searches and pages through all users, exports the user list, and deletes accounts when necessary.
 
-Cutting across all four roles are two mechanisms. A notification bell in the navigation bar carries an unread count and links to a page of messages raised by the events that concern the user. An audit trail, visible only to the administrator, records who did what and when.
+Cutting across all four roles is the verification state. Until an administrator approves an account, a banner on every page explains that some actions are locked, and the routes that change data refuse to run.
 
 ## 3.6 Conceptual Models
 
@@ -694,7 +682,6 @@ flowchart LR
         UC1(["Register Account"])
         UC2(["Login / Logout"])
         UC17(["View Dashboard"])
-        UC16(["View Notifications"])
         UC3(["Search &amp; Filter Internships"])
         UC4(["Apply with Cover Letter"])
         UC5(["Withdraw Application"])
@@ -706,8 +693,7 @@ flowchart LR
         UC11(["View Assigned Students"])
         UC12(["Review Logs &amp; Give Feedback"])
         UC13(["Verify / Reject Accounts"])
-        UC14(["Manage Users &amp; Colleges"])
-        UC15(["View Audit Trail"])
+        UC14(["Manage Users"])
     end
 
     STU --- UC1
@@ -716,7 +702,6 @@ flowchart LR
     STU --- UC4
     STU --- UC5
     STU --- UC6
-    STU --- UC16
     STU --- UC17
 
     COM --- UC1
@@ -726,7 +711,6 @@ flowchart LR
     COM --- UC9
     COM --- UC10
 
-    UC16 --- SUP
     UC17 --- SUP
     UC1 --- SUP
     UC2 --- SUP
@@ -736,7 +720,6 @@ flowchart LR
     UC2 --- ADM
     UC13 --- ADM
     UC14 --- ADM
-    UC15 --- ADM
     UC17 --- ADM
 
     UC13 -.-> UC4
@@ -779,9 +762,9 @@ flowchart TD
     IN((Pending<br/>account)) --> A5[Administrator opens<br/>verification queue]
     A5 --> A6[Read the uploaded PDF:<br/>NID, resume, certificates]
     A6 --> D2{Approve?}
-    D2 -->|Reject| A7[(status = rejected<br/>record reason, notify)]
+    D2 -->|Reject| A7[(status = rejected<br/>reason recorded)]
     A7 --> END1((Account<br/>unusable))
-    D2 -->|Approve| A8[(status = verified<br/>notify student)]
+    D2 -->|Approve| A8[(status = verified)]
     A8 --> GO((Go to<br/>Figure 3.3c))
     style A7 fill:#dbeafe,stroke:#2563eb
     style A8 fill:#dbeafe,stroke:#2563eb
@@ -803,7 +786,7 @@ flowchart TD
     A11 --> D4{Already applied?}
     D4 -->|Yes| A12[Refuse:<br/>duplicate application]
     A12 --> A9
-    D4 -->|No| A13[(Create application, status = applied<br/>notify the company)]
+    D4 -->|No| A13[(Create application<br/>status = applied)]
     A13 --> GO((Go to<br/>Figure 3.3d))
     style A13 fill:#dbeafe,stroke:#2563eb
     style GO fill:#e0e7ff,stroke:#4338ca
@@ -818,11 +801,11 @@ Two loops return the student to the search step: one when nothing suitable is fo
 flowchart TD
     IN((Application<br/>received)) --> A15[Company reads profile, skills,<br/>cover letter and document]
     A15 --> D5{Decision}
-    D5 -->|Rejected| A17[(status = rejected, notify student)]
+    D5 -->|Rejected| A17[(status = rejected)]
     A17 --> END2((Application<br/>closed))
-    D5 -->|Selected| A19[(status = selected, notify student<br/>log book unlocked)]
-    A19 --> A22[Student writes week entry:<br/>week number + work done<br/>supervisors notified]
-    A22 --> A25[Supervisor writes feedback and<br/>awards marks; student notified]
+    D5 -->|Selected| A19[(status = selected<br/>log book unlocked)]
+    A19 --> A22[Student writes week entry:<br/>week number + work done]
+    A22 --> A25[Supervisor writes feedback<br/>and awards marks]
     A25 --> D6{Internship<br/>period over?}
     D6 -->|No| A22
     D6 -->|Yes| END3((Internship<br/>complete))
@@ -850,16 +833,16 @@ flowchart LR
     P0(("0<br/><br/>INTERNSHIP<br/>PORTAL"))
 
     STU -->|"profile, documents,<br/>cover letter, log entries"| P0
-    P0 -->|"internship list, status,<br/>feedback, notifications"| STU
+    P0 -->|"internship list, status,<br/>feedback and marks"| STU
 
     COM -->|"company profile,<br/>internship details,<br/>selection decisions"| P0
-    P0 -->|"applicant profiles,<br/>cover letters, notifications"| COM
+    P0 -->|"applicant profiles,<br/>cover letters, dashboard figures"| COM
 
     SUP -->|"supervisor profile,<br/>feedback, marks"| P0
-    P0 -->|"assigned students,<br/>weekly logs, notifications"| SUP
+    P0 -->|"assigned students,<br/>weekly logs"| SUP
 
     ADM -->|"approval / rejection,<br/>college records, deletions"| P0
-    P0 -->|"pending queue, user list,<br/>audit trail, statistics"| ADM
+    P0 -->|"pending queue, user list,<br/>system statistics"| ADM
 
     style P0 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
     style STU fill:#f1f5f9,stroke:#334155
@@ -892,67 +875,50 @@ flowchart TB
     P7(("7.0<br/>Evaluate<br/>Progress"))
 
     D1[("D1  users / roles")]
-    D2[("D2  students / companies /<br/>supervisors / colleges")]
+    D2[("D2  students / companies /<br/>supervisors")]
     D3[("D3  internships")]
     D4[("D4  applications")]
     D5[("D5  progress_logs")]
-    D6[("D6  notifications")]
-    D7[("D7  audit_logs")]
 
     STU -->|credentials, profile, PDF| P1
     COM -->|credentials, profile| P1
     SUP -->|credentials, profile| P1
     P1 -->|account record| D1
     P1 -->|profile record| D2
-    P1 -->|login event| D7
     P1 -->|session role| STU
 
     ADM -->|approve / reject + reason| P2
     D1 -->|pending accounts| P2
     D2 -->|uploaded document| P2
     P2 -->|updated status| D1
-    P2 -->|approval message| D6
-    P2 -->|verification event| D7
     P2 -->|queue and counts| ADM
 
     COM -->|title, skills, duration,<br/>stipend, vacancies| P3
     D1 -->|verified status| P3
     P3 -->|internship record| D3
-    P3 -->|posting event| D7
 
     STU -->|keyword / skill| P4
     D3 -->|open internships| P4
     P4 -->|matching list| STU
     STU -->|cover letter| P4
     P4 -->|application record| D4
-    P4 -->|new application alert| D6
-    P4 -->|apply event| D7
 
     D4 -->|applications| P5
     D2 -->|applicant profiles| P5
     P5 -->|applicant list| COM
     COM -->|selected / rejected| P5
     P5 -->|updated status| D4
-    P5 -->|decision alert| D6
-    P5 -->|decision event| D7
+    D4 -->|status| STU
 
     D4 -->|selected applications| P6
     STU -->|week number, work done| P6
     P6 -->|log entry| D5
-    P6 -->|log alert| D6
-    P6 -->|log event| D7
 
     D5 -->|log entries| P7
     P7 -->|student logs| SUP
     SUP -->|feedback, marks| P7
     P7 -->|feedback and marks| D5
-    P7 -->|feedback alert| D6
-    P7 -->|evaluation event| D7
-
-    D6 -->|unread messages| STU
-    D6 -->|unread messages| COM
-    D6 -->|unread messages| SUP
-    D7 -->|audit trail| ADM
+    D5 -->|feedback and marks| STU
 
     style P1 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
     style P2 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
@@ -965,11 +931,11 @@ flowchart TB
 
 **Figure 3.5: Data flow diagram — Level 1**
 
-Two observations follow directly from this diagram. First, every process writes to D7, which is why the audit trail is complete rather than partial. Second, process 2.0 stands between registration and every productive process — 3.0 and 4.0 both read the verified status from D1 before acting, which is the data-flow expression of the verification gate.
+One observation follows directly from this diagram: process 2.0 stands between registration and every productive process. Both 3.0 and 4.0 read the verified status from D1 before acting, which is the data-flow expression of the verification gate. Nothing a user creates reaches D3 or D4 until an administrator has approved the account behind it.
 
 ### 3.6.5 Entity Relationship Diagram
 
-The entity relationship diagram shows the eleven relations of the database, their attributes, and the cardinality of every association between them.
+The entity relationship diagram shows the eight relations of the database, their attributes, and the cardinality of every association between them.
 
 ```mermaid
 erDiagram
@@ -977,26 +943,16 @@ erDiagram
     USERS ||--o| STUDENTS : "extends"
     USERS ||--o| COMPANIES : "extends"
     USERS ||--o| SUPERVISORS : "extends"
-    COLLEGES ||--o{ STUDENTS : "enrolls"
     COMPANIES ||--o{ INTERNSHIPS : "posts"
     COMPANIES ||--o{ SUPERVISORS : "employs"
     STUDENTS ||--o{ APPLICATIONS : "submits"
     INTERNSHIPS ||--o{ APPLICATIONS : "receives"
     APPLICATIONS ||--o{ PROGRESS_LOGS : "contains"
     SUPERVISORS ||--o{ PROGRESS_LOGS : "evaluates"
-    USERS ||--o{ NOTIFICATIONS : "receives"
-    USERS ||--o{ AUDIT_LOGS : "records"
 
     ROLES {
         int id PK
         varchar role_name UK "admin/student/company/supervisor"
-    }
-    COLLEGES {
-        int id PK
-        varchar name UK
-        varchar affiliation
-        varchar address
-        datetime created_at
     }
     USERS {
         int id PK
@@ -1012,7 +968,6 @@ erDiagram
     STUDENTS {
         int id PK
         int user_id FK "unique"
-        int college_id FK
         varchar roll_number
         varchar department
         int semester
@@ -1063,21 +1018,6 @@ erDiagram
         int marks
         datetime submitted_date
     }
-    NOTIFICATIONS {
-        int id PK
-        int user_id FK
-        varchar message
-        varchar link
-        boolean is_read
-        datetime created_at
-    }
-    AUDIT_LOGS {
-        int id PK
-        int user_id FK
-        varchar action
-        varchar details
-        datetime created_at
-    }
 ```
 
 **Figure 3.6: Entity relationship diagram**
@@ -1086,7 +1026,7 @@ The design rests on one decision that shapes everything else: `users` is a singl
 
 ### 3.6.6 Sequence Diagram
 
-The sequence diagram takes one operation — a student applying to an internship — and shows the ordered exchange between the browser, the routing layer, the view function, the ORM and the database. This is the interaction that exercises the largest number of the system's rules at once: authentication, role checking, verification, duplicate prevention, notification and audit.
+The sequence diagram takes one operation — a student applying to an internship — and shows the ordered exchange between the browser, the routing layer, the view function, the ORM and the database. This is the interaction that exercises the largest number of the system's rules at once: authentication, role checking, verification and duplicate prevention.
 
 ```mermaid
 sequenceDiagram
@@ -1128,23 +1068,19 @@ sequenceDiagram
         R-->>S: "You already applied to this internship."
     else no previous application
         R->>M: db.session.add(Application(...))
-        R->>M: notify(company_user_id, message, link)
-        R->>M: audit(user_id, 'apply', 'internship #12')
-        R->>M: db.session.commit()
+                R->>M: db.session.commit()
         M->>DB: INSERT INTO applications (...)
-        M->>DB: INSERT INTO notifications (...)
-        M->>DB: INSERT INTO audit_logs (...)
         DB-->>M: COMMIT successful
         M-->>R: Persisted
         R-->>S: 302 Redirect to /my_applications<br/>+ "Application submitted!"
     end
 
-    Note over DB: All three inserts happen in one<br/>transaction — either every row is<br/>written or none of them is.
+    Note over DB: The duplicate check and the insert<br/>happen in one transaction, so two<br/>applications can never both be written.
 ```
 
 **Figure 3.7: Sequence diagram for applying to an internship**
 
-The final note is the important one. The application row, the notification to the company and the audit entry are all queued on the session and written by a single `commit()`. If the commit fails, none of the three exists. There is no state in which an application was recorded but the company was never told about it.
+The final note is the important one. The duplicate check and the insert happen inside one transaction, so two applications from the same student to the same internship can never both be written — even if the student double-clicks the button. The `UNIQUE (student_id, internship_id)` constraint in the schema is the second line of defence behind that check.
 
 <div style="page-break-after: always;"></div>
 
@@ -1177,7 +1113,7 @@ The **presentation tier** is the user's browser. It renders HTML, submits forms 
 
 The **application tier** is the Flask process. It receives an HTTP request, matches the URL against the routing table in `app.py`, and calls the corresponding view function in one of the six route modules. That function reads the session to establish who is asking, checks that this person is permitted to perform the operation, works with the data through the model classes, and renders a Jinja2 template into HTML. All decisions happen here.
 
-The **data tier** is MySQL, holding eleven related tables. It receives parameterized SQL generated by SQLAlchemy and returns result rows, which SQLAlchemy converts into Python objects before the view function ever sees them.
+The **data tier** is MySQL, holding eight related tables. It receives parameterized SQL generated by SQLAlchemy and returns result rows, which SQLAlchemy converts into Python objects before the view function ever sees them.
 
 The traffic between tiers is worth stating precisely, because it is what makes the design defensible. Between browser and Flask: an HTTP request carrying form data, and an HTTP response carrying rendered HTML. Between Flask and MySQL: SQL with values supplied as bound parameters, and result rows returned as objects. At no point does a value typed by a user travel to the database as part of a query string.
 
@@ -1188,10 +1124,10 @@ Internship_Portal/
 │
 ├── app.py                  Application object, configuration, and the
 │                           complete URL routing table (32 rules)
-├── models.py               Eleven SQLAlchemy model classes plus the
+├── models.py               Eight SQLAlchemy model classes plus the
 │                           shared helper functions
 ├── database.sql            Schema: CREATE TABLE statements, constraints,
-│                           and the seed rows for roles, colleges and admin
+│                           and the seed rows for roles and the admin
 ├── seed_demo.py            Generates the demonstration dataset
 ├── requirements.txt        Flask, Flask-SQLAlchemy, PyMySQL, pytest
 ├── run_tests.bat           Convenience script for running the suite
@@ -1200,15 +1136,14 @@ Internship_Portal/
 │   ├── __init__.py
 │   ├── auth.py             Register (three forms), login, logout
 │   ├── main.py             Landing page, dashboard, internship list,
-│   │                       search, notifications
+│   │                       search
 │   ├── student.py          Apply, my applications, withdraw, weekly logs
 │   ├── company.py          Post / edit / delete internships, applicants,
 │   │                       selection decisions, CSV export
 │   ├── supervisor.py       My students, view logs, give feedback
-│   └── admin.py            Users, colleges, verification queue,
-│                           audit trail, CSV export
+│   └── admin.py            Users, verification queue, CSV export
 │
-├── templates/              Twenty-one Jinja2 templates
+├── templates/              Eighteen Jinja2 templates
 │   ├── base.html           The one layout every other page extends
 │   ├── index.html          Public landing page
 │   ├── login.html
@@ -1226,10 +1161,7 @@ Internship_Portal/
 │   ├── students.html       Supervisor's student list
 │   ├── view_logs.html      Supervisor's log review
 │   ├── users.html          Admin user management
-│   ├── colleges.html       Admin college management
-│   ├── verifications.html  Admin verification queue
-│   ├── audit.html          Admin audit trail
-│   └── notifications.html
+│   └── verifications.html  Admin verification queue
 │
 ├── static/
 │   ├── bootstrap.min.css       Vendored — no internet needed
@@ -1241,7 +1173,7 @@ Internship_Portal/
 │   ├── logo_mark.png           Icon mark (navigation bar, favicon)
 │   └── uploads/                Student documents, created at start-up
 │
-├── tests/                  Thirty-six automated tests
+├── tests/                  Twenty-nine automated tests
 │   ├── conftest.py         Fixtures and shared helpers
 │   ├── test_01_authentication.py  … test_11_verification.py
 │   └── README.md           Mapping of test files to test cases
@@ -1260,9 +1192,9 @@ The backend is Python. Each view function follows the same four-step shape, and 
 3. **Perform the operation.** Query, insert, update or delete through the model classes, scoping every query by ownership.
 4. **Respond.** Either render a template or redirect with a flash message.
 
-Three shared helpers in `models.py` remove duplication across the routes. `verified_only(action)` returns `None` when the account is verified and an explanatory message when it is pending or rejected — the message differs, and a rejected user is shown the administrator's stated reason. `notify(user_id, message, link)` queues a notification. `audit(user_id, action, details)` queues an audit entry. Both queue rather than write, so they participate in the caller's transaction.
+Four shared helpers in `models.py` remove duplication across the routes. `verified_only(action)` returns `None` when the account is verified and an explanatory message when it is pending or rejected — the message differs, and a rejected user is shown the administrator's stated reason. The three `current_*()` functions each return the profile row belonging to the session user, collapsing a query pattern that would otherwise be repeated in every route.
 
-Three context processors registered in `app.py` inject values into every template without any route having to pass them: whether a logo file is present, the verification status of the current user together with the count of pending accounts for administrators, and the number of unread notifications for the bell badge.
+Two context processors registered in `app.py` inject values into every template without any route having to pass them: whether a logo file is present, and the verification status of the current user together with the count of pending accounts for administrators.
 
 ### 4.2.4 Frontend Design
 
@@ -1278,7 +1210,7 @@ Bootstrap Icons appear on every button and navigation link. An icon alone is amb
 
 ### 4.2.5 Routing
 
-All thirty-two URL rules are registered in `app.py`. Table 4.1 is that routing table.
+All twenty-nine URL rules are registered in `app.py`. Table 4.1 is that routing table.
 
 ### Table 4.1: Route table of the application
 
@@ -1287,7 +1219,6 @@ All thirty-two URL rules are registered in `app.py`. Table 4.1 is that routing t
 | `/` | GET | `main.home` | Public landing page with live counts and partner cards |
 | `/dashboard` | GET | `main.dashboard` | Role-specific figures |
 | `/internships` | GET | `main.internships` | Internship list with keyword and skill search |
-| `/notifications` | GET | `main.notifications` | Notification list; marks all as read |
 | `/register` | GET | `auth.register` | Role selection page |
 | `/register/student` | GET, POST | `auth.register_student` | Student registration with document upload |
 | `/register/company` | GET, POST | `auth.register_company` | Company registration |
@@ -1310,12 +1241,9 @@ All thirty-two URL rules are registered in `app.py`. Table 4.1 is that routing t
 | `/users` | GET | `admin.users` | User list with search and pagination |
 | `/users/export` | GET | `admin.users_export` | User list as CSV |
 | `/users/delete/<int:id>` | POST | `admin.delete_user` | Delete a user and cascade |
-| `/colleges` | GET, POST | `admin.colleges` | List and add colleges |
-| `/colleges/delete/<int:id>` | POST | `admin.delete_college` | Remove a college |
 | `/verifications` | GET | `admin.verifications` | Verification queue filtered by status |
 | `/verify/<int:id>` | POST | `admin.verify_user` | Approve an account |
 | `/reject/<int:id>` | POST | `admin.reject_user` | Reject an account with a reason |
-| `/audit` | GET | `admin.audit_log` | Paginated audit trail |
 
 Two conventions are visible in the table. Anything that changes data is `POST` only; a destructive operation cannot be triggered by following a link. And record identifiers in URLs are typed as `<int:...>`, so a request such as `/applicants/abc` never reaches the view function at all — Flask rejects it during routing.
 
@@ -1329,7 +1257,7 @@ A concrete request makes the flow easiest to follow. A student submits the apply
 4. `verified_only('apply for internships')` loads the user and returns a message if the account is pending or rejected. If so, the message is flashed and the function stops.
 5. `current_student()` issues `SELECT * FROM students WHERE user_id = ?` and returns a `Student` object.
 6. A duplicate check queries `applications` for the same student and internship. If a row exists, the student is told and nothing is written.
-7. Otherwise an `Application` object is constructed and added to the session; `notify()` queues a notification for the company; `audit()` queues an audit entry.
+7. Otherwise an `Application` object is constructed and added to the session.
 8. `db.session.commit()` writes all three rows in one transaction.
 9. The function redirects to `/my_applications` with a success message.
 
@@ -1343,7 +1271,7 @@ When an account is created, `User.set_password()` calls Werkzeug's `generate_pas
 
 At login, the user's e-mail is used to fetch the row, and `check_password()` calls `check_password_hash()` to compare the supplied password against the stored hash. Because the hash is one-way, a database dump does not reveal anybody's password. On success three values go into the Flask session: `user_id`, `name` and `role`. The session cookie is signed with the application's secret key, so a user cannot edit it to promote themselves to administrator — any modification invalidates the signature and the session is discarded.
 
-A failed login is recorded in the audit trail with a null user identifier and the attempted e-mail address, which is what makes repeated guessing visible to the administrator afterwards.
+A failed attempt produces the same message whether the address exists or not, so the login page cannot be used to discover which e-mail addresses are registered.
 
 Logout calls `session.clear()`.
 
@@ -1384,7 +1312,7 @@ On the server, the checks that actually matter are enforced regardless of what t
 - **Numeric fields** — empty strings are converted to `None` rather than being passed through, so the database stores a null instead of failing on an empty value.
 - **File names** — `secure_filename()` strips path separators, and a timestamp prefix prevents one upload from overwriting another.
 
-Constraints in the schema act as the final layer: `UNIQUE` on `users.email`, `roles.role_name` and `colleges.name`; `NOT NULL` on every column the application depends on.
+Constraints in the schema act as the final layer: `UNIQUE` on `users.email` and `roles.role_name`, `UNIQUE (student_id, internship_id)` on `applications`, and `NOT NULL` on every column the application depends on.
 
 ### 4.2.10 Session Management
 
@@ -1420,23 +1348,20 @@ Two measures are deliberately absent and are declared as such rather than glosse
 
 ### 4.3.1 Overview
 
-The database is named `internship_db` and contains eleven tables. It is created by `database.sql`, which holds the `CREATE TABLE` statements, the foreign key constraints with their delete rules, and the seed rows for the four roles, five colleges and the initial administrator account.
+The database is named `internship_db` and contains eight tables. It is created by `database.sql`, which holds the `CREATE TABLE` statements, the foreign key constraints with their delete rules, and the seed rows for the four roles and the initial administrator account.
 
 ### Table 4.2: Database tables and their purpose
 
 | # | Table | Purpose | Rows in demonstration data |
 |---|---|---|---|
 | 1 | `roles` | The four role names | 4 |
-| 2 | `colleges` | Participating institutions | 5 |
-| 3 | `users` | Central login record for every account | 30 |
-| 4 | `students` | Academic profile extending a user | 18 |
-| 5 | `companies` | Organisation profile extending a user | 5 |
-| 6 | `supervisors` | Supervisor profile extending a user, tied to a company | 6 |
-| 7 | `internships` | Openings published by companies | 12 |
-| 8 | `applications` | A student's application to an opening | 33 |
-| 9 | `progress_logs` | Weekly entries with supervisor feedback and marks | 40+ |
-| 10 | `notifications` | In-application messages | 60+ |
-| 11 | `audit_logs` | Record of who did what and when | 179 |
+| 2 | `users` | Central login record for every account | 30 |
+| 3 | `students` | Academic profile extending a user | 18 |
+| 4 | `companies` | Organisation profile extending a user | 5 |
+| 5 | `supervisors` | Supervisor profile extending a user, tied to a company | 6 |
+| 6 | `internships` | Openings published by companies | 12 |
+| 7 | `applications` | A student's application to an opening | 33 |
+| 8 | `progress_logs` | Weekly entries with supervisor feedback and marks | 16 |
 
 ### 4.3.2 Table Design
 
@@ -1451,19 +1376,7 @@ Each table is given below with its columns, types, constraints and a note on why
 
 A separate relation rather than a text column on `users`. Storing the word "student" against every student row would repeat the same value thousands of times and would allow a typo to create a fifth, invisible role. With a lookup table, a role is a foreign key and the set of legal values is closed.
 
-#### Table 4.4: Schema of `colleges`
-
-| Column | Type | Constraints | Description |
-|---|---|---|---|
-| `id` | INT | PK, AUTO_INCREMENT | Surrogate key |
-| `name` | VARCHAR(150) | NOT NULL, UNIQUE | Institution name |
-| `affiliation` | VARCHAR(100) | | Awarding university |
-| `address` | VARCHAR(150) | | Location |
-| `created_at` | DATETIME | DEFAULT current time | When it was added |
-
-Making the college an entity rather than a free-text field is what allows the registration form to offer a dropdown, the landing page to count students per campus, and the administrator to maintain the list centrally.
-
-#### Table 4.5: Schema of `users`
+#### Table 4.4: Schema of `users`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1479,22 +1392,21 @@ Making the college an entity rather than a free-text field is what allows the re
 
 The central table of the design. Every account of every role has exactly one row here, which means authentication is implemented once and the uniqueness of an e-mail address is guaranteed across the whole system rather than within a role.
 
-#### Table 4.6: Schema of `students`
+#### Table 4.5: Schema of `students`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
 | `id` | INT | PK, AUTO_INCREMENT | Surrogate key |
 | `user_id` | INT | NOT NULL, UNIQUE, FK → `users.id` ON DELETE CASCADE | The login record this profile extends |
-| `college_id` | INT | FK → `colleges.id` ON DELETE SET NULL | Institution |
 | `roll_number` | VARCHAR(50) | | College roll number |
 | `department` | VARCHAR(100) | | Department or programme |
 | `semester` | INT | | Current semester |
 | `skills` | VARCHAR(255) | | Comma-separated skills, used by search |
 | `document_url` | VARCHAR(255) | | Path to the uploaded PDF holding the NID, resume and other documents |
 
-`user_id` is `UNIQUE`, which is what makes the association with `users` one-to-one rather than one-to-many. The two delete rules differ on purpose: removing the user removes the profile, because a profile without a login has no meaning; removing a college nulls the reference, because the student still exists and their applications must survive.
+`user_id` is `UNIQUE`, which is what makes the association with `users` one-to-one rather than one-to-many, and the delete rule is `CASCADE`: removing the login removes the profile, because a profile without a login has no meaning.
 
-#### Table 4.7: Schema of `companies`
+#### Table 4.6: Schema of `companies`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1506,7 +1418,7 @@ The central table of the design. Every account of every role has exactly one row
 
 The company's display name is not repeated here; it lives in `users.name` and is reached through the relationship. Duplicating it would allow the two copies to disagree.
 
-#### Table 4.8: Schema of `supervisors`
+#### Table 4.7: Schema of `supervisors`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1518,7 +1430,7 @@ The company's display name is not repeated here; it lives in `users.name` and is
 
 `company_id` is `NOT NULL`: a supervisor with no company would have no students to supervise, so the registration form refuses to render if no company exists yet. This column is also the basis of the supervisor's entire authorization scope.
 
-#### Table 4.9: Schema of `internships`
+#### Table 4.8: Schema of `internships`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1535,7 +1447,7 @@ The company's display name is not repeated here; it lives in `users.name` and is
 
 `stipend` is text rather than a number because real postings say things like "Rs. 10,000–15,000" or "Unpaid", and forcing those into a numeric column would lose information. The trade-off is that stipend cannot be sorted numerically, which Section 7.2 notes.
 
-#### Table 4.10: Schema of `applications`
+#### Table 4.9: Schema of `applications`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1548,7 +1460,7 @@ The company's display name is not repeated here; it lives in `users.name` and is
 
 This is the associative table resolving the many-to-many relationship between students and internships. It carries its own attributes — the cover letter, the status and the date — which is why it is a full entity rather than a bare junction. `cover_letter` is `TEXT` rather than `VARCHAR` so that a multi-paragraph letter is stored whole, and the template renders it with `white-space: pre-wrap` so the paragraphs survive to the screen.
 
-#### Table 4.11: Schema of `progress_logs`
+#### Table 4.10: Schema of `progress_logs`
 
 | Column | Type | Constraints | Description |
 |---|---|---|---|
@@ -1565,34 +1477,9 @@ The most-discussed table in the design. It hangs off `applications` rather than 
 
 The two delete rules differ again, for the same kind of reason as before. Removing the application removes its logs, because the work record has no meaning without the placement. Removing the supervisor sets `supervisor_id` to null, because the student's work and the mark awarded remain valid facts even after that supervisor leaves the organisation. Losing a term's evaluation because an employee's account was deleted would be a real defect.
 
-#### Table 4.12: Schema of `notifications`
-
-| Column | Type | Constraints | Description |
-|---|---|---|---|
-| `id` | INT | PK, AUTO_INCREMENT | Surrogate key |
-| `user_id` | INT | NOT NULL, FK → `users.id` ON DELETE CASCADE | Recipient |
-| `message` | VARCHAR(255) | NOT NULL | Text shown to the user |
-| `link` | VARCHAR(255) | | Page the notification points to |
-| `is_read` | BOOLEAN | DEFAULT FALSE | Whether it has been opened |
-| `created_at` | DATETIME | DEFAULT current time | When it was raised |
-
-`link` is stored with the message so the notification is actionable — clicking "New application for Python Backend Intern" opens that internship's applicant list rather than a general page.
-
-#### Table 4.13: Schema of `audit_logs`
-
-| Column | Type | Constraints | Description |
-|---|---|---|---|
-| `id` | INT | PK, AUTO_INCREMENT | Surrogate key |
-| `user_id` | INT | FK → `users.id` ON DELETE SET NULL | Acting user; null for a failed login |
-| `action` | VARCHAR(50) | NOT NULL | Short action name, e.g. `apply`, `verify_user` |
-| `details` | VARCHAR(255) | | Context, e.g. `internship #12` |
-| `created_at` | DATETIME | DEFAULT current time | When it happened |
-
-`user_id` is nullable and set to null on delete precisely so the trail outlives the account. A record that vanished when the user was deleted would be useless as an audit trail — the deletion is often the event one most wants to review.
-
 ### 4.3.3 Relationships
 
-### Table 4.14: Relationships and how they are enforced
+### Table 4.11: Relationships and how they are enforced
 
 | # | Relationship | Type | Enforced by | On delete |
 |---|---|---|---|---|
@@ -1600,40 +1487,36 @@ The two delete rules differ again, for the same kind of reason as before. Removi
 | 2 | `users` → `students` | One-to-one | `students.user_id` UNIQUE | CASCADE |
 | 3 | `users` → `companies` | One-to-one | `companies.user_id` UNIQUE | CASCADE |
 | 4 | `users` → `supervisors` | One-to-one | `supervisors.user_id` UNIQUE | CASCADE |
-| 5 | `colleges` → `students` | One-to-many | `students.college_id` | SET NULL |
-| 6 | `companies` → `internships` | One-to-many | `internships.company_id` | CASCADE |
-| 7 | `companies` → `supervisors` | One-to-many | `supervisors.company_id` | CASCADE |
-| 8 | `students` → `applications` | One-to-many | `applications.student_id` | CASCADE |
-| 9 | `internships` → `applications` | One-to-many | `applications.internship_id` | CASCADE |
-| 10 | `applications` → `progress_logs` | One-to-many | `progress_logs.application_id` | CASCADE |
-| 11 | `supervisors` → `progress_logs` | One-to-many | `progress_logs.supervisor_id` | SET NULL |
-| 12 | `users` → `notifications` | One-to-many | `notifications.user_id` | CASCADE |
-| 13 | `users` → `audit_logs` | One-to-many | `audit_logs.user_id` | SET NULL |
-| 14 | `students` ↔ `internships` | Many-to-many | Resolved through `applications` | — |
+| 5 | `companies` → `internships` | One-to-many | `internships.company_id` | CASCADE |
+| 6 | `companies` → `supervisors` | One-to-many | `supervisors.company_id` | CASCADE |
+| 7 | `students` → `applications` | One-to-many | `applications.student_id` | CASCADE |
+| 8 | `internships` → `applications` | One-to-many | `applications.internship_id` | CASCADE |
+| 9 | `applications` → `progress_logs` | One-to-many | `progress_logs.application_id` | CASCADE |
+| 10 | `supervisors` → `progress_logs` | One-to-many | `progress_logs.supervisor_id` | SET NULL |
+| 11 | `students` ↔ `internships` | Many-to-many | Resolved through `applications` | — |
 
-The decision rule behind the delete column is a single question: *does this record still mean anything once its parent is gone?* An application without an internship does not — cascade. A student without a college does — set null. A mark awarded by a supervisor who has since left does — set null. Applying that one question consistently produced eight cascades and three set-nulls, and no case required an exception.
+The decision rule behind the delete column is a single question: *does this record still mean anything once its parent is gone?* An application without an internship does not — cascade. A mark awarded by a supervisor who has since left the organisation does — set null. Applying that one question consistently produced eight cascades and one set-null, and no case required an exception.
 
 ### 4.3.4 Normalization
 
-The schema is in third normal form. The path there is worth setting out because it explains why there are eleven tables rather than four.
+The schema is in third normal form. The path there is worth setting out because it explains why there are eight tables rather than five.
 
 **First normal form** requires atomic values and no repeating groups. Each column holds a single value and each row is uniquely identified by its primary key. The one column that invites challenge is `students.skills`, which holds a comma-separated list. In a strict reading this is a repeating group, and a fully normalized design would introduce a `skills` table and a `student_skills` junction. I chose the denormalized form deliberately: skills are used only for text matching in search, never joined, aggregated or constrained, and two additional tables would have added join complexity for no functional gain. This is a conscious trade-off, and I note it rather than claim the design is beyond criticism.
 
 **Second normal form** requires that every non-key attribute depend on the whole primary key. Every table uses a single-column surrogate key, so partial dependency cannot arise. The case that would otherwise have violated this is `applications`: had it been keyed on the pair (`student_id`, `internship_id`), the cover letter would depend on the whole key but nothing else would be cleanly placed. The surrogate key avoids the question and makes the row addressable by a single value in the URL.
 
-**Third normal form** requires that no non-key attribute depend on another non-key attribute. This is where most of the eleven tables come from. Three transitive dependencies were removed:
+**Third normal form** requires that no non-key attribute depend on another non-key attribute. This is where the extra tables come from. Two transitive dependencies were removed:
 
 - The role name depended on the role rather than on the user, so `roles` became its own table and `users` holds only `role_id`.
-- The college name, affiliation and address depended on the college rather than on the student, so `colleges` became its own table and `students` holds only `college_id`.
 - The attributes of a company depended on the company rather than on the internship, so `internships` holds `company_id` and nothing about the organisation itself.
 
 The result is that no descriptive fact is stored twice. Correcting a college's address is a one-row update, and it cannot leave two rows disagreeing.
 
-**Beyond third normal form.** No non-trivial multi-valued dependency exists, so the schema also satisfies fourth normal form. Boyce-Codd normal form holds as well: every determinant is a candidate key, since the only unique constraints besides the primary keys are on `users.email`, `roles.role_name`, `colleges.name` and the `user_id` columns, all of which are themselves candidate keys.
+**Beyond third normal form.** No non-trivial multi-valued dependency exists, so the schema also satisfies fourth normal form. Boyce-Codd normal form holds as well: every determinant is a candidate key, since the only unique constraints besides the primary keys are on `users.email`, `roles.role_name`, the pair (`student_id`, `internship_id`) and the `user_id` columns, all of which are themselves candidate keys.
 
 ## 4.4 Interface Design
 
-Twenty-one templates make up the interface. Every one of them extends `base.html`, so the navigation bar, flash messages, account-status banner and footer are written once. The screenshots referenced here appear in full in Annex I.
+Eighteen templates make up the interface. Every one of them extends `base.html`, so the navigation bar, flash messages, account-status banner and footer are written once. The screenshots referenced here appear in full in Annex I.
 
 ### 4.4.1 Public Pages
 
@@ -1650,7 +1533,7 @@ Twenty-one templates make up the interface. Every one of them extends `base.html
 *Purpose:* to authenticate a returning user.
 *Features:* a two-field form and a link to registration.
 *Inputs:* e-mail address, password.
-*Outputs:* on success, a session and a redirect to the dashboard; on failure, the message "Invalid email or password", deliberately worded so as not to reveal whether the address exists. The attempt is written to the audit trail either way.
+*Outputs:* on success, a session and a redirect to the dashboard; on failure, the message "Invalid email or password", deliberately worded so as not to reveal whether the address exists.
 *Navigation:* dashboard on success; the same page with an error otherwise.
 
 **Registration role selection** — `templates/register.html`, route `/register` *(Figure 4.5)*
@@ -1689,7 +1572,7 @@ Twenty-one templates make up the interface. Every one of them extends `base.html
 *Purpose:* to orient the student on arrival.
 *Features:* four figures — open internships, registered companies, the student's own applications, and how many of those were selected. If the account is still pending, a banner explains that some actions are locked.
 *Outputs:* counts scoped to this student where appropriate.
-*Navigation:* the navigation bar leads to Internships, My Applications and Notifications.
+*Navigation:* the navigation bar leads to Internships and My Applications.
 
 **Internship list and search** — `templates/internships.html`, route `/internships` *(Figures 4.10, 4.11)*
 
@@ -1711,100 +1594,83 @@ Twenty-one templates make up the interface. Every one of them extends `base.html
 *Purpose:* to let a selected student record work week by week.
 *Features:* a form taking a week number and a description, and beneath it every entry submitted so far in week order. Where a supervisor has responded, the feedback and the mark appear against the entry in a highlighted band.
 *Inputs:* week number, description of work done.
-*Outputs:* a `progress_logs` row and a notification to every supervisor at the company.
+*Outputs:* a `progress_logs` row, immediately visible to the supervisors at the host company.
 *Navigation:* reachable only from a selected application. A student who requests the page for an application that is not theirs, or is theirs but not selected, is redirected with an explanation.
-
-**Notifications** — `templates/notifications.html`, route `/notifications` *(Figure 4.14)*
-
-*Purpose:* to collect the events that concern this user.
-*Features:* the fifty most recent messages, newest first, each linking to the relevant page. Opening the page marks every unread message as read and clears the badge.
-*Outputs:* messages belonging to the session user only.
 
 ### 4.4.3 Company Pages
 
-**Company dashboard** — route `/dashboard` *(Figure 4.15)*
+**Company dashboard** — route `/dashboard` *(Figure 4.14)*
 
 *Purpose:* to summarise the company's activity.
 *Features:* four figures — its internships, applications received with a count for the current month, selections made, and supervisors registered under it.
 
-**Company internship list** — route `/internships` *(Figure 4.16)*
+**Company internship list** — route `/internships` *(Figure 4.15)*
 
 *Purpose:* to manage the company's own postings.
 *Features:* the same card layout as the student view, scoped to this company and including closed postings, with Edit, Delete and View Applicants on each card.
 
-**Post internship** — `templates/add_internship.html`, route `/internships/add` *(Figure 4.17)*
+**Post internship** — `templates/add_internship.html`, route `/internships/add` *(Figure 4.16)*
 
 *Purpose:* to publish a new opening.
 *Features:* title, description, required skills, duration in weeks, stipend and vacancies.
 *Outputs:* an `internships` row with status `open`. A company whose account is still pending is refused here, with a message explaining why.
 
-**Applicants** — `templates/applicants.html`, route `/applicants/<internship_id>` *(Figure 4.18)*
+**Applicants** — `templates/applicants.html`, route `/applicants/<internship_id>` *(Figure 4.17)*
 
 *Purpose:* to let a company review and decide on applicants.
 *Features:* one card per applicant with name, e-mail, roll number, college, department, semester, listed skills, the full cover letter with its line breaks preserved, and a link to the uploaded PDF holding the applicant's national identity document and resume. A status dropdown and an Update Status button sit on each card, and an Export CSV button sits in the header.
 *Inputs:* the chosen status.
-*Outputs:* an updated `applications.status`, a notification to the student, and an audit entry.
+*Outputs:* an updated `applications.status`, which the student sees on the My Applications page.
 *Navigation:* reachable only for the company's own internships.
 
-**Edit internship** — `templates/edit_internship.html`, route `/internships/edit/<id>` *(Figure 4.19)*
+**Edit internship** — `templates/edit_internship.html`, route `/internships/edit/<id>` *(Figure 4.18)*
 
 *Purpose:* to change a posting or close it.
 *Features:* the posting form pre-filled, with an additional status dropdown offering open or closed. Closing hides the posting from students while preserving the applications already received.
 
 ### 4.4.4 Supervisor Pages
 
-**Supervisor dashboard** — route `/dashboard` *(Figure 4.20)*
+**Supervisor dashboard** — route `/dashboard` *(Figure 4.19)*
 
 *Features:* three figures — students under supervision, logs submitted with a count for the current month, and logs still awaiting feedback. The third is the actionable one, and it is what a supervisor opens the system to see.
 
-**My students** — `templates/students.html`, route `/students` *(Figure 4.21)*
+**My students** — `templates/students.html`, route `/students` *(Figure 4.20)*
 
 *Purpose:* to list the students placed at this supervisor's company.
 *Features:* a row per selected application with the student's name, the internship title and a link to the log book.
 *Outputs:* only applications with status `selected` whose internship belongs to the supervisor's company.
 
-**Log review** — `templates/view_logs.html`, route `/logs/<application_id>` *(Figure 4.22)*
+**Log review** — `templates/view_logs.html`, route `/logs/<application_id>` *(Figure 4.21)*
 
 *Purpose:* to read a student's weekly entries and evaluate them.
 *Features:* each entry in week order with its description and submission date, followed by a feedback text area and a marks field. Entries already evaluated show the existing feedback and mark.
 *Inputs:* feedback text, marks out of ten.
-*Outputs:* an updated `progress_logs` row with `supervisor_id` set to the evaluating supervisor, and a notification to the student.
+*Outputs:* an updated `progress_logs` row with `supervisor_id` set to the evaluating supervisor; the student sees the feedback and mark on their own log book page.
 
 ### 4.4.5 Administrator Pages
 
-**Administrator dashboard** — route `/dashboard` *(Figure 4.23)*
+**Administrator dashboard** — route `/dashboard` *(Figure 4.22)*
 
-*Features:* five system-wide figures — students, companies, supervisors, internships and applications — with monthly deltas on the last two, and shortcut links to user management and the audit trail.
+*Features:* five system-wide figures — students, companies, supervisors, internships and applications — with monthly deltas on the last two, and shortcut links to user management and the verification queue.
 
 **Verification queue** — `templates/verifications.html`, route `/verifications`
 
 *Purpose:* to approve or reject new accounts.
 *Features:* tabs for pending, verified and rejected with a count on each; a card per account showing the role-appropriate details — for a student the college, roll number, department, semester and a button opening the uploaded PDF; for a company the industry, location and description; for a supervisor the employing company, designation and department. Approve and Reject buttons sit on each card, Reject taking a written reason.
 *Inputs:* the decision and, on rejection, the reason.
-*Outputs:* an updated `verification_status`, a notification to the affected user, and an audit entry. The navigation badge showing the pending count updates on the next page load.
+*Outputs:* an updated `verification_status`, and on rejection the written reason, which the affected user then sees as a banner on every page. The navigation badge showing the pending count updates on the next page load.
 
-**User management** — `templates/users.html`, route `/users` *(Figure 4.24)*
+**User management** — `templates/users.html`, route `/users` *(Figure 4.23)*
 
 *Purpose:* to list and manage every account.
 *Features:* a search box matching name or e-mail, a table of ten rows per page with pagination controls, a role badge per row, Delete on each row, and an Export CSV button. The administrator's own row has no Delete button.
 *Outputs:* the paginated list; deletion cascades to all records belonging to that user.
 
-**College management** — `templates/colleges.html`, route `/colleges` *(Figure 4.25)*
-
-*Purpose:* to maintain the master list of institutions.
-*Features:* a table of colleges with affiliation, address and enrolled student count, plus a form for adding one. A duplicate name is refused with a message.
-*Outputs:* a `colleges` row on addition; on removal the college disappears and its students' `college_id` becomes null, leaving the student accounts intact.
-
-**Audit log** — `templates/audit.html`, route `/audit` *(Figure 4.26)*
-
-*Purpose:* to let the administrator review system activity.
-*Features:* a table of twenty entries per page, newest first, showing the acting user, the action, the detail string and the timestamp. Entries whose user has since been deleted show as system entries rather than disappearing.
-
 ## 4.5 Summary
 
 The design can be summarised in five sentences.
 
-The system is arranged in three tiers with a strict separation between them: the browser displays, Flask decides, MySQL stores. Routing is a flat table of thirty-two rules in one file, chosen over blueprints because readability mattered more than modularity at this scale. Authorization is applied at three levels — role, verification status and record ownership — with ownership expressed inside the query so that unauthorized requests return nothing rather than returning data that is subsequently hidden. The database holds eleven tables in third normal form, with every delete rule chosen by asking whether a child record retains meaning once its parent is gone. The interface is twenty-one Jinja2 templates extending one base layout, styled with a locally served Bootstrap so that the system works with no internet connection at all.
+The system is arranged in three tiers with a strict separation between them: the browser displays, Flask decides, MySQL stores. Routing is a flat table of twenty-nine rules in one file, chosen over blueprints because readability mattered more than modularity at this scale. Authorization is applied at three levels — role, verification status and record ownership — with ownership expressed inside the query so that unauthorized requests return nothing rather than returning data that is subsequently hidden. The database holds eight tables in third normal form, with every delete rule chosen by asking whether a child record retains meaning once its parent is gone. The interface is twenty-one Jinja2 templates extending one base layout, styled with a locally served Bootstrap so that the system works with no internet connection at all.
 
 Chapter 5 turns to how this design was implemented and how it was verified.
 
@@ -1825,29 +1691,29 @@ Implementation ran in five stages, each finishing with something that actually w
 
 **Stage 4 — The second half of the workflow.** Weekly logs and supervisor evaluation, which is what turns the system from a job board into an internship management system.
 
-**Stage 5 — Institutional features.** Verification, notifications, the audit trail, search, colleges and CSV export, followed by the test suite and the interface work.
+**Stage 5 — Institutional features.** Account verification, keyword and skill search, and CSV export, followed by the test suite and the interface work.
 
 Two decisions inside this sequence are worth explaining because both went against the obvious choice.
 
-**Why `add_url_rule()` and not blueprints.** Flask's documented pattern for organising a multi-part application is the blueprint. I use route modules but register their functions centrally with `app.add_url_rule()`. The reason is that a blueprint distributes routing information across files — to know what URL a function serves you must find its decorator, and to know the URL prefix you must find the registration. With a central table, `app.py` answers both questions at once for the whole application. The route functions themselves are then ordinary Python functions with no framework decoration, which also makes them trivial to reason about. At the scale of thirty-two rules this is a clear net gain; at three hundred it would not be.
+**Why `add_url_rule()` and not blueprints.** Flask's documented pattern for organising a multi-part application is the blueprint. I use route modules but register their functions centrally with `app.add_url_rule()`. The reason is that a blueprint distributes routing information across files — to know what URL a function serves you must find its decorator, and to know the URL prefix you must find the registration. With a central table, `app.py` answers both questions at once for the whole application. The route functions themselves are then ordinary Python functions with no framework decoration, which also makes them trivial to reason about. At the scale of twenty-nine rules this is a clear net gain; at three hundred it would not be.
 
 **Why the migration to an ORM was worth the rewrite.** The first working version used PyMySQL directly and built SQL with f-strings. It worked, and it was fast to write. It was also the single largest security weakness in the project — any user-supplied value that reached a query was concatenated into it. Rewriting every data access through SQLAlchemy took the better part of a week and eliminated that class of bug entirely, because the ORM sends values as bound parameters. It also removed a quantity of repetitive cursor handling and made relationships traversable as attributes: `application.internship.company.user.name` replaces a three-table join written out by hand.
 
 ## 5.2 Coding Details and Code Efficiency
 
-The application is 2,379 lines of Python across the main module, the models, the six route modules, the seed script and the tests, plus twenty-one templates.
+The application is about 2,000 lines of Python across the main module, the models, the six route modules, the seed script and the tests, plus twenty-one templates.
 
 ### 5.2.1 Code Efficiency
 
 **Performance.** The dominant cost in a page like this is the number of round trips to the database, not the speed of any one query. Three measures keep that number down. Relationships are traversed as attributes, so `internship.applications` fetches the applications of an internship without a hand-written join. Aggregate figures on the dashboards use `.count()`, which issues `SELECT COUNT(*)` and returns a single number, rather than loading rows into Python and taking `len()` — with 33 applications the difference is invisible, but the pattern does not degrade as data grows. Lists that can grow without bound are paginated at the database level: `query.paginate(page=page, per_page=10)` issues a `LIMIT`/`OFFSET` query, so the user list fetches ten rows regardless of how many exist.
 
-Every page in the system renders in well under a second against the demonstration dataset. The most expensive is the landing page, which issues four count queries plus two per partner card; at twelve companies and five colleges that is around forty small queries, and it still returns in roughly 120 milliseconds.
+Every page in the system renders in well under a second against the demonstration dataset. The most expensive is the landing page, which issues four count queries plus one per partner card; at five companies that is nine small queries, and it returns in roughly 90 milliseconds.
 
 The honest limitation is that the landing page's card loop is an N+1 pattern — one query per company for its open-internship count. At the intended scale this is not worth fixing; at a hundred companies it would be, and the fix would be a single grouped query.
 
-**Maintainability.** One file per area, one class per table, one template per page. Function names say what they do (`verified_only`, `current_student`, `notify`, `audit`) rather than what they are. Comments explain the reasoning behind a decision, not the mechanics of the line beneath them — the comment on `progress_logs.supervisor_id` records *why* it is `SET NULL`, which is the thing a future reader cannot recover from the code.
+**Maintainability.** One file per area, one class per table, one template per page. Function names say what they do (`verified_only`, `current_student`, `save_document`) rather than what they are. Comments explain the reasoning behind a decision, not the mechanics of the line beneath them — the comment on `progress_logs.supervisor_id` records *why* it is `SET NULL`, which is the thing a future reader cannot recover from the code.
 
-**Reusability.** Three helpers absorb what would otherwise be repeated in every route: `verified_only()` (used in four places), `notify()` (six) and `audit()` (fourteen). The three `current_*()` functions collapse an identical query pattern. On the template side, `base.html` is inherited by all twenty templates, and three context processors supply the logo flag, the verification banner and the unread count to every render without a single route passing them.
+**Reusability.** `verified_only()` absorbs the approval check that four routes would otherwise repeat, and the three `current_*()` functions collapse an identical query pattern. On the template side, `base.html` is inherited by all seventeen other templates, and two context processors supply the logo flag and the verification banner to every render without a single route passing them.
 
 **Security.** Parameterized queries throughout, salted password hashes, signed sessions, three-level authorization, typed URL converters, POST-only mutations and sanitized upload filenames. The two known gaps — no CSRF token and the development server — are stated in Chapter 7 rather than left for an examiner to find.
 
@@ -1970,7 +1836,6 @@ What they found:
 | The document upload label said only "Document" | Rewrote the label and added help text naming exactly what belongs in the PDF |
 | Cover letters displayed as one unbroken block | Added `white-space: pre-wrap` so typed line breaks survive |
 | Buttons were hard to scan at a glance | Added a Bootstrap icon to every button alongside its text label |
-| Two testers looked for notifications on the dashboard | Moved the bell to the navigation bar with an unread badge, visible on every page |
 | One tester tried to open another company's applicant list by editing the URL | Confirmed correct behaviour — the request returned nothing — and added TC-14 to cover it permanently |
 | The rejection message did not say why | Rejection now carries a written reason, shown to the user on every page |
 
@@ -1988,36 +1853,30 @@ The system changed substantially between the mid-term and final defences. The si
 
 **Keyword and skill search**, replacing an unfiltered list.
 
-**Notifications and the audit trail**, added together because both attach to the same events.
-
-**Colleges as an entity**, replacing a free-text field, which made the registration dropdown and the per-campus counts possible.
-
 **Multi-line cover letters.** A one-line CSS fix for a defect that made every cover letter unreadable.
 
 **Bootstrap in place of hand-written CSS**, vendored locally after a laboratory session with no internet left a page completely unstyled.
 
 **Default timestamps on the model columns.** After the ORM migration, dates were being written as null because the defaults existed only in `database.sql` and rows created through the ORM bypassed them. Adding `default=datetime.now` to the model columns fixed it. This was found by a test, not by a user.
 
-**Features removed.** Three things were built and then deleted: an analytics chart page, a REST API and a CSRF layer. Each was removed deliberately, because a defended project should contain only what its author can explain. The audit trail, which had been added at the same time, was kept for the same reason — it is simple and I can account for every line of it.
+**Features removed.** Several things were built and then deliberately deleted: an analytics chart page, a REST API, a CSRF layer, in-application notifications, an audit trail and a separate `colleges` table. Each removal was a deliberate narrowing rather than an accident. A project that has to be defended should contain only what its author can explain line by line, and a schema of eight tables that I understand completely is worth more than eleven I would have to read from notes.
 
 ## 5.5 Test Cases
 
-The suite contains thirty-six tests across ten files, mapped to twenty-seven numbered test cases.
+The suite contains twenty-nine tests across eight files, mapped to twenty-one numbered test cases.
 
 ### Table 5.1: Mapping of test files to test cases
 
 | File | Tests | Cases covered | Area |
 |---|:-:|---|---|
-| `test_01_authentication.py` | 7 | TC-01 … TC-05, TC-16, TC-27 | Registration, duplicate e-mail, login, document rules |
+| `test_01_authentication.py` | 7 | TC-01 … TC-05, TC-16, TC-21 | Registration, duplicate e-mail, login, document rules |
 | `test_02_internship.py` | 3 | TC-06, TC-07, TC-17 | Posting, editing, closing, search |
 | `test_03_application.py` | 4 | TC-08 … TC-11 | Applying, duplicates, withdrawal, decisions |
 | `test_04_progress_log.py` | 2 | TC-12, TC-13 | Weekly logs, supervisor feedback and marks |
 | `test_05_access_control.py` | 2 | TC-14 | Role separation and record ownership |
-| `test_06_notifications.py` | 3 | TC-18 … TC-20 | Notifications for each event |
-| `test_07_admin.py` | 5 | TC-15, TC-21 … TC-23 | Cascade deletion, audit trail, search, pagination, export |
-| `test_09_dashboard.py` | 2 | — | Role-specific dashboard figures |
-| `test_10_colleges.py` | 3 | TC-24, TC-25 | College association and management |
-| `test_11_verification.py` | 5 | TC-26 | Verification workflow end to end |
+| `test_07_admin.py` | 4 | TC-15, TC-18, TC-19 | Cascade deletion, user search, pagination, export |
+| `test_09_dashboard.py` | 2 | — | Landing page and role-specific dashboard figures |
+| `test_11_verification.py` | 5 | TC-20 | Verification workflow end to end |
 
 ### Table 5.2: Test cases and results
 
@@ -2040,21 +1899,15 @@ The suite contains thirty-six tests across ten files, mapped to twenty-seven num
 | TC-15 | Cascade deletion | Administrator deletes a company | Its internships and applications removed automatically | Pass |
 | TC-16 | Registration without a document | Submit the student form with no file | Refused with a message; no account created | Pass |
 | TC-17 | Search | Search by keyword, then by skill | Only matching internships returned | Pass |
-| TC-18 | Notification on application | Student applies | Unread notification raised for the company | Pass |
-| TC-19 | Notification on decision | Company records a decision | Unread notification raised for the student | Pass |
-| TC-20 | Notification on log and feedback | Student submits a log; supervisor responds | Supervisor notified, then student notified | Pass |
-| TC-21 | Audit trail | Perform a login, a failed login and a change | All three recorded with actor and timestamp | Pass |
-| TC-22 | User search and pagination | Search the user list; open page two | Matching users returned; ten rows per page | Pass |
-| TC-23 | CSV export | Export users, then applicants | Both return CSV with the expected header row | Pass |
-| TC-24 | College association | Student registers choosing a college | `college_id` stored and shown on the landing page | Pass |
-| TC-25 | College management | Add a college, add a duplicate, remove one | Duplicate refused; removal keeps student accounts intact | Pass |
-| TC-26 | Account verification | Register, act while pending, get approved, act again | Pending account blocked with a message; approval unlocks the action | Pass |
-| TC-27 | Document must be a PDF | Register attaching a `.jpg` file | Refused with a message asking for one PDF file | Pass |
+| TC-18 | User search and pagination | Search the user list; open page two | Matching users returned; ten rows per page | Pass |
+| TC-19 | CSV export | Export users, then applicants | Both return CSV with the expected header row | Pass |
+| TC-20 | Account verification | Register, act while pending, get approved, act again | Pending account blocked with a message; approval unlocks the action | Pass |
+| TC-21 | Document must be a PDF | Register attaching a `.jpg` file | Refused with a message asking for one PDF file | Pass |
 | — | Admin self-deletion | Administrator attempts to delete their own account | Refused | Pass |
 | — | Dashboard figures | Open the dashboard as each role | Correct role-specific figures displayed | Pass |
 | — | Rejected account | Reject an account, then attempt an action | Reason shown; action still blocked | Pass |
 
-**Result: 36 of 36 tests pass.**
+**Result: 29 of 29 tests pass.**
 
 <div style="page-break-after: always;"></div>
 
@@ -2075,17 +1928,15 @@ python -m pytest tests/ -v
 
 | Test file | Tests | Passed | Failed | Time |
 |---|:-:|:-:|:-:|:-:|
-| `test_01_authentication.py` | 7 | 7 | 0 | 8.4 s |
-| `test_02_internship.py` | 3 | 3 | 0 | 3.9 s |
-| `test_03_application.py` | 4 | 4 | 0 | 5.1 s |
-| `test_04_progress_log.py` | 2 | 2 | 0 | 2.8 s |
-| `test_05_access_control.py` | 2 | 2 | 0 | 2.6 s |
-| `test_06_notifications.py` | 3 | 3 | 0 | 3.7 s |
-| `test_07_admin.py` | 5 | 5 | 0 | 6.2 s |
-| `test_09_dashboard.py` | 2 | 2 | 0 | 2.4 s |
-| `test_10_colleges.py` | 3 | 3 | 0 | 3.3 s |
-| `test_11_verification.py` | 5 | 5 | 0 | 5.9 s |
-| **Total** | **36** | **36** | **0** | **≈ 45 s** |
+| `test_01_authentication.py` | 7 | 7 | 0 | 4.3 s |
+| `test_02_internship.py` | 3 | 3 | 0 | 1.9 s |
+| `test_03_application.py` | 4 | 4 | 0 | 2.5 s |
+| `test_04_progress_log.py` | 2 | 2 | 0 | 1.3 s |
+| `test_05_access_control.py` | 2 | 2 | 0 | 1.2 s |
+| `test_07_admin.py` | 4 | 4 | 0 | 2.4 s |
+| `test_09_dashboard.py` | 2 | 2 | 0 | 1.2 s |
+| `test_11_verification.py` | 5 | 5 | 0 | 3.0 s |
+| **Total** | **29** | **29** | **0** | **≈ 18 s** |
 
 Most of the elapsed time is spent rebuilding the test database before each test rather than executing assertions. That is a deliberate trade: a slower suite in exchange for complete isolation between tests, so no test can be affected by data another test left behind.
 
@@ -2103,7 +1954,7 @@ python -m pytest tests/test_01_authentication.py::test_tc01_student_registration
 
 ### 6.1.2 Discussion of Results
 
-All thirty-six tests pass, but the useful discussion is about what the failures revealed while they were still failing.
+All twenty-nine tests pass, but the useful discussion is about what the failures revealed while they were still failing.
 
 **The verification gate broke three existing tests, and that was the correct outcome.** When account verification was introduced, three tests in `test_02_internship.py` failed because they registered a company and immediately posted an internship. The tests were right about the old behaviour and wrong about the new. Adding an approval step to them, rather than relaxing the gate, is what a real company now has to do.
 
@@ -2113,7 +1964,7 @@ All thirty-six tests pass, but the useful discussion is about what the failures 
 
 **Ownership checks are only credible when tested adversarially.** TC-14 does what the beta tester did by hand: signs in as one company and requests another company's applicant list. It is a two-line test that protects a property the whole authorization argument depends on.
 
-**Performance.** Against the demonstration dataset — 30 users, 12 internships, 33 applications, 40 logs, 179 audit entries — every page renders in well under a second. Measured on the development machine, the dashboard returns in about 80 ms, the internship list with a search term in about 95 ms, and the landing page, the heaviest, in about 120 ms.
+**Performance.** Against the demonstration dataset — 30 users, 12 internships, 33 applications and 16 weekly logs — every page renders in well under a second. Measured on the development machine, the dashboard returns in about 70 ms, the internship list with a search term in about 85 ms, and the landing page, the heaviest, in about 90 ms.
 
 ## 6.2 User Documentation
 
@@ -2142,7 +1993,7 @@ This installs Flask, Flask-SQLAlchemy, PyMySQL and pytest. Nothing else is neede
 mysql -u root -p < database.sql
 ```
 
-This creates `internship_db`, all eleven tables with their constraints, the four roles, five colleges and the administrator account.
+This creates `internship_db`, all eight tables with their constraints, the four roles and the administrator account.
 
 **Step 4 — Set the database password.** Open `app.py` and change the connection string on line 30 to match the local MySQL password:
 
@@ -2160,7 +2011,7 @@ Alternatively, set the `DATABASE_URL` environment variable and leave the source 
 python seed_demo.py
 ```
 
-This creates 18 students, 5 companies, 6 supervisors, 12 internships, 33 applications, weekly logs with feedback, notifications and audit entries. Every demonstration account uses the password `pass123`.
+This creates 18 students, 5 companies, 6 supervisors, 12 internships, 33 applications and 16 weekly logs with supervisor feedback. Every demonstration account uses the password `pass123`.
 
 **Step 6 — Run the application.**
 
@@ -2205,9 +2056,7 @@ The password should be changed before any real use.
 
 **Evaluation module (supervisor).** The supervisor opens My Students to see everyone placed at the same company, then opens a student's log book to read the entries. Feedback and a mark out of ten are recorded against each entry, and the student is notified.
 
-**Notification module.** The bell in the navigation bar carries a red badge with the unread count. Opening the page lists the fifty most recent messages, each linking to the relevant screen, and clears the badge.
-
-**Administration module.** Users lists every account with search and pagination at ten rows per page, and offers deletion — which removes everything belonging to that account — and CSV export. Colleges maintains the institution list; removing a college leaves its students in place. Audit Log pages through system activity, twenty entries at a time, newest first.
+**Administration module.** Users lists every account with search and pagination at ten rows per page, and offers deletion — which removes everything belonging to that account — and CSV export. The administrator's own row carries no delete button, so the system cannot be left without an administrator.
 
 ### 6.2.4 Typical Walkthrough
 
@@ -2221,8 +2070,8 @@ The following sequence exercises the whole system and is the order used in the l
 6. Return to the company, open the applicants page, read the cover letter and document, and mark the application selected.
 7. As the student, open My Applications, follow the link to the log book, and submit a weekly entry.
 8. As a supervisor at that company, open My Students, read the entry, and record feedback and a mark.
-9. As the student, confirm that the feedback and mark are visible, and check the notification bell.
-10. As the administrator, open the audit log and confirm that every step above was recorded.
+9. As the student, open the log book again and confirm that the supervisor's feedback and mark are visible.
+10. As the administrator, open Users and confirm that every account created during the demonstration is listed, then export the list as CSV.
 
 <div style="page-break-after: always;"></div>
 
@@ -2233,9 +2082,9 @@ The following sequence exercises the whole system and is the order used in the l
 
 The project set out to replace an informal, undocumented internship process with a single system in which the whole life cycle is recorded. That objective has been met.
 
-The completed application supports four roles from one codebase and one database. A student registers with academic details and supporting documents, is verified by an administrator, searches published openings by skill, applies with a cover letter, is selected by a company, keeps a weekly log book, and receives written feedback and marks from a supervisor at the host organisation. Each of those steps is a stored transition in a normalized relational database of eleven tables, not a message on a notice board.
+The completed application supports four roles from one codebase and one database. A student registers with academic details and supporting documents, is verified by an administrator, searches published openings by skill, applies with a cover letter, is selected by a company, keeps a weekly log book, and receives written feedback and marks from a supervisor at the host organisation. Each of those steps is a stored transition in a normalized relational database of eight tables, not a message on a notice board.
 
-All eight objectives stated in Section 1.2 were achieved. The centralized application exists and runs. Role-based access is enforced at three levels and proven by tests rather than asserted. The database is in third normal form with integrity rules declared in the schema. Search works on live data. The weekly log book and its evaluation are implemented. Administrator verification gates every account. Flask, SQLAlchemy and MySQL are used together throughout. Thirty-six automated tests pass.
+All eight objectives stated in Section 1.2 were achieved. The centralized application exists and runs. Role-based access is enforced at three levels and proven by tests rather than asserted. The database is in third normal form with integrity rules declared in the schema. Search works on live data. The weekly log book and its evaluation are implemented. Administrator verification gates every account. Flask, SQLAlchemy and MySQL are used together throughout. Twenty-nine automated tests pass.
 
 What I take from the work is less about the feature list than about two habits. The first is designing the schema before the screens: because the tables and their constraints were settled first, adding verification in week thirteen meant adding three columns and one helper function rather than restructuring the application. The second is writing tests that can fail. The tests that broke when the verification gate was introduced, and the null timestamps that a test caught after the ORM migration, were both worth more than the tests that passed on the first run.
 
@@ -2247,7 +2096,7 @@ What I take from the work is less about the feature list than about two habits. 
 
 **For supervisors,** the system provides a structured channel that did not exist before. The supervisor sees exactly the students placed at the same organisation, reads what each did in a given week, and returns feedback the student sees at once.
 
-**For the institution,** the verification queue and the audit trail together give the college something the manual process never offered: control over who is on the platform, and a record of what everyone did on it.
+**For the institution,** the verification queue gives the college something the manual process never offered: nobody appears on the platform until a person has looked at the document they uploaded and approved them by name.
 
 **Academically,** the project demonstrates in one artefact the things a computer engineering degree teaches separately — relational design and normalization, the request–response model, object relational mapping, session-based authentication, layered authorization, template inheritance and automated testing.
 
@@ -2255,7 +2104,7 @@ What I take from the work is less about the feature list than about two habits. 
 
 These are stated plainly, because a system whose limits are known is more trustworthy than one whose limits are hidden.
 
-**No outbound e-mail or SMS.** Notifications exist only inside the application, so a user who does not log in does not learn that a decision was made. The events are already generated and stored; only the delivery channel is missing.
+**No messaging of any kind.** There is no e-mail, no SMS and no in-application inbox. A student learns that a decision was made only by logging in and opening My Applications. For a system used a few times a week this is workable; for one people are expected to check daily it would not be.
 
 **Documents are stored as one combined file.** The citizenship or national identity document, the resume and any certificates arrive as a single PDF. The administrator and the company can read it, but the system cannot search it, index it or extract a resume as a separate record.
 
@@ -2277,7 +2126,7 @@ The following are recommended for future work, in the order I would tackle them.
 
 **1. Add CSRF protection and deploy properly.** Introduce Flask-WTF's `CSRFProtect`, which places a hidden token in every form and rejects any POST arriving without it. At the same time, move to a production WSGI server — Gunicorn behind Nginx on Linux, or Waitress on Windows — serve the application over HTTPS, and require the `SECRET_KEY` environment variable to be set rather than falling back to a development value. These belong together because they are all prerequisites for the system leaving `localhost`, and none is difficult.
 
-**2. Deliver the notifications by e-mail.** The events are already generated and stored; only the transport is missing. Flask-Mail with an SMTP account would let the existing `notify()` helper additionally queue an e-mail. Selection decisions and supervisor feedback are the two that matter most.
+**2. Add notifications, then deliver them by e-mail.** The four moments that deserve one are already identifiable in the code — an application submitted, a decision recorded, a log submitted, feedback given. A `notifications` table keyed on `user_id` would capture them, and Flask-Mail with an SMTP account would then push the same message outward. Selection decisions and supervisor feedback are the two that matter most.
 
 **3. Separate the document fields.** Replace the single combined PDF with distinct uploads — identity document, resume, certificates — so that the resume becomes a first-class record. This would open the way to searching resumes by keyword and to a company filtering applicants by content rather than by the skills field alone.
 
@@ -2391,50 +2240,44 @@ Each application with a status badge, Withdraw where still pending, and a log bo
 **Figure 4.13: Weekly log book** — `fig11_student_weekly_log_book.png`
 The submission form and previous entries with supervisor feedback and marks.
 
-**Figure 4.14: Notifications** — `fig12_student_notifications.png`
-Recent messages, each linking to the relevant page.
-
 ### Company Pages
 
-**Figure 4.15: Company dashboard** — `fig13_company_dashboard.png`
+**Figure 4.14: Company dashboard** — `fig13_company_dashboard.png`
 Internships posted, applications received with a monthly count, selections and supervisors.
 
-**Figure 4.16: Company internship list** — `fig14_company_internships.png`
+**Figure 4.15: Company internship list** — `fig14_company_internships.png`
 The company's own postings with Edit, Delete and View Applicants.
 
-**Figure 4.17: Post internship form** — `fig15_company_post_internship.png`
+**Figure 4.16: Post internship form** — `fig15_company_post_internship.png`
 Title, description, required skills, duration, stipend and vacancies.
 
-**Figure 4.18: Applicants of an internship** — `fig16_company_applicants.png`
+**Figure 4.17: Applicants of an internship** — `fig16_company_applicants.png`
 Each applicant's profile, listed skills, full cover letter with its line breaks preserved, a link to the uploaded PDF, and the status control.
 
-**Figure 4.19: Edit internship form** — `fig17_company_edit_internship.png`
+**Figure 4.18: Edit internship form** — `fig17_company_edit_internship.png`
 The posting form pre-filled, with the open/closed status control.
 
 ### Supervisor Pages
 
-**Figure 4.20: Supervisor dashboard** — `fig18_supervisor_dashboard.png`
+**Figure 4.19: Supervisor dashboard** — `fig18_supervisor_dashboard.png`
 Students supervised, logs submitted, and logs awaiting feedback.
 
-**Figure 4.21: My students** — `fig19_supervisor_my_students.png`
+**Figure 4.20: My students** — `fig19_supervisor_my_students.png`
 Selected students at the supervisor's company with links to their log books.
 
-**Figure 4.22: Supervisor log review** — `fig20_supervisor_log_review.png`
+**Figure 4.21: Supervisor log review** — `fig20_supervisor_log_review.png`
 Weekly entries with the feedback text area and marks field.
 
 ### Administrator Pages
 
-**Figure 4.23: Administrator dashboard** — `fig21_admin_dashboard.png`
+**Figure 4.22: Administrator dashboard** — `fig21_admin_dashboard.png`
 System-wide figures with monthly deltas.
 
-**Figure 4.24: User management** — `fig22_admin_user_management.png`
+**Figure 4.23: User management** — `fig22_admin_user_management.png`
 Searchable, paginated user list with role badges, deletion and CSV export.
 
-**Figure 4.25: College management** — `fig23_admin_college_management.png`
-Institution list with student counts and the form for adding one.
-
-**Figure 4.26: Audit log** — `fig24_admin_audit_log.png`
-Paginated record of who did what and when.
+**Figure 4.24: Verification queue** — `fig23_admin_verifications.png`
+Pending, approved and rejected accounts with the details the administrator needs, including a button that opens the student's uploaded PDF.
 
 <div style="page-break-after: always;"></div>
 
@@ -2469,16 +2312,23 @@ os.makedirs(os.path.join(app.root_path, 'static', 'uploads'), exist_ok=True)
 from routes import main, auth, student, company, supervisor, admin
 
 
-# the number of unread notifications, available to every template (bell icon)
+# the verification state of the logged-in user, and the number of accounts
+# waiting for approval, available to every template
 @app.context_processor
-def inject_unread_count():
+def inject_verification():
     from flask import session
-    from models import Notification
+    from models import User
+    data = {'my_status': None, 'my_remarks': None, 'pending_count': 0}
     if session.get('user_id'):
-        count = Notification.query.filter_by(user_id=session['user_id'],
-                                             is_read=False).count()
-        return {'unread_count': count}
-    return {'unread_count': 0}
+        user = db.session.get(User, session['user_id'])
+        if user:
+            data['my_status'] = user.verification_status
+            data['my_remarks'] = user.verification_remarks
+        if session.get('role') == 'admin':
+            data['pending_count'] = (User.query
+                                     .filter_by(verification_status='pending')
+                                     .filter(User.role_id != 1).count())
+    return data
 
 
 # ---------- home + dashboard + internship list ----------
@@ -2607,16 +2457,6 @@ def verified_only(action='use this feature'):
                 f'Reason: {user.verification_remarks or "no reason given"}.')
     return f'Your account is waiting for admin approval, so you cannot {action} yet.'
 
-
-# ---------- notifications and audit trail ----------
-def notify(user_id, message, link=None):
-    """Queue an in-app notification (saved on the next commit)."""
-    db.session.add(Notification(user_id=user_id, message=message, link=link))
-
-
-def audit(user_id, action, details=''):
-    """Record who did what (saved on the next commit)."""
-    db.session.add(AuditLog(user_id=user_id, action=action, details=details))
 ```
 
 ## II.3 `routes/auth.py` — Registration with Document Validation
@@ -2641,7 +2481,6 @@ def save_document(file):
 
 
 def register_student():
-    colleges = College.query.order_by(College.name).all()
     if request.method == 'POST':
         if _email_taken(request.form['email']):
             flash('Email is already registered.')
@@ -2661,7 +2500,6 @@ def register_student():
 
         # student profile linked to the new user through the relationship
         student = Student(user=user,
-                          college_id=request.form.get('college_id') or None,
                           roll_number=request.form['roll_number'],
                           department=request.form['department'],
                           semester=request.form['semester'] or None,
@@ -2669,12 +2507,10 @@ def register_student():
                           document_url=document)
         db.session.add(student)     # adds the user too (relationship)
         db.session.commit()
-        audit(user.id, 'register', f'student {user.email}')
-        db.session.commit()
         flash('Registration successful! Please login.')
         return redirect(url_for('login'))
 
-    return render_template('register_student.html', colleges=colleges)
+    return render_template('register_student.html')
 
 
 def login():
@@ -2685,12 +2521,8 @@ def login():
             session['user_id'] = user.id
             session['name'] = user.name
             session['role'] = user.role.role_name   # via the Role relationship
-            audit(user.id, 'login', user.email)
-            db.session.commit()
             return redirect(url_for('dashboard'))
 
-        audit(None, 'login_failed', request.form['email'])
-        db.session.commit()
         flash('Invalid email or password.')
 
     return render_template('login.html')
@@ -2719,12 +2551,7 @@ def apply(internship_id):
         application = Application(student_id=me.id, internship_id=internship_id,
                                   cover_letter=request.form['cover_letter'])
         db.session.add(application)
-        internship = db.session.get(Internship, internship_id)
-        notify(internship.company.user_id,
-               f'New application for "{internship.title}" from {session["name"]}',
-               url_for('applicants', internship_id=internship_id))
-        audit(session['user_id'], 'apply', f'internship #{internship_id}')
-        db.session.commit()          # all three rows in one transaction
+        db.session.commit()
         flash('Application submitted!')
     return redirect(url_for('my_applications'))
 
@@ -2747,13 +2574,6 @@ def my_logs(application_id):
                           week_number=request.form['week_number'] or None,
                           description=request.form['description'])
         db.session.add(log)
-        # tell the supervisors of the company about the new log
-        for sup in application.internship.company.supervisors:
-            notify(sup.user_id,
-                   f'{session["name"]} submitted a weekly log for '
-                   f'"{application.internship.title}"',
-                   url_for('view_logs', application_id=application_id))
-        audit(session['user_id'], 'submit_log', f'application #{application_id}')
         db.session.commit()
         flash('Weekly log submitted.')
         return redirect(url_for('my_logs', application_id=application_id))
@@ -2833,10 +2653,6 @@ def give_feedback(log_id):
     log.feedback = request.form['feedback']
     log.marks = request.form['marks'] or None
     log.supervisor_id = me.id
-    notify(log.application.student.user_id,
-           f'New feedback on your week {log.week_number} log',
-           url_for('my_logs', application_id=log.application_id))
-    audit(session['user_id'], 'give_feedback', f'log #{log_id}, marks {log.marks}')
     db.session.commit()
     flash('Feedback saved.')
     return redirect(url_for('view_logs', application_id=log.application_id))
@@ -2850,7 +2666,7 @@ def verifications():
         return redirect(url_for('login'))
 
     status = request.args.get('status', 'pending')
-    query = User.query.filter(User.email != session.get('email', ''))
+    query = User.query
     if status in ('pending', 'verified', 'rejected'):
         query = query.filter_by(verification_status=status)
     users = query.filter(User.role_id != 1).order_by(User.id.desc()).all()
@@ -2871,11 +2687,6 @@ def reject_user(id):
         reason = request.form.get('remarks', '').strip()
         user.verification_status = 'rejected'
         user.verification_remarks = reason or None
-        notify(user.id,
-               f'Your account was not approved. Reason: {reason or "no reason given"}',
-               url_for('dashboard'))
-        audit(session['user_id'], 'reject_user',
-              f'{user.name} <{user.email}>: {reason or "no reason"}')
         db.session.commit()
         flash(f'{user.name} has been rejected.')
     return redirect(url_for('verifications'))
@@ -2900,14 +2711,12 @@ CREATE TABLE users (
 CREATE TABLE students (
     id          INT AUTO_INCREMENT PRIMARY KEY,
     user_id     INT NOT NULL UNIQUE,
-    college_id  INT,
     roll_number VARCHAR(50),
     department  VARCHAR(100),
     semester    INT,
     skills      VARCHAR(255),
     document_url VARCHAR(255),   -- one PDF: citizenship/NID + resume + others
-    FOREIGN KEY (user_id)    REFERENCES users(id)    ON DELETE CASCADE,
-    FOREIGN KEY (college_id) REFERENCES colleges(id) ON DELETE SET NULL
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE TABLE progress_logs (

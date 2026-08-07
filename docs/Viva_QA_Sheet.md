@@ -14,13 +14,13 @@ and sets the direction of the questions that follow.
 > internship starts nobody records what work the student actually does.
 >
 > Our system brings four roles onto one platform. Students register with
-> their college and skills and apply to internships with a cover letter.
+> their skills and apply to internships with a cover letter.
 > Companies post internships and select or reject applicants. A supervisor
 > from the company reviews the student's weekly log book and gives feedback
-> with marks. An administrator manages all users and colleges.
+> with marks. An administrator approves every account and manages all users.
 >
 > It is built with Python Flask, MySQL and the SQLAlchemy ORM, with a
-> Bootstrap interface. The database has eleven tables, and we have written
+> Bootstrap interface. The database has eight tables, and we have written
 > thirty-five automated tests covering every test case in our report."
 
 ---
@@ -32,20 +32,20 @@ Have the app already running at `http://127.0.0.1:5000`.
 
 | # | Step | What to say while clicking |
 |---|------|----------------------------|
-| 1 | Landing page | "These numbers and the company and college cards come live from the database." |
-| 2 | Register a student | "Notice the college dropdown and the compulsory PDF upload — citizenship / NID, resume and other documents in one file." |
+| 1 | Landing page | "These numbers and the company cards come live from the database." |
+| 2 | Register a student | "Notice the compulsory PDF upload — citizenship / NID, resume and other documents in one file." |
 | 2b | Login as admin, open Verifications | "Every new account waits here. I can see the uploaded document before approving." Approve the new student. |
 | 3 | Login as `company1@portal.com` | "The navigation bar changes according to the role." |
 | 4 | Post an internship | "This is a CREATE operation." |
-| 5 | View applicants | "The company sees the student's college, skills, cover letter and the uploaded PDF with the NID and resume." |
+| 5 | View applicants | "The company sees the student's details, skills, cover letter and the uploaded PDF with the NID and resume." |
 | 6 | Mark one applicant **selected** | "This is an UPDATE, and it notifies the student." |
-| 7 | Login as that student | "The bell icon shows the notification." |
+| 7 | Login as that student | "My Applications now shows the status as selected, and the log book link has appeared." |
 | 8 | Open Weekly Logs, submit a log | "Only a selected student can open the log book." |
 | 9 | Login as `supervisor1@portal.com` | "The supervisor sees only their own company's students." |
 | 10 | Give feedback and marks | "The student can now see this immediately." |
 | 11 | Login as `admin@portal.com` | "The admin dashboard shows system wide figures." |
 | 12 | Show Users → search, export CSV | "Searchable, paginated, exportable." |
-| 13 | Show Audit Log | "Every important action is recorded, including failed logins." |
+| 13 | Show Users | "Every account is searchable and can be exported as CSV. My own row has no delete button." |
 | 14 | Run `python -m pytest tests/ -v` | "All thirty-five tests pass." |
 
 **Keep a second browser (or incognito window) open** so you can be logged in
@@ -78,8 +78,8 @@ non-functional requirements in Chapter 3.
 **Q: What is the scope of the project? What is not included?**
 Included: registration and login for all roles, internship posting and
 search, applications with cover letters, selection, weekly logs with
-supervisor feedback and marks, notifications, audit log, CSV exports,
-and college and user administration. Each student uploads one PDF holding
+supervisor feedback and marks, CSV exports and user administration.
+Each student uploads one PDF holding
 the citizenship / NID, resume and other documents, which the admin checks
 before approving and the company reads when the student applies.
 Not included: email or SMS delivery, interview scheduling, direct messaging
@@ -89,8 +89,8 @@ listed as future scope.
 ## B. Database
 
 **Q: How many tables do you have and what are they?**
-Eleven: `roles`, `users`, `colleges`, `students`, `companies`, `supervisors`,
-`internships`, `applications`, `progress_logs`, `notifications`, `audit_logs`.
+Eight: `roles`, `users`, `students`, `companies`, `supervisors`,
+`internships`, `applications`, `progress_logs`.
 
 **Q: Why is `users` separate from `students` and `companies`?**
 Everyone who logs in needs the same fields — name, email, password, role — so
@@ -120,7 +120,7 @@ DELETE statements ourselves; the database enforces it. Test case 15 proves it.
 **Q: Why does `progress_logs.supervisor_id` use SET NULL instead of CASCADE?**
 Because if a supervisor leaves, the student's weekly log and its marks must
 survive. Only the link to that supervisor is cleared. The same idea applies to
-`students.college_id`: removing a college must not delete student accounts.
+`progress_logs.supervisor_id`: a mark already awarded must survive the supervisor's account being removed.
 
 **Q: How do you prevent a student from applying twice?**
 Two layers. In the code we check for an existing application first, and in the
@@ -129,7 +129,7 @@ even a double-click or a direct database insert cannot create a duplicate.
 
 **Q: What indexes do you have?**
 Primary keys are indexed automatically, foreign keys are indexed by InnoDB,
-and `users.email` and `colleges.name` have unique indexes. Those are the
+and `users.email` and `roles.role_name` have unique indexes. Those are the
 columns we search and join on most.
 
 ## C. Backend and Flask
@@ -138,7 +138,7 @@ columns we search and join on most.
 Three tiers. The presentation tier is the browser showing HTML produced from
 Jinja templates. The application tier is Flask: `app.py` maps every URL to a
 function, the functions live in the `routes/` package, and `models.py`
-defines the data model. The data tier is MySQL with eleven tables.
+defines the data model. The data tier is MySQL with eight tables.
 
 **Q: What does `app.py` do?**
 It creates the Flask application, configures the database connection, and
@@ -154,9 +154,9 @@ a change to one role's pages cannot break another's.
 The browser sends `POST /apply/5`. `app.py` matches the rule and calls
 `apply(internship_id=5)` in `routes/student.py`. The function checks
 `session['role']` is student, checks there is no existing application, creates
-an `Application` object, queues a notification for the company and an audit
-entry, and commits. SQLAlchemy generates the INSERT statements. The browser is
-then redirected to My Applications, which queries the new row and renders it.
+an `Application` object and commits. SQLAlchemy generates the INSERT
+statement with the values bound as parameters. The browser is then redirected
+to My Applications, which queries the new row and renders it.
 
 **Q: What is a session and how do you use it?**
 After a successful login we store the user's id, name and role in the Flask
@@ -223,8 +223,7 @@ look around, but its main action is blocked: a student cannot apply, a
 company cannot post an internship, and a supervisor cannot give feedback. The
 administrator sees a verification queue showing each applicant's details and,
 for students, the uploaded document, and approves or rejects with a reason.
-The user is notified of the decision, and the whole action is written to the
-audit log.
+A rejected user is shown that reason as a banner on every page.
 
 **Q: How does role-based access control work?**
 Every route checks `session.get('role')` before doing anything and redirects
@@ -238,10 +237,12 @@ You are redirected with "Internship not found". The query filters by both the
 internship id and the logged-in company id, so the record simply is not
 returned. That is test case 14b.
 
-**Q: How do you know an action was performed by a particular user?**
-Every important action writes an entry to `audit_logs` with the user, the
-action, details and a timestamp — including failed login attempts, which are
-stored with no user id. The admin can review them on the Audit Log page.
+**Q: How do you know who created a record?**
+Every row that a user creates carries a foreign key back to them —
+`applications.student_id`, `internships.company_id`,
+`progress_logs.supervisor_id` — so ownership is part of the data rather than
+something recorded alongside it. That is also what the access-control checks
+query against.
 
 **Q: (Honest answer) Do you have CSRF protection?**
 No, and we know it. A malicious page could in principle submit a form on
@@ -288,12 +289,11 @@ columns and re-tested.
 ## H. Diagrams
 
 **Q: Explain your ER diagram.**
-Eleven entities. `roles` defines the type of every user; `users` is the
+Eight entities. `roles` defines the type of every user; `users` is the
 central login table; `students`, `companies` and `supervisors` extend it with
-role-specific details; `colleges` enrolls students; companies post
-`internships`, which receive `applications` from students; each application
-contains `progress_logs` which a supervisor evaluates; `notifications` and
-`audit_logs` both belong to a user.
+role-specific details; companies post `internships`, which receive
+`applications` from students; and each application contains `progress_logs`,
+which a supervisor evaluates with feedback and marks.
 
 **Q: What is the difference between your DFD and your ER diagram?**
 The ER diagram shows the *data at rest* — entities and their relationships.
@@ -331,14 +331,15 @@ For a project meant to demonstrate understanding, that was the right trade.
 
 **Q: What was the hardest part?**
 Getting the relationships and cascade rules right. Deciding that deleting a
-company should remove its internships, but removing a supervisor or a college
-must not delete a student's records, took careful thought — and each rule is
-now covered by a test.
+company should remove its internships and their applications, but that
+removing a supervisor must not wipe the marks that supervisor already
+awarded, took careful thought — and each rule is now covered by a test.
 
 **Q: If you had two more months, what would you build?**
-Email delivery of the notifications we already generate, interview scheduling,
-direct messaging between students and companies, automatic completion
-certificates, and deployment on a live server with HTTPS and backups.
+In-application notifications and then email delivery of them, interview
+scheduling, direct messaging between students and companies, automatic
+completion certificates, and deployment on a live server with HTTPS and
+backups.
 
 ---
 
@@ -346,8 +347,9 @@ certificates, and deployment on a live server with HTTPS and backups.
 
 Examiners respect a straight answer far more than a bluff. If asked:
 
-- **Email and SMS** — not implemented; notifications are inside the
-  application only, because we had no mail server to demonstrate with.
+- **Notifications of any kind** — not implemented. A student sees a decision
+  by opening My Applications, not by being told. This was a deliberate
+  simplification so the schema stays at eight tables.
 - **Deployment** — runs on the Flask development server; a production
   deployment needs Gunicorn or similar behind a web server, with HTTPS.
 - **CSRF protection** — not implemented; the fix is Flask-WTF `CSRFProtect`.
@@ -366,14 +368,14 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 
 | Item | Value |
 |------|-------|
-| Tables | 11 |
-| Model classes | 11 (`models.py`) |
-| URL rules | 32 (`app.py`) |
+| Tables | 8 |
+| Model classes | 8 (`models.py`) |
+| URL rules | 29 (`app.py`) |
 | Route files | 7 (`routes/`) |
-| Templates | 20 (all extend `base.html`) |
-| Automated tests | 36, all passing |
-| Test cases in report | 27 |
-| Functional requirements | FR-1 … FR-24 |
+| Templates | 18 (all extend `base.html`) |
+| Automated tests | 29, all passing |
+| Test cases in report | 21 |
+| Functional requirements | FR-1 … FR-23 |
 | Roles | admin, student, company, supervisor |
 | Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons |
 | Admin login | `admin@portal.com` / `admin123` |

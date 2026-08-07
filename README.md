@@ -9,9 +9,9 @@ A Flask + MySQL web app that connects **Students**, **Companies**, **Supervisors
 | **Student** | Register with details (roll no, department, semester, skills), browse open internships, apply with a cover letter, withdraw, and keep a **weekly log book** after being selected |
 | **Company** | Register, post / edit / delete internships (skills, duration, stipend, vacancies), view applicants with their details, mark them selected / rejected |
 | **Supervisor** | Register under a company, see the selected students of that company, read their weekly logs and give **feedback + marks** |
-| **Admin** | Verify or reject every new account, manage colleges, view and search all users, delete users (related data is removed automatically by `ON DELETE CASCADE`), review the audit log |
+| **Admin** | Verify or reject every new account, view and search all users, export the list as CSV, delete users (related data is removed automatically by `ON DELETE CASCADE`) |
 
-## Database (11 tables — matches the ER diagram)
+## Database (8 tables — matches the ER diagram)
 
 ```
 roles ──< users ──< students ──────< applications >────── internships >── companies
@@ -27,9 +27,6 @@ roles ──< users ──< students ──────< applications >───
 - `internships` — posted by a company (title, skills, duration, stipend, vacancies, status)
 - `applications` — student applies to internship (cover letter, status: applied/selected/rejected)
 - `progress_logs` — weekly work of a selected student + supervisor feedback and marks
-- `colleges` — participating institutions; a student is linked to one
-- `notifications` — in-app messages with an unread flag (the bell badge)
-- `audit_logs` — who did what and when, including failed logins
 
 ## Project Structure
 
@@ -43,8 +40,8 @@ Internship_Portal/
 │   ├── student.py      <- apply, my applications, weekly logs
 │   ├── company.py      <- post/edit/delete internships, applicants
 │   ├── supervisor.py   <- my students, view logs, give feedback
-│   └── admin.py        <- manage users, audit log, CSV export
-├── database.sql        <- creates the database, 11 tables and admin account
+│   └── admin.py        <- manage users, verify accounts, CSV export
+├── database.sql        <- creates the database, 8 tables and admin account
 ├── requirements.txt
 ├── static/
 │   ├── bootstrap.min.css   <- Bootstrap 5 (served locally, works offline)
@@ -63,19 +60,10 @@ Internship_Portal/
   post internships, and a supervisor cannot give feedback.
 
 - **Partner directory on the landing page** — cards showing the companies
-  working with the portal (with their open internship count) and the
-  participating colleges (with their student count).
-- **College management** — colleges are stored in their own table, students
-  choose their college at registration, and the admin can add or remove
-  colleges.
+  working with the portal, with their open internship count.
 
 - **Role-specific dashboards** — each role sees key figures relevant to it,
   with monthly growth, read live from the database.
-- **In-app notifications** — bell icon with unread count; users are notified
-  when an application arrives, a decision is made, a log is submitted, or
-  feedback is given.
-- **Audit log** — every important action (logins, failed logins, registrations,
-  postings, decisions, deletions) is recorded and browsable by the admin.
 - **Search + pagination** — internship search by keyword and skill; the admin
   user table is searchable and paginated.
 - **CSV exports** — the admin can export all users; a company can export the
@@ -85,7 +73,7 @@ Internship_Portal/
 
 To fill the database with realistic sample data for a demonstration
 (18 students, 5 companies, 6 supervisors, 12 internships, applications in
-every status, weekly logs with feedback, notifications and audit entries):
+every status, and weekly logs with supervisor feedback):
 
 ```
 python seed_demo.py
