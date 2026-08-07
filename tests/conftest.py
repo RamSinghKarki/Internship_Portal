@@ -77,7 +77,7 @@ def register_student(client, email='student@test.com', name='Test Student',
                      skills='Python, MySQL', document=True,
                      document_name='nid_resume.pdf'):
     data = {'name': name, 'email': email, 'password': 'pass123',
-            'college_id': '1', 'roll_number': 'CS-101',
+            'roll_number': 'CS-101',
             'department': 'Computer Engineering',
             'semester': '6', 'skills': skills}
     if document:

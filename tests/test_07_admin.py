@@ -1,5 +1,5 @@
 # ============================================================
-# TEST CASES 15, 21, 22, 23 : Administration, audit log and exports
+# TEST CASES 15, 22, 23 : Administration, user search and exports
 # ============================================================
 
 from conftest import setup_all_roles, register_student, login, logout
@@ -40,29 +40,6 @@ def test_tc15b_admin_cannot_delete_own_account(client):
     assert b'cannot delete your own account' in response.data
     assert User.query.filter_by(email='admin@portal.com').first() is not None
 
-
-def test_tc21_important_actions_are_written_to_the_audit_log(client):
-    """TC-21: Logins, failed logins and changes are recorded in the audit log."""
-    setup_all_roles(client)
-
-    # a failed login attempt
-    login(client, 'student@test.com', 'WRONG-PASSWORD')
-
-    from models import AuditLog
-    actions = {log.action for log in AuditLog.query.all()}
-    for expected in ('register', 'login', 'login_failed', 'post_internship'):
-        assert expected in actions, f'{expected} missing from the audit log'
-
-    # the failed login stored the email that was tried
-    failed = AuditLog.query.filter_by(action='login_failed').first()
-    assert failed.details == 'student@test.com'
-    assert failed.user_id is None            # nobody was logged in
-
-    # the admin can read the audit page
-    login(client, 'admin@portal.com', 'admin123')
-    response = client.get('/audit')
-    assert response.status_code == 200
-    assert b'login_failed' in response.data
 
 
 def test_tc22_user_list_can_be_searched_and_paged(client):

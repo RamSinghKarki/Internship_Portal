@@ -8,7 +8,7 @@
 #   routes/student.py    -> apply, my applications, weekly logs
 #   routes/company.py    -> post/edit/delete internships, applicants
 #   routes/supervisor.py -> my students, view logs, give feedback
-#   routes/admin.py      -> manage users
+#   routes/admin.py      -> manage users, verify accounts
 #
 # Below, app.add_url_rule() connects every URL of the site
 # to its function - like a table of contents of the whole app.
@@ -64,16 +64,6 @@ def inject_verification():
     return data
 
 
-# make the unread notification count available to every template (bell icon)
-@app.context_processor
-def inject_unread_count():
-    from flask import session
-    from models import Notification
-    if session.get('user_id'):
-        count = Notification.query.filter_by(user_id=session['user_id'],
-                                             is_read=False).count()
-        return {'unread_count': count}
-    return {'unread_count': 0}
 
 # ---------- home + dashboard + internship list ----------
 app.add_url_rule('/',            view_func=main.home)
@@ -110,15 +100,10 @@ app.add_url_rule('/logs/<int:log_id>/feedback', view_func=supervisor.give_feedba
 app.add_url_rule('/users',                 view_func=admin.users)
 app.add_url_rule('/users/delete/<int:id>', view_func=admin.delete_user, methods=['POST'])
 app.add_url_rule('/users/export',          view_func=admin.users_export)
-app.add_url_rule('/audit',                 view_func=admin.audit_log)
 app.add_url_rule('/verifications',         view_func=admin.verifications)
 app.add_url_rule('/verify/<int:id>',       view_func=admin.verify_user, methods=['POST'])
 app.add_url_rule('/reject/<int:id>',       view_func=admin.reject_user, methods=['POST'])
-app.add_url_rule('/colleges',              view_func=admin.colleges, methods=['GET', 'POST'])
-app.add_url_rule('/colleges/delete/<int:id>', view_func=admin.delete_college, methods=['POST'])
 
-# ---------- notifications ----------
-app.add_url_rule('/notifications', view_func=main.notifications)
 
 # ---------- csv exports ----------
 app.add_url_rule('/applicants/<int:internship_id>/export', view_func=company.applicants_export)

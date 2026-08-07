@@ -25,7 +25,7 @@
 {% elif session.role == 'supervisor' %}
     <p>Check <a href="{{ url_for('students') }}">your students</a> and give feedback on their weekly logs.</p>
 {% elif session.role == 'admin' %}
-    <p><a href="{{ url_for('users') }}">Manage users</a> or review the <a href="{{ url_for('audit_log') }}">audit log</a>.</p>
+    <p><a href="{{ url_for('users') }}">Manage users</a> or review the <a href="{{ url_for('verifications') }}">verification queue</a>.</p>
 {% endif %}
 
 {% endblock %}

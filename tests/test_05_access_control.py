@@ -11,34 +11,34 @@ def test_tc14_pages_are_protected_by_role(client):
 
     # ---- not logged in: every private page redirects to login ----
     for url in ('/dashboard', '/internships', '/my_applications',
-                '/users', '/audit', '/students'):
+                '/users', '/students'):
         response = client.get(url)
         assert response.status_code == 302, f'{url} should redirect'
 
     # ---- student cannot reach company, supervisor or admin pages ----
     login(client, 'student@test.com')
-    for url in ('/users', '/audit', '/students', '/internships/add', '/applicants/1'):
+    for url in ('/users', '/students', '/internships/add', '/applicants/1'):
         response = client.get(url)
         assert response.status_code == 302, f'student should not open {url}'
     logout(client)
 
     # ---- company cannot reach admin or supervisor pages ----
     login(client, 'company@test.com')
-    for url in ('/users', '/audit', '/students', '/my_applications'):
+    for url in ('/users', '/students', '/my_applications'):
         response = client.get(url)
         assert response.status_code == 302, f'company should not open {url}'
     logout(client)
 
     # ---- supervisor cannot reach admin pages ----
     login(client, 'supervisor@test.com')
-    for url in ('/users', '/audit', '/internships/add'):
+    for url in ('/users', '/internships/add'):
         response = client.get(url)
         assert response.status_code == 302, f'supervisor should not open {url}'
     logout(client)
 
     # ---- admin can reach the admin pages ----
     login(client, 'admin@portal.com', 'admin123')
-    for url in ('/users', '/audit', '/dashboard'):
+    for url in ('/users', '/dashboard'):
         assert client.get(url).status_code == 200
 
 

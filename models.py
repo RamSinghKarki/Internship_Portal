@@ -47,23 +47,11 @@ class User(db.Model):
         return check_password_hash(self.password, pw)
 
 
-class College(db.Model):
-    __tablename__ = 'colleges'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(150), unique=True, nullable=False)
-    affiliation = db.Column(db.String(100))
-    address = db.Column(db.String(150))
-    created_at = db.Column(db.DateTime, default=datetime.now)
-
-    students = db.relationship('Student', backref='college')
-
-
 class Student(db.Model):
     __tablename__ = 'students'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
                         unique=True, nullable=False)
-    college_id = db.Column(db.Integer, db.ForeignKey('colleges.id', ondelete='SET NULL'))
     roll_number = db.Column(db.String(50))
     department = db.Column(db.String(100))
     semester = db.Column(db.Integer)
@@ -151,28 +139,6 @@ class ProgressLog(db.Model):
     supervisor = db.relationship('Supervisor')
 
 
-class Notification(db.Model):
-    __tablename__ = 'notifications'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
-                        nullable=False)
-    message = db.Column(db.String(255), nullable=False)
-    link = db.Column(db.String(255))
-    is_read = db.Column(db.Boolean, default=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
-
-
-class AuditLog(db.Model):
-    __tablename__ = 'audit_logs'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL'))
-    action = db.Column(db.String(50), nullable=False)
-    details = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=datetime.now)
-
-    user = db.relationship('User')
-
-
 # ---------- account verification ----------
 def verified_only(action='use this feature'):
     """Return an error message if the logged-in user is not verified yet,
@@ -187,17 +153,6 @@ def verified_only(action='use this feature'):
         return (f'Your account was not approved, so you cannot {action}. '
                 f'Reason: {user.verification_remarks or "no reason given"}.')
     return f'Your account is waiting for admin approval, so you cannot {action} yet.'
-
-
-# ---------- notifications and audit trail ----------
-def notify(user_id, message, link=None):
-    """Queue an in-app notification (saved on the next commit)."""
-    db.session.add(Notification(user_id=user_id, message=message, link=link))
-
-
-def audit(user_id, action, details=''):
-    """Record who did what (saved on the next commit)."""
-    db.session.add(AuditLog(user_id=user_id, action=action, details=details))
 
 
 # ---------- helpers: profile row of the logged-in user ----------

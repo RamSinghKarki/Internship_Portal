@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from app import app
 from models import (db, Role, User, Student, Company, Supervisor, Internship,
-                    Application, ProgressLog, Notification, AuditLog, College)
+                    Application, ProgressLog)
 
 random.seed(7)          # same data every time the script is run
 
@@ -118,7 +118,7 @@ def make_user(role_name, name, email, created_at, status='verified'):
 
 def seed():
     print('Clearing existing data...')
-    for model in (AuditLog, Notification, ProgressLog, Application,
+    for model in (ProgressLog, Application,
                   Internship, Supervisor, Student, Company):
         model.query.delete()
     User.query.filter(User.email != 'admin@portal.com').delete()
@@ -150,7 +150,6 @@ def seed():
 
     # ---------------- students ----------------
     print('Creating students...')
-    colleges = College.query.order_by(College.id).all()
     student_rows = []
     for i, (name, roll, dept, sem, skills) in enumerate(STUDENTS):
         # spread joining dates over the last three months, several this month
@@ -163,7 +162,6 @@ def seed():
             status = 'pending'
         user = make_user('student', name, f'student{i + 1}@portal.com', created, status)
         student = Student(user=user,
-                          college_id=colleges[i % len(colleges)].id if colleges else None,
                           roll_number=roll, department=dept,
                           semester=sem, skills=skills,
                           document_url='uploads/sample_document.pdf')
@@ -245,64 +243,8 @@ def seed():
             db.session.add(log)
     db.session.commit()
 
-    # ---------------- notifications ----------------
-    print('Creating notifications...')
-    for application in random.sample(applications, min(12, len(applications))):
-        company_user_id = application.internship.company.user_id
-        db.session.add(Notification(
-            user_id=company_user_id,
-            message=f'New application for "{application.internship.title}" '
-                    f'from {application.student.user.name}',
-            link=f'/applicants/{application.internship_id}',
-            is_read=random.choice([True, False]),
-            created_at=application.applied_date))
-    for application in selected[:8]:
-        db.session.add(Notification(
-            user_id=application.student.user_id,
-            message=f'Your application for "{application.internship.title}" '
-                    f'was marked selected',
-            link='/my_applications', is_read=random.choice([True, False]),
-            created_at=application.applied_date + timedelta(days=3)))
-    db.session.commit()
-
-    # ---------------- audit log ----------------
-    print('Creating audit entries...')
-    entries = []
-    for user in User.query.all():
-        entries.append(AuditLog(user_id=user.id, action='register',
-                                details=f'{user.role.role_name} {user.email}',
-                                created_at=user.created_at))
-        for _ in range(random.randint(1, 4)):
-            entries.append(AuditLog(
-                user_id=user.id, action='login', details=user.email,
-                created_at=NOW - timedelta(days=random.randint(0, 30),
-                                           hours=random.randint(0, 23))))
-    for internship in internship_rows:
-        entries.append(AuditLog(user_id=internship.company.user_id,
-                                action='post_internship', details=internship.title,
-                                created_at=internship.posted_date))
-    for application in applications:
-        entries.append(AuditLog(user_id=application.student.user_id, action='apply',
-                                details=f'internship #{application.internship_id}',
-                                created_at=application.applied_date))
-        if application.status != 'applied':
-            entries.append(AuditLog(
-                user_id=application.internship.company.user_id,
-                action='update_status',
-                details=f'application #{application.id} -> {application.status}',
-                created_at=application.applied_date + timedelta(days=3)))
-    entries.append(AuditLog(user_id=None, action='login_failed',
-                            details='student3@portal.com',
-                            created_at=NOW - timedelta(days=2)))
-    entries.append(AuditLog(user_id=admin.id, action='login',
-                            details='admin@portal.com', created_at=NOW))
-    for e in entries:
-        db.session.add(e)
-    db.session.commit()
-
     # ---------------- summary ----------------
     print('\nDemo data created:')
-    print(f'  Colleges      : {College.query.count()}')
     print(f'  Verification  : {User.query.filter_by(verification_status="verified").count()} approved, '
           f'{User.query.filter_by(verification_status="pending").count()} pending, '
           f'{User.query.filter_by(verification_status="rejected").count()} rejected')
@@ -314,8 +256,6 @@ def seed():
           f'  (selected: {Application.query.filter_by(status="selected").count()},'
           f' rejected: {Application.query.filter_by(status="rejected").count()})')
     print(f'  Progress logs : {ProgressLog.query.count()}')
-    print(f'  Notifications : {Notification.query.count()}')
-    print(f'  Audit entries : {AuditLog.query.count()}')
     print('\nLogin accounts (password: pass123)')
     print('  Student    : student1@portal.com')
     print('  Company    : company1@portal.com')

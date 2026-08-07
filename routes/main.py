@@ -1,12 +1,12 @@
 # ============================================================
 # Main pages: landing page, dashboard (key figures),
-# internship list with search, notifications
+# internship list with search
 # ============================================================
 
 from datetime import datetime
 from flask import render_template, redirect, url_for, session, request
-from models import (db, User, Student, Company, Supervisor, Internship, College,
-                    Application, ProgressLog, Notification,
+from models import (db, User, Student, Company, Supervisor, Internship,
+                    Application, ProgressLog,
                     current_student, current_company, current_supervisor)
 
 
@@ -34,17 +34,7 @@ def home():
                          'initials': ''.join(w[0] for w in company.user.name.split()[:2]).upper(),
                          'open_internships': open_count})
 
-    # colleges taking part, with how many of their students have joined
-    campuses = []
-    for college in College.query.order_by(College.name).limit(12).all():
-        campuses.append({'name': college.name,
-                         'affiliation': college.affiliation,
-                         'address': college.address,
-                         'initials': ''.join(w[0] for w in college.name.split()[:3]).upper(),
-                         'students': Student.query.filter_by(college_id=college.id).count()})
-
-    return render_template('index.html', counts=counts, partners=partners,
-                           campuses=campuses)
+    return render_template('index.html', counts=counts, partners=partners)
 
 
 # ---------- DASHBOARD (role-specific key figures) ----------
@@ -132,16 +122,3 @@ def internships():
     return render_template('internships.html', internships=items,
                            applied_ids=applied_ids, q=q, skill=skill)
 
-
-# ---------- NOTIFICATIONS (bell icon page) ----------
-def notifications():
-    if 'user_id' not in session:
-        return redirect(url_for('login'))
-
-    items = (Notification.query.filter_by(user_id=session['user_id'])
-             .order_by(Notification.id.desc()).limit(50).all())
-    # mark everything as read once the page is opened
-    (Notification.query.filter_by(user_id=session['user_id'], is_read=False)
-     .update({'is_read': True}))
-    db.session.commit()
-    return render_template('notifications.html', items=items)

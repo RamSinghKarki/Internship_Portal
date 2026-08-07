@@ -40,21 +40,11 @@
             <li class="nav-item"><a class="nav-link" href="{{ url_for('verifications') }}"><i class="bi bi-patch-check me-1"></i>Verifications
                 {% if pending_count %}<span class="badge bg-danger ms-1">{{ pending_count }}</span>{% endif %}</a></li>
             <li class="nav-item"><a class="nav-link" href="{{ url_for('users') }}"><i class="bi bi-person-gear me-1"></i>Users</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('colleges') }}"><i class="bi bi-building me-1"></i>Colleges</a></li>
-            <li class="nav-item"><a class="nav-link" href="{{ url_for('audit_log') }}"><i class="bi bi-clock-history me-1"></i>Audit Log</a></li>
           {% endif %}
         {% endif %}
       </ul>
       <ul class="navbar-nav ms-auto align-items-lg-center">
         {% if session.user_id %}
-          <li class="nav-item me-3">
-            <a class="nav-link position-relative" href="{{ url_for('notifications') }}" title="Notifications">
-              <i class="bi bi-bell fs-5"></i>
-              {% if unread_count %}
-                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ unread_count }}</span>
-              {% endif %}
-            </a>
-          </li>
           <li class="nav-item"><span class="navbar-text me-3">{{ session.name }} ({{ session.role }})</span></li>
           <li class="nav-item"><a class="btn btn-outline-light btn-sm" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
         {% else %}

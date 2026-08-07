@@ -44,9 +44,9 @@ def test_tc26b_unverified_users_cannot_act(client):
 
 
 def test_tc26c_admin_can_approve_an_account(client):
-    """TC-26: The admin approves an account and the user is notified."""
+    """TC-26: The admin approves an account and the status changes."""
     register_student(client)
-    from models import User, Notification
+    from models import User
     student = User.query.filter_by(email='student@test.com').first()
 
     login(client, 'admin@portal.com', 'admin123')
@@ -59,9 +59,6 @@ def test_tc26c_admin_can_approve_an_account(client):
     student = User.query.filter_by(email='student@test.com').first()
     assert student.verification_status == 'verified'
     assert student.verified_at is not None
-    # the student was told
-    note = Notification.query.filter_by(user_id=student.id).first()
-    assert note is not None and 'approved' in note.message
 
 
 def test_tc26d_admin_can_reject_with_a_reason(client):

@@ -8,7 +8,7 @@ import csv
 import io
 from flask import Response
 from models import (db, Internship, Application, current_company,
-                    notify, audit, verified_only)
+                    verified_only)
 
 
 # ---------- ADD INTERNSHIP (CREATE) ----------
@@ -32,7 +32,6 @@ def add_internship():
                             stipend=request.form['stipend'],
                             vacancies=request.form['vacancies'] or None)
         db.session.add(intern)
-        audit(session['user_id'], 'post_internship', request.form['title'])
         db.session.commit()
         flash('Internship posted.')
         return redirect(url_for('internships'))
@@ -59,7 +58,6 @@ def edit_internship(id):
         internship.stipend = request.form['stipend']
         internship.vacancies = request.form['vacancies'] or None
         internship.status = request.form['status']
-        audit(session['user_id'], 'edit_internship', f'#{id} {internship.title}')
         db.session.commit()
         flash('Internship updated.')
         return redirect(url_for('internships'))
@@ -76,7 +74,6 @@ def delete_internship(id):
     me = current_company()
     internship = Internship.query.filter_by(id=id, company_id=me.id).first()
     if internship:
-        audit(session['user_id'], 'delete_internship', f'#{id} {internship.title}')
         db.session.delete(internship)
         db.session.commit()
         flash('Internship deleted.')
@@ -112,10 +109,6 @@ def update_status(id):
         return redirect(url_for('internships'))
 
     application.status = request.form['status']
-    notify(application.student.user_id,
-           f'Your application for "{application.internship.title}" was marked {application.status}',
-           url_for('my_applications'))
-    audit(session['user_id'], 'update_status', f'application #{id} -> {application.status}')
     db.session.commit()
     flash('Status updated.')
     return redirect(url_for('applicants', internship_id=application.internship_id))
