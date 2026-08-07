@@ -157,9 +157,11 @@ INSERT INTO users (role_id, name, email, password, verification_status, verified
  'pbkdf2:sha256:1000000$q9kKTkMrQZLUSLQp$50cdcb29c2a20385dc20c63bc2735817ce17372aa4c138e4fbd44c8e6d79d698',
  'verified', CURRENT_TIMESTAMP);
 
-ALTER TABLE users
-ADD COLUMN verification_status VARCHAR(20) DEFAULT 'pending',
-ADD COLUMN verification_remarks TEXT NULL,
-ADD COLUMN verified_at DATETIME NULL;
-
-DESCRIBE users;
+-- Note: the three verification columns are already part of the CREATE TABLE
+-- for users above. If an OLD database is being upgraded in place rather than
+-- rebuilt from this file, run the following once, on its own:
+--
+--   ALTER TABLE users
+--     ADD COLUMN verification_status  VARCHAR(20) DEFAULT 'pending',
+--     ADD COLUMN verification_remarks VARCHAR(255),
+--     ADD COLUMN verified_at          DATETIME NULL;

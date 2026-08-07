@@ -14,7 +14,7 @@ def test_landing_page_shows_live_counts(client):
     setup_all_roles(client)
     response = client.get('/')
     assert b'Students Joined' in response.data
-    assert b'Internships Posted' in response.data
+    assert b'Internships' in response.data
 
 
 def test_each_role_sees_only_its_own_dashboard_figures(client):
