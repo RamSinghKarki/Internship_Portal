@@ -208,9 +208,8 @@ The completed system demonstrates that a small, well-normalized relational desig
 | Table 3.1 | Functional requirements | |
 | Table 3.2 | Non-functional requirements | |
 | Table 3.3 | Project milestones | |
-| Table 3.4 | Gantt chart of activities against weeks | |
-| Table 3.5 | Software requirements | |
-| Table 3.6 | Hardware requirements | |
+| Table 3.4 | Software requirements | |
+| Table 3.5 | Hardware requirements | |
 | Table 4.1 | Route table of the application | |
 | Table 4.2 | Database tables and their purpose | |
 | Table 4.3 | Schema of `roles` | |
@@ -589,34 +588,15 @@ The project ran across sixteen weeks in two phases separated by the mid-term def
 | M9 | Interface refinement, demonstration data, screenshots | Week 15 | Bootstrap UI, `seed_demo.py` |
 | M10 | Report, presentation, final defence | Week 16 | **Final defence** |
 
-### Table 3.4: Gantt chart of activities against weeks
+Figure 3.1 shows the same schedule as a Gantt chart. A solid bar marks the weeks in which an activity was active, and a diamond marks each defence.
 
-Figure 3.1 shows the same schedule as a Gantt chart. The shaded cells mark the weeks in which each activity was active.
-
-| Activity | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 | W12 | W13 | W14 | W15 | W16 |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Problem study and requirement gathering | ▓ | ▓ | | | | | | | | | | | | | | |
-| Survey of existing systems | | ▓ | ▓ | | | | | | | | | | | | | |
-| Database design and normalization | | | ▓ | ▓ | | | | | | | | | | | | |
-| Environment setup and project skeleton | | | | ▓ | ▓ | | | | | | | | | | | |
-| Authentication and role-based routing | | | | | ▓ | ▓ | | | | | | | | | | |
-| Internship posting and listing | | | | | | ▓ | ▓ | | | | | | | | | |
-| Application workflow and cover letters | | | | | | | ▓ | ▓ | | | | | | | | |
-| **Mid-term defence** | | | | | | | | ▓ | | | | | | | | |
-| Weekly log book and supervisor evaluation | | | | | | | | | ▓ | ▓ | | | | | | |
-| Migration to SQLAlchemy ORM | | | | | | | | | | | ▓ | | | | | |
-| Internship search by keyword and skill | | | | | | | | | | | ▓ | ▓ | | | | |
-| Account verification workflow | | | | | | | | | | | | ▓ | ▓ | | | |
-| Automated testing | | | | | | | | | | | | | ▓ | ▓ | | |
-| Interface refinement and demonstration data | | | | | | | | | | | | | | ▓ | ▓ | |
-| Report writing and presentation | | | | | | | | | | | | | | ▓ | ▓ | ▓ |
-| **Final defence** | | | | | | | | | | | | | | | | ▓ |
+![](diagrams/fig3_1_gantt.png)
 
 **Figure 3.1: Gantt chart of the project schedule**
 
 ## 3.4 Software and Hardware Requirements
 
-### Table 3.5: Software requirements
+### Table 3.4: Software requirements
 
 | Software | Version | Purpose |
 |---|---|---|
@@ -637,7 +617,7 @@ Figure 3.1 shows the same schedule as a Gantt chart. The shaded cells mark the w
 
 The four packages that must be installed with `pip` are listed in `requirements.txt`: Flask, Flask-SQLAlchemy, PyMySQL and pytest. Everything else arrives as a dependency of those or is vendored into the `static/` folder.
 
-### Table 3.6: Hardware requirements
+### Table 3.5: Hardware requirements
 
 | Component | Minimum | Recommended |
 |---|---|---|
@@ -677,68 +657,11 @@ The use case diagram identifies four actors and the operations each may perform.
 
 The diagram makes one structural point that matters later: *Apply for Internship* and *Maintain Weekly Log* both belong to Student, but the second is only reachable after Company has performed *Select or Reject Applicant*. The dependency between actors is real, not decorative.
 
-```mermaid
-flowchart LR
-    STU([Student])
-    COM([Company])
-    SUP([Supervisor])
-    ADM([Administrator])
-
-    subgraph SYSTEM["INTERNSHIP PORTAL SYSTEM"]
-        UC1(["Register Account"])
-        UC2(["Login / Logout"])
-        UC17(["View Dashboard"])
-        UC3(["Search &amp; Filter Internships"])
-        UC4(["Apply with Cover Letter"])
-        UC5(["Withdraw Application"])
-        UC6(["Maintain Weekly Log Book"])
-        UC7(["Post / Edit / Close Internship"])
-        UC8(["View Applicants"])
-        UC9(["Select or Reject Applicant"])
-        UC10(["Export Applicants as CSV"])
-        UC11(["View Assigned Students"])
-        UC12(["Review Logs &amp; Give Feedback"])
-        UC13(["Verify / Reject Accounts"])
-        UC14(["Manage Users"])
-    end
-
-    STU --- UC1
-    STU --- UC2
-    STU --- UC3
-    STU --- UC4
-    STU --- UC5
-    STU --- UC6
-    STU --- UC17
-
-    COM --- UC1
-    COM --- UC2
-    COM --- UC7
-    COM --- UC8
-    COM --- UC9
-    COM --- UC10
-
-    UC17 --- SUP
-    UC1 --- SUP
-    UC2 --- SUP
-    UC11 --- SUP
-    UC12 --- SUP
-
-    UC2 --- ADM
-    UC13 --- ADM
-    UC14 --- ADM
-    UC17 --- ADM
-
-    UC13 -.-> UC4
-    UC13 -.-> UC7
-    UC9 -.-> UC6
-    UC6 -.-> UC12
-
-    style SYSTEM fill:#f8fafc,stroke:#334155,stroke-width:2px
-```
+![](diagrams/fig3_2_use_case.png)
 
 **Figure 3.2: Use case diagram of the Internship Portal**
 
-The dotted edges are worth reading carefully. *Verify Accounts* gates both *Apply* and *Post Internship*: neither is possible while an account is pending. *Select Applicant* enables *Maintain Weekly Log*, and the log in turn precedes *Give Feedback*. These four dependencies are the backbone of the workflow, and each of them is enforced in code and covered by a test.
+Four dependencies between these use cases are not visible as symbols but matter more than any of them individually. *Verify / Reject Accounts* gates both *Apply with Cover Letter* and *Post / Edit / Close Internship*: neither is possible while an account is still pending. *Select or Reject Applicant* is what enables *Maintain Weekly Log Book*, and a log entry in turn has to exist before *Review Logs & Give Feedback* can act on it. Each of those four rules is enforced in code and covered by a test case.
 
 ### 3.6.2 Activity Diagram
 
@@ -829,33 +752,7 @@ The loop at the foot of Figure 3.3(d) is the one worth dwelling on: the log-and-
 
 The context diagram treats the whole system as a single process and shows only what crosses its boundary. Four external entities exchange data with it.
 
-```mermaid
-flowchart LR
-    STU[["STUDENT"]]
-    COM[["COMPANY"]]
-    SUP[["SUPERVISOR"]]
-    ADM[["ADMINISTRATOR"]]
-
-    P0(("0<br/><br/>INTERNSHIP<br/>PORTAL"))
-
-    STU -->|"profile, documents,<br/>cover letter, log entries"| P0
-    P0 -->|"internship list, status,<br/>feedback and marks"| STU
-
-    COM -->|"company profile,<br/>internship details,<br/>selection decisions"| P0
-    P0 -->|"applicant profiles,<br/>cover letters, dashboard figures"| COM
-
-    SUP -->|"supervisor profile,<br/>feedback, marks"| P0
-    P0 -->|"assigned students,<br/>weekly logs"| SUP
-
-    ADM -->|"approval / rejection,<br/>college records, deletions"| P0
-    P0 -->|"pending queue, user list,<br/>system statistics"| ADM
-
-    style P0 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style STU fill:#f1f5f9,stroke:#334155
-    style COM fill:#f1f5f9,stroke:#334155
-    style SUP fill:#f1f5f9,stroke:#334155
-    style ADM fill:#f1f5f9,stroke:#334155
-```
+![](diagrams/fig3_4_dfd0.png)
 
 **Figure 3.4: Data flow diagram — Level 0 (context diagram)**
 
@@ -863,77 +760,9 @@ Nothing enters or leaves the system except through these four entities. There is
 
 ### 3.6.4 Data Flow Diagram — Level 1
 
-Level 1 opens the single process of Figure 3.4 into seven numbered processes and shows the data stores each one reads and writes.
+Level 1 opens the single process of Figure 3.4 into eight numbered processes and shows the data stores each one reads and writes. Process 8.0 exists because a data store may never be connected straight to an external entity: a user reads the notification list through a process, not by reaching into the table.
 
-```mermaid
-flowchart TB
-    STU[["STUDENT"]]
-    COM[["COMPANY"]]
-    SUP[["SUPERVISOR"]]
-    ADM[["ADMINISTRATOR"]]
-
-    P1(("1.0<br/>Register &<br/>Authenticate"))
-    P2(("2.0<br/>Verify<br/>Accounts"))
-    P3(("3.0<br/>Manage<br/>Internships"))
-    P4(("4.0<br/>Search &<br/>Apply"))
-    P5(("5.0<br/>Review &<br/>Select"))
-    P6(("6.0<br/>Maintain<br/>Log Book"))
-    P7(("7.0<br/>Evaluate<br/>Progress"))
-
-    D1[("D1  users / roles")]
-    D2[("D2  students / companies /<br/>supervisors")]
-    D3[("D3  internships")]
-    D4[("D4  applications")]
-    D5[("D5  progress_logs")]
-
-    STU -->|credentials, profile, PDF| P1
-    COM -->|credentials, profile| P1
-    SUP -->|credentials, profile| P1
-    P1 -->|account record| D1
-    P1 -->|profile record| D2
-    P1 -->|session role| STU
-
-    ADM -->|approve / reject + reason| P2
-    D1 -->|pending accounts| P2
-    D2 -->|uploaded document| P2
-    P2 -->|updated status| D1
-    P2 -->|queue and counts| ADM
-
-    COM -->|title, skills, duration,<br/>stipend, vacancies| P3
-    D1 -->|verified status| P3
-    P3 -->|internship record| D3
-
-    STU -->|keyword / skill| P4
-    D3 -->|open internships| P4
-    P4 -->|matching list| STU
-    STU -->|cover letter| P4
-    P4 -->|application record| D4
-
-    D4 -->|applications| P5
-    D2 -->|applicant profiles| P5
-    P5 -->|applicant list| COM
-    COM -->|selected / rejected| P5
-    P5 -->|updated status| D4
-    D4 -->|status| STU
-
-    D4 -->|selected applications| P6
-    STU -->|week number, work done| P6
-    P6 -->|log entry| D5
-
-    D5 -->|log entries| P7
-    P7 -->|student logs| SUP
-    SUP -->|feedback, marks| P7
-    P7 -->|feedback and marks| D5
-    D5 -->|feedback and marks| STU
-
-    style P1 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P2 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P3 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P4 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P5 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P6 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-    style P7 fill:#1e3a8a,stroke:#1e3a8a,color:#ffffff
-```
+![](diagrams/fig3_5_dfd1.png)
 
 **Figure 3.5: Data flow diagram — Level 1**
 
