@@ -3,8 +3,8 @@
 # ============================================================
 
 from flask import render_template, request, redirect, url_for, session, flash
-from models import (db, Application, ProgressLog,
-                    current_student, verified_only)
+from models import (db, Application, ProgressLog, Internship,
+                    current_student, notify, verified_only)
 
 
 # ---------- APPLY (CREATE - with cover letter) ----------
@@ -27,7 +27,12 @@ def apply(internship_id):
         application = Application(student_id=me.id, internship_id=internship_id,
                                   cover_letter=request.form['cover_letter'])
         db.session.add(application)
-        db.session.commit()
+        # tell the company that a new application has arrived
+        internship = db.session.get(Internship, internship_id)
+        notify(internship.company.user_id,
+               f'New application for "{internship.title}" from {session["name"]}',
+               url_for('applicants', internship_id=internship_id))
+        db.session.commit()      # application and notification in one transaction
         flash('Application submitted!')
     return redirect(url_for('my_applications'))
 
@@ -74,6 +79,12 @@ def my_logs(application_id):
                           week_number=request.form['week_number'] or None,
                           description=request.form['description'])
         db.session.add(log)
+        # tell every supervisor at the host company about the new entry
+        for sup in application.internship.company.supervisors:
+            notify(sup.user_id,
+                   f'{session["name"]} submitted a weekly log for '
+                   f'"{application.internship.title}"',
+                   url_for('view_logs', application_id=application_id))
         db.session.commit()
         flash('Weekly log submitted.')
         return redirect(url_for('my_logs', application_id=application_id))

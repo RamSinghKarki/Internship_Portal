@@ -7,7 +7,7 @@ import csv
 import io
 from flask import render_template, redirect, url_for, session, flash, request, Response
 from datetime import datetime
-from models import db, User
+from models import db, User, notify
 
 
 # ---------- ALL USERS (READ - with search and pagination) ----------
@@ -89,6 +89,8 @@ def verify_user(id):
         user.verification_status = 'verified'
         user.verification_remarks = None
         user.verified_at = datetime.now()
+        notify(user.id, 'Your account has been approved. You can now use the portal.',
+               url_for('dashboard'))
         db.session.commit()
         flash(f'{user.name} has been approved.')
     return redirect(url_for('verifications'))
@@ -105,6 +107,9 @@ def reject_user(id):
         reason = request.form.get('remarks', '').strip()
         user.verification_status = 'rejected'
         user.verification_remarks = reason or None
+        notify(user.id,
+               f'Your account was not approved. Reason: {reason or "no reason given"}',
+               url_for('dashboard'))
         db.session.commit()
         flash(f'{user.name} has been rejected.')
     return redirect(url_for('verifications'))

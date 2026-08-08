@@ -4,7 +4,7 @@
 
 from flask import render_template, request, redirect, url_for, session, flash
 from models import (db, Internship, Application, ProgressLog,
-                    current_supervisor, verified_only)
+                    current_supervisor, notify, verified_only)
 
 
 # ---------- MY STUDENTS (READ) ----------
@@ -59,6 +59,9 @@ def give_feedback(log_id):
     log.feedback = request.form['feedback']
     log.marks = request.form['marks'] or None
     log.supervisor_id = me.id
+    notify(log.application.student.user_id,
+           f'New feedback on your week {log.week_number} log',
+           url_for('my_logs', application_id=log.application_id))
     db.session.commit()
     flash('Feedback saved.')
     return redirect(url_for('view_logs', application_id=log.application_id))

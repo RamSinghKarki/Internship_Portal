@@ -8,7 +8,7 @@ import csv
 import io
 from flask import Response
 from models import (db, Internship, Application, current_company,
-                    verified_only)
+                    notify, verified_only)
 
 
 # ---------- ADD INTERNSHIP (CREATE) ----------
@@ -109,6 +109,10 @@ def update_status(id):
         return redirect(url_for('internships'))
 
     application.status = request.form['status']
+    notify(application.student.user_id,
+           f'Your application for "{application.internship.title}" '
+           f'was marked {application.status}',
+           url_for('my_applications'))
     db.session.commit()
     flash('Status updated.')
     return redirect(url_for('applicants', internship_id=application.internship_id))

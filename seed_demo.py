@@ -16,7 +16,7 @@ from datetime import datetime, timedelta
 
 from app import app
 from models import (db, Role, User, Student, Company, Supervisor, Internship,
-                    Application, ProgressLog)
+                    Application, ProgressLog, Notification)
 
 random.seed(7)          # same data every time the script is run
 
@@ -118,7 +118,7 @@ def make_user(role_name, name, email, created_at, status='verified'):
 
 def seed():
     print('Clearing existing data...')
-    for model in (ProgressLog, Application,
+    for model in (Notification, ProgressLog, Application,
                   Internship, Supervisor, Student, Company):
         model.query.delete()
     User.query.filter(User.email != 'admin@portal.com').delete()
@@ -243,6 +243,25 @@ def seed():
             db.session.add(log)
     db.session.commit()
 
+    # ---------------- notifications ----------------
+    print('Creating notifications...')
+    for application in random.sample(applications, min(12, len(applications))):
+        db.session.add(Notification(
+            user_id=application.internship.company.user_id,
+            message=f'New application for "{application.internship.title}" '
+                    f'from {application.student.user.name}',
+            link=f'/applicants/{application.internship_id}',
+            is_read=random.choice([True, False]),
+            created_at=application.applied_date))
+    for application in selected[:8]:
+        db.session.add(Notification(
+            user_id=application.student.user_id,
+            message=f'Your application for "{application.internship.title}" '
+                    f'was marked selected',
+            link='/my_applications', is_read=random.choice([True, False]),
+            created_at=application.applied_date + timedelta(days=3)))
+    db.session.commit()
+
     # ---------------- summary ----------------
     print('\nDemo data created:')
     print(f'  Verification  : {User.query.filter_by(verification_status="verified").count()} approved, '
@@ -256,6 +275,7 @@ def seed():
           f'  (selected: {Application.query.filter_by(status="selected").count()},'
           f' rejected: {Application.query.filter_by(status="rejected").count()})')
     print(f'  Progress logs : {ProgressLog.query.count()}')
+    print(f'  Notifications : {Notification.query.count()}')
     print('\nLogin accounts (password: pass123)')
     print('  Student    : student1@portal.com')
     print('  Company    : company1@portal.com')

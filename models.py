@@ -139,6 +139,17 @@ class ProgressLog(db.Model):
     supervisor = db.relationship('Supervisor')
 
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='CASCADE'),
+                        nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    link = db.Column(db.String(255))          # page the message points to
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.now)
+
+
 # ---------- account verification ----------
 def verified_only(action='use this feature'):
     """Return an error message if the logged-in user is not verified yet,
@@ -153,6 +164,13 @@ def verified_only(action='use this feature'):
         return (f'Your account was not approved, so you cannot {action}. '
                 f'Reason: {user.verification_remarks or "no reason given"}.')
     return f'Your account is waiting for admin approval, so you cannot {action} yet.'
+
+
+# ---------- notifications ----------
+def notify(user_id, message, link=None):
+    """Queue an in-app notification. It is written on the caller's next
+    commit, so it belongs to the same transaction as the action itself."""
+    db.session.add(Notification(user_id=user_id, message=message, link=link))
 
 
 # ---------- helpers: profile row of the logged-in user ----------

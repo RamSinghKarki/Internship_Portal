@@ -4,7 +4,7 @@
 # The database models (tables) are in models.py.
 # The code for the pages lives in the routes/ folder:
 #   routes/auth.py       -> register + login + logout
-#   routes/main.py       -> landing page + dashboard + internship list
+#   routes/main.py       -> landing page + dashboard + internships + notifications
 #   routes/student.py    -> apply, my applications, weekly logs
 #   routes/company.py    -> post/edit/delete internships, applicants
 #   routes/supervisor.py -> my students, view logs, give feedback
@@ -65,6 +65,18 @@ def inject_verification():
 
 
 
+# make the number of unread notifications available to every template (bell icon)
+@app.context_processor
+def inject_unread_count():
+    from flask import session
+    from models import Notification
+    if session.get('user_id'):
+        count = Notification.query.filter_by(user_id=session['user_id'],
+                                             is_read=False).count()
+        return {'unread_count': count}
+    return {'unread_count': 0}
+
+
 # ---------- home + dashboard + internship list ----------
 app.add_url_rule('/',            view_func=main.home)
 app.add_url_rule('/dashboard',   view_func=main.dashboard)
@@ -104,6 +116,9 @@ app.add_url_rule('/verifications',         view_func=admin.verifications)
 app.add_url_rule('/verify/<int:id>',       view_func=admin.verify_user, methods=['POST'])
 app.add_url_rule('/reject/<int:id>',       view_func=admin.reject_user, methods=['POST'])
 
+
+# ---------- notifications ----------
+app.add_url_rule('/notifications', view_func=main.notifications)
 
 # ---------- csv exports ----------
 app.add_url_rule('/applicants/<int:internship_id>/export', view_func=company.applicants_export)

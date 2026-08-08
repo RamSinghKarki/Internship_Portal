@@ -3,8 +3,8 @@
 -- Internship Portal - Database Setup (matches the ER diagram)
 -- Run once in MySQL:  mysql -u root -p < database.sql
 --
--- Tables (8): roles, users, students, companies, supervisors,
---             internships, applications, progress_logs
+-- Tables (9): roles, users, students, companies, supervisors,
+--             internships, applications, progress_logs, notifications
 -- ============================================================
 
 DROP DATABASE IF EXISTS internship_db;
@@ -106,6 +106,17 @@ CREATE TABLE progress_logs (
     submitted_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (application_id) REFERENCES applications(id) ON DELETE CASCADE,
     FOREIGN KEY (supervisor_id)  REFERENCES supervisors(id)  ON DELETE SET NULL
+);
+
+-- 9. Notifications (in-app messages for a user, shown at the bell icon)
+CREATE TABLE notifications (
+    id         INT AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT NOT NULL,
+    message    VARCHAR(255) NOT NULL,
+    link       VARCHAR(255),                   -- page the message points to
+    is_read    BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- ---------- starting data ----------

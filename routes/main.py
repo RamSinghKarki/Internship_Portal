@@ -1,12 +1,12 @@
 # ============================================================
 # Main pages: landing page, dashboard (key figures),
-# internship list with search
+# internship list with search, notifications
 # ============================================================
 
 from datetime import datetime
 from flask import render_template, redirect, url_for, session, request
 from models import (db, User, Student, Company, Supervisor, Internship,
-                    Application, ProgressLog,
+                    Application, ProgressLog, Notification,
                     current_student, current_company, current_supervisor)
 
 
@@ -122,3 +122,16 @@ def internships():
     return render_template('internships.html', internships=items,
                            applied_ids=applied_ids, q=q, skill=skill)
 
+
+# ---------- NOTIFICATIONS (bell icon page) ----------
+def notifications():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    items = (Notification.query.filter_by(user_id=session['user_id'])
+             .order_by(Notification.id.desc()).limit(50).all())
+    # opening the page marks everything as read, which clears the badge
+    (Notification.query.filter_by(user_id=session['user_id'], is_read=False)
+     .update({'is_read': True}))
+    db.session.commit()
+    return render_template('notifications.html', items=items)
