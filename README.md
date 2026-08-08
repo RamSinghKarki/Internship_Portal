@@ -11,7 +11,7 @@ A Flask + MySQL web app that connects **Students**, **Companies**, **Supervisors
 | **Supervisor** | Register under a company, see the selected students of that company, read their weekly logs and give **feedback + marks** |
 | **Admin** | Verify or reject every new account, view and search all users, export the list as CSV, delete users (related data is removed automatically by `ON DELETE CASCADE`) |
 
-## Database (8 tables — matches the ER diagram)
+## Database (9 tables — matches the ER diagram)
 
 ```
 roles ──< users ──< students ──────< applications >────── internships >── companies
@@ -27,6 +27,7 @@ roles ──< users ──< students ──────< applications >───
 - `internships` — posted by a company (title, skills, duration, stipend, vacancies, status)
 - `applications` — student applies to internship (cover letter, status: applied/selected/rejected)
 - `progress_logs` — weekly work of a selected student + supervisor feedback and marks
+- `notifications` — in-app messages with an unread flag (the bell badge)
 
 ## Project Structure
 
@@ -41,7 +42,7 @@ Internship_Portal/
 │   ├── company.py      <- post/edit/delete internships, applicants
 │   ├── supervisor.py   <- my students, view logs, give feedback
 │   └── admin.py        <- manage users, verify accounts, CSV export
-├── database.sql        <- creates the database, 8 tables and admin account
+├── database.sql        <- creates the database, 9 tables and admin account
 ├── requirements.txt
 ├── static/
 │   ├── bootstrap.min.css   <- Bootstrap 5 (served locally, works offline)
@@ -64,6 +65,9 @@ Internship_Portal/
 
 - **Role-specific dashboards** — each role sees key figures relevant to it,
   with monthly growth, read live from the database.
+- **In-app notifications** — bell icon with an unread count; users are told
+  when an application arrives, a decision is made, a log is submitted, or
+  feedback is given.
 - **Search + pagination** — internship search by keyword and skill; the admin
   user table is searchable and paginated.
 - **CSV exports** — the admin can export all users; a company can export the
@@ -73,7 +77,7 @@ Internship_Portal/
 
 To fill the database with realistic sample data for a demonstration
 (18 students, 5 companies, 6 supervisors, 12 internships, applications in
-every status, and weekly logs with supervisor feedback):
+every status, weekly logs with supervisor feedback, and notifications):
 
 ```
 python seed_demo.py

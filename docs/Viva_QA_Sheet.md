@@ -20,7 +20,7 @@ and sets the direction of the questions that follow.
 > with marks. An administrator approves every account and manages all users.
 >
 > It is built with Python Flask, MySQL and the SQLAlchemy ORM, with a
-> Bootstrap interface. The database has eight tables, and we have written
+> Bootstrap interface. The database has nine tables, and we have written
 > thirty-five automated tests covering every test case in our report."
 
 ---
@@ -39,7 +39,7 @@ Have the app already running at `http://127.0.0.1:5000`.
 | 4 | Post an internship | "This is a CREATE operation." |
 | 5 | View applicants | "The company sees the student's details, skills, cover letter and the uploaded PDF with the NID and resume." |
 | 6 | Mark one applicant **selected** | "This is an UPDATE, and it notifies the student." |
-| 7 | Login as that student | "My Applications now shows the status as selected, and the log book link has appeared." |
+| 7 | Login as that student | "The bell shows an unread count. The message links straight to the application." |
 | 8 | Open Weekly Logs, submit a log | "Only a selected student can open the log book." |
 | 9 | Login as `supervisor1@portal.com` | "The supervisor sees only their own company's students." |
 | 10 | Give feedback and marks | "The student can now see this immediately." |
@@ -78,8 +78,8 @@ non-functional requirements in Chapter 3.
 **Q: What is the scope of the project? What is not included?**
 Included: registration and login for all roles, internship posting and
 search, applications with cover letters, selection, weekly logs with
-supervisor feedback and marks, CSV exports and user administration.
-Each student uploads one PDF holding
+supervisor feedback and marks, in-app notifications, CSV exports and user
+administration. Each student uploads one PDF holding
 the citizenship / NID, resume and other documents, which the admin checks
 before approving and the company reads when the student applies.
 Not included: email or SMS delivery, interview scheduling, direct messaging
@@ -89,8 +89,8 @@ listed as future scope.
 ## B. Database
 
 **Q: How many tables do you have and what are they?**
-Eight: `roles`, `users`, `students`, `companies`, `supervisors`,
-`internships`, `applications`, `progress_logs`.
+Nine: `roles`, `users`, `students`, `companies`, `supervisors`,
+`internships`, `applications`, `progress_logs`, `notifications`.
 
 **Q: Why is `users` separate from `students` and `companies`?**
 Everyone who logs in needs the same fields — name, email, password, role — so
@@ -138,7 +138,7 @@ columns we search and join on most.
 Three tiers. The presentation tier is the browser showing HTML produced from
 Jinja templates. The application tier is Flask: `app.py` maps every URL to a
 function, the functions live in the `routes/` package, and `models.py`
-defines the data model. The data tier is MySQL with eight tables.
+defines the data model. The data tier is MySQL with nine tables.
 
 **Q: What does `app.py` do?**
 It creates the Flask application, configures the database connection, and
@@ -237,6 +237,14 @@ You are redirected with "Internship not found". The query filters by both the
 internship id and the logged-in company id, so the record simply is not
 returned. That is test case 14b.
 
+**Q: How does a user find out something happened?**
+Four events queue a notification: an application submitted, a decision
+recorded, a weekly log submitted and feedback given. Approving or rejecting
+an account notifies its owner too. `notify()` adds the row to the same
+session as the action, so one `commit()` writes both — an application can
+never exist without the company having been told. The bell in the navigation
+bar shows the unread count, and opening the page marks them read.
+
 **Q: How do you know who created a record?**
 Every row that a user creates carries a foreign key back to them —
 `applications.student_id`, `internships.company_id`,
@@ -289,11 +297,12 @@ columns and re-tested.
 ## H. Diagrams
 
 **Q: Explain your ER diagram.**
-Eight entities. `roles` defines the type of every user; `users` is the
+Nine entities. `roles` defines the type of every user; `users` is the
 central login table; `students`, `companies` and `supervisors` extend it with
 role-specific details; companies post `internships`, which receive
-`applications` from students; and each application contains `progress_logs`,
-which a supervisor evaluates with feedback and marks.
+`applications` from students; each application contains `progress_logs`,
+which a supervisor evaluates with feedback and marks; and every user can
+receive `notifications`.
 
 **Q: What is the difference between your DFD and your ER diagram?**
 The ER diagram shows the *data at rest* — entities and their relationships.
@@ -336,7 +345,7 @@ removing a supervisor must not wipe the marks that supervisor already
 awarded, took careful thought — and each rule is now covered by a test.
 
 **Q: If you had two more months, what would you build?**
-In-application notifications and then email delivery of them, interview
+Email delivery of the notifications we already generate, interview
 scheduling, direct messaging between students and companies, automatic
 completion certificates, and deployment on a live server with HTTPS and
 backups.
@@ -347,9 +356,9 @@ backups.
 
 Examiners respect a straight answer far more than a bluff. If asked:
 
-- **Notifications of any kind** — not implemented. A student sees a decision
-  by opening My Applications, not by being told. This was a deliberate
-  simplification so the schema stays at eight tables.
+- **Email and SMS** — not implemented. Notifications are inside the
+  application only, because we had no mail server to demonstrate with. The
+  events are already stored, so only the delivery channel is missing.
 - **Deployment** — runs on the Flask development server; a production
   deployment needs Gunicorn or similar behind a web server, with HTTPS.
 - **CSRF protection** — not implemented; the fix is Flask-WTF `CSRFProtect`.
@@ -368,14 +377,14 @@ is …"* and then say the nearest thing you do know. Never invent a detail.
 
 | Item | Value |
 |------|-------|
-| Tables | 8 |
-| Model classes | 8 (`models.py`) |
-| URL rules | 29 (`app.py`) |
+| Tables | 9 |
+| Model classes | 9 (`models.py`) |
+| URL rules | 30 (`app.py`) |
 | Route files | 7 (`routes/`) |
-| Templates | 18 (all extend `base.html`) |
-| Automated tests | 29, all passing |
-| Test cases in report | 21 |
-| Functional requirements | FR-1 … FR-23 |
+| Templates | 19 (all extend `base.html`) |
+| Automated tests | 33, all passing |
+| Test cases in report | 24 |
+| Functional requirements | FR-1 … FR-24 |
 | Roles | admin, student, company, supervisor |
 | Stack | Python, Flask, SQLAlchemy ORM, PyMySQL, MySQL, Bootstrap 5, Bootstrap Icons |
 | Admin login | `admin@portal.com` / `admin123` |
